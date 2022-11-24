@@ -19,3 +19,4 @@ passlib
 psycopg2
 sqlalchemy
 pydantic[email]
+bcrypt
