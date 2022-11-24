@@ -1,20 +1,34 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
 
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:Genesis@localhost/slightly"
+TEST_SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@localhost/st_crm_test_db"
 
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+def set_up_db(production_env=False):
+    if production_env:
+        engine = create_engine(SQLALCHEMY_DATABASE_URL)
+        SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=engine)
+        Base = declarative_base()
+        return engine, SessionLocal, Base
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    engine = create_engine(
+        TEST_SQLALCHEMY_DATABASE_URL)
+    SessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=engine)
+    Base = declarative_base()
+    return engine, SessionLocal, Base
 
-Base = declarative_base()
+
+engine, SessionLocal, Base = set_up_db()
 
 
 def get_db():
-  db = SessionLocal()
-  try:
-    yield db
-  finally:
-    db.close()
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

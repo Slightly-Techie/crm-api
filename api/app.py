@@ -12,24 +12,10 @@ app = FastAPI()
 
 @app.get('/')
 def index():
-  return {"msg":"home"}
+    return {"msg": "home"}
+
 
 app.include_router(auth_router, prefix="/api/v1")
 
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  # pip cache purge
-  # pip config set global.no-cache-dir false
+# pip cache purge
+# pip config set global.no-cache-dir false
