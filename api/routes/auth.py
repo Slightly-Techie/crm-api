@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+
 from sqlalchemy.orm import Session
 
 from utils import get_password_hash
 
-from models import User
+from db.models.users import User
 
-from database import get_db
+from db.database import get_db
+from db.repository.users import create_new_user
 
-from schema import UserSignUp, UserResponse
+from api.api_models.user_sign_up import UserSignUp
+from api.api_models.user_response import UserResponse
 
 
 auth_router = APIRouter(tags=["Auth"])
@@ -33,10 +36,6 @@ def signup(user: UserSignUp, db: Session = Depends(get_db)):
     user_edit = {key: user.dict()[key] for key in extract_keys}
     user_edit['password'] = hash_passwd
 
-    new_user = User(**user_edit)
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    new_user = create_new_user(user_edit, db)
 
     return new_user
