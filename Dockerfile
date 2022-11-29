@@ -12,4 +12,3 @@ CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8080"]
 
 
 
-# db_url = postgres://postgres:WGod4JQZFZoFwai@crm-db.internal:5432
