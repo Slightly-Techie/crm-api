@@ -1,4 +1,6 @@
-from utils import get_password_hash, verify_password
+
+
+from utils.utils import get_password_hash, verify_password
 
 
 def test_verify_password():

@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from core.config import settings
 
-TEST_SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@localhost/st_crm_test_db"
+TEST_SQLALCHEMY_DATABASE_URL = "postgresql://postgres:asdfghjkl@localhost/trial"
 
 
 def set_up_db(production_env=False):
