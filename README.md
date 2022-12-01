@@ -91,7 +91,17 @@ POSTGRES_PORT= #e.g 5432
 POSTGRES_DB= #e.g st_crm_db
 ```
 
-#### Step 6: Start the uvicorn server
+#### Step 6: Create a `test.env` file in the root directory and add the following environment variables
+
+```bash
+POSTGRES_USER= #e.g postgres
+POSTGRES_PASSWORD= #e.g password123
+POSTGRES_SERVER= #e.g localhost
+POSTGRES_PORT= #e.g 5432
+POSTGRES_DB= #e.g st_crm_db
+```
+
+#### Step 7: Start the uvicorn server
 
 ```bash
 uvicorn api.app:app --reload
