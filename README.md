@@ -81,6 +81,12 @@ poetry shell
 poetry install
 ```
 
+> Note to add a package to the project, run
+
+```bash
+poetry add <package-name>
+```
+
 #### Step 5: Create a `.env` file in the root directory and add the following environment variables
 
 ```bash
@@ -104,7 +110,7 @@ POSTGRES_DB= #e.g st_crm_db
 #### Step 7: Start the uvicorn server
 
 ```bash
-uvicorn api.app:app --reload
+uvicorn app:app --reload
 ```
 
 
