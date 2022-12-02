@@ -11,7 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 
 ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * settings.ACCESS_TOKEN_EXPIRE_DAYS
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,

@@ -18,7 +18,7 @@ def set_up_db(production_env=False):
     return engine, SessionLocal, Base
 
 
-engine, SessionLocal, Base = set_up_db(production_env=True)
+engine, SessionLocal, Base = set_up_db(settings.PRODUCTION_ENV)
 
 
 def get_db():

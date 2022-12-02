@@ -14,6 +14,7 @@ from api.api_models.user_response import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from utils.utils import verify_password
 from utils.oauth2 import get_access_token
+from core.exceptions import ValidationError
 
 auth_router = APIRouter(tags=["Auth"])
 
