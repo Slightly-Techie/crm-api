@@ -5,7 +5,6 @@ from api.api_models import user_sign_up
 import pytest
 from jose import jwt
 from core.config import settings
-from pydantic.errors import LuhnValidationError
 
 
 def test_sign_up(client):
@@ -45,4 +44,3 @@ def test_incorrect_log_in(client, email, password, status_code):
     res = client.post("/api/v1/users/login", data={"username": email, "password": password})
     print(res.json())
     assert res.status_code == status_code
-    # assert res.json().get('detail') == "Invalid Credentials"
