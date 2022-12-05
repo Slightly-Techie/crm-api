@@ -21,7 +21,8 @@ class Settings:
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ERRORS: dict = {
         "INVALID_CREDENTIALS": "Invalid Credentials",
-        "PASSWORD_MATCH_DETAIL": "Passwords do not match"
+        "PASSWORD_MATCH_DETAIL": "Passwords do not match",
+        "USER_EXISTS": "User with email already exists"
     }
     
 settings = Settings()
