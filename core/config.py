@@ -19,7 +19,9 @@ class Settings:
     PRODUCTION_ENV : bool = os.getenv("PRODUCTION_ENV")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60*24*30)
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
-    INVALID_CREDENTIALS: str = "Invalid Credentials"
-    PASSWORD_MATCH_DETAIL: str = "Passwords do not match"
+    ERRORS: dict = {
+        "INVALID_CREDENTIALS": "Invalid Credentials",
+        "PASSWORD_MATCH_DETAIL": "Passwords do not match"
+    }
     
 settings = Settings()

@@ -28,7 +28,7 @@ def signup(user: UserSignUp, db: Session = Depends(get_db)):
                             detail="User with email already exists")
     hash_passwd = get_password_hash(user.password)
     if user.password != user.password_confirmation:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.PASSWORD_MATCH_DETAIL)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
 
     user.password = hash_passwd
     new_user = create_new_user(user, db)
@@ -41,11 +41,11 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     user_data = db.query(User).filter(User.email == user.username).first()
     if not user_data:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.INVALID_CREDENTIALS)
+            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
 
     if not verify_password(user.password, user_data.password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.INVALID_CREDENTIALS)
+            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
 
     token = get_access_token(str(user_data.id))
 
