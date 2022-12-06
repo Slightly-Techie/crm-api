@@ -6,7 +6,10 @@ from db.models.users import User
 
 def create_new_user(user: UserSignUp, db: Session):
 
-    new_user = User(**user)
+    new_user = user.dict().copy()
+    new_user.pop("password_confirmation")
+
+    new_user = User(**new_user)
 
     db.add(new_user)
     db.commit()

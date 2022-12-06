@@ -17,5 +17,6 @@ def index():
 
 app.include_router(auth_router, prefix="/api/v1")
 
+
 # pip cache purge
 # pip config set global.no-cache-dir false

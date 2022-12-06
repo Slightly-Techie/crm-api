@@ -2,10 +2,20 @@ FROM python:3.9
 
 WORKDIR /code
 
-COPY requirements.txt /code/requirements.txt
+ENV PYTHONUNBUFFERED=1 \
+    POETRY_HOME="/code/poetry"
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+ENV PATH="$POETRY_HOME/bin:$PATH"
 
-COPY ./api /code/src
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
-CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8080"]
+COPY poetry.lock pyproject.toml /code/
+
+RUN poetry install
+
+COPY . /code/
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+
+
+
