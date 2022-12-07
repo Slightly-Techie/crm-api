@@ -6,7 +6,8 @@ from core.config import settings
 SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 
 
-def set_up_db(production_env=False):
+
+def set_up_db(production_env=settings.PRODUCTION_ENV):
     if production_env:
         engine = create_engine(settings.DATABASE_URL)
     else:
