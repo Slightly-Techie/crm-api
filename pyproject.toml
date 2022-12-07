@@ -2,10 +2,9 @@
 name = "crm-api"
 version = "0.1.0"
 description = "CRM API for Slightly Techie"
-authors = [""]
+authors = ["Slightly Techie <slightlytechie@gmail.com>"]
 license = "Proprietory"
 readme = "README.md"
-packages = [{include = "crm_api"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"

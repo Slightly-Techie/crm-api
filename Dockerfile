@@ -5,18 +5,18 @@ WORKDIR /code
 
 ENV PYTHONUNBUFFERED=1 \
     POETRY_HOME="/code/poetry"
+    
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN pip install --no-cache-dir --upgrade "poetry==1.2.2"
 
 COPY poetry.lock pyproject.toml /code/
+
+RUN poetry config virtualenvs.create false
 
 RUN poetry install
 
 COPY . /code/
 
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
-
-
-
