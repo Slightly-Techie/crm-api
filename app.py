@@ -11,7 +11,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:3000",
-    "https://crm-web.fly.dev/",
+    "https://crm-web.fly.dev",
 ]
 
 app.add_middleware(
