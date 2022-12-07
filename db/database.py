@@ -6,8 +6,7 @@ from core.config import settings
 SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 
 
-
-def set_up_db(production_env=settings.PRODUCTION_ENV):
+def set_up_db(production_env):
     if production_env:
         engine = create_engine(settings.DATABASE_URL)
     else:
@@ -19,7 +18,7 @@ def set_up_db(production_env=settings.PRODUCTION_ENV):
     return engine, SessionLocal, Base
 
 
-engine, SessionLocal, Base = set_up_db()
+engine, SessionLocal, Base = set_up_db(settings.PRODUCTION_ENV)
 
 
 def get_db():
