@@ -9,20 +9,21 @@ jobs:
   deploy:
       name: Build and Test
       runs-on: ubuntu-latest
+
+
       steps:
         - uses: actions/checkout@v3
         - name: Set up Python 3.10
-          uses: actions/setup-python@v1
+          uses: actions/setup-python@v4
           with:
-            python-version: 3.10.9
+            python-version: 3.10
 
-        - name: Install pytest
-          run: pip install pytest
-
-        - name: Run poetry
+        - name: Install dependencies
           run: |
-            pip install --upgrade poetry==1.2.2
+            python -m pip install --upgrade pip
+            pip install poetry
             poetry install
 
         - name: Test with pytest
-          run: pytest
+          run: |
+            pytest
