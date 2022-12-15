@@ -10,6 +10,10 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    userdetails = relationship(back_populates = 'user')
+    github_profile = Column(String)
+    twitter_profile = Column(String)
+    linkedin_profile = Column(String)
+    portfolio_url = Column(String)
+    profile_pic_url = Column(String)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
