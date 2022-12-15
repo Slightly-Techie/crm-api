@@ -1,22 +1,21 @@
 from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy.orm import Session
-from db.models.users import User
-from db.models.user_details import UserDetails
-from api.api_models.user_details import UserDetails
+from api.api_models.user_response import UserResponse
 from db.database import get_db
+from db.models.users import User
 
 
-details_route = APIRouter(tags=["user_details"])
+details_route = APIRouter(tags=["user_details"],prefix="/users")
 
-@details_route.get("/profile",response_model=UserDetails)
-async def get_profile(user_id:int,db: Session = Depends(get_db)) -> UserDetails:
-    user_exists = await db.query(User).filter(User.id == user_id).first()
+@details_route.get("/profile",response_model=UserResponse)
+async def get_profile(id:int,db: Session = Depends(get_db)) -> UserResponse:
+    user_exists = await db.query(User).filter(User.id ==  id).first()
     if user_exists:
-        user_details = await db.query(UserDetails).filter(UserDetails.user_id == user_id).first()
+        user_details = await db.query(User).filter(User.id == id).first()
     else:
         raise HTTPException(status_code=404,details = "User does not exist")    
 
-    return UserDetails(**user_details)     
+    return UserResponse(**user_details)     
 
 
 

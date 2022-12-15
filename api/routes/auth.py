@@ -32,6 +32,8 @@ def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
     user.password = hash_passwd
     new_user = create_new_user(user, db)
+    
+
 
     return new_user
 
