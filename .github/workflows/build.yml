@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [opened, edited]
 
+# command to run
+
 jobs:
   deploy:
       name: Build and Test
