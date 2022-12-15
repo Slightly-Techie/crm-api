@@ -19,5 +19,10 @@ jobs:
         - name: Install pytest
           run: pip install pytest
 
+        - name: Run poetry
+          run: |
+            pip install --upgrade poetry==1.2.2
+            poetry install
+
         - name: Test with pytest
           run: pytest
