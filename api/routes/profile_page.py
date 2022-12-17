@@ -18,9 +18,6 @@ async def get_profile(id:int,db: Session = Depends(get_db)) -> UserResponse:
 @profile_route.put("/profile")
 async def update_profile(id:int,userDetails:ProfileResponse,db:Session = Depends(get_db)):
     user_exists =  db.query(User).filter(User.id == id).first()
-    print(user_exists.email)
-    print(userDetails.email)
-
     try:
         if user_exists:
             user_exists.email = userDetails.email if userDetails.email else user_exists.email
