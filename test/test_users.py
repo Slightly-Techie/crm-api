@@ -1,5 +1,3 @@
-
-
 from api.api_models import user_response
 from api.api_models import user_sign_up
 import pytest

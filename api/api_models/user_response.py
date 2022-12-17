@@ -17,3 +17,13 @@ class UserResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class ProfileResponse(BaseModel):
+    email: Optional[EmailStr] 
+    first_name: Optional[str] 
+    last_name: Optional[str] 
+    github_profile: Optional[str] 
+    twitter_profile: Optional[str] 
+    linkedin_profile: Optional[str] 
+    portfolio_url: Optional[str]
+    profile_pic_url: Optional[str] 
