@@ -13,7 +13,7 @@ async def get_profile(id:int,db: Session = Depends(get_db)) -> UserResponse:
     if user_details:
         return {user_details}     
     else:
-        raise HTTPException(status_code=404,detail="something went wrong")    
+        raise HTTPException(status_code=404,detail="Id does not exist")    
 
 @profile_route.put("/profile")
 async def update_profile(id:int,userDetails:ProfileResponse,db:Session = Depends(get_db)):

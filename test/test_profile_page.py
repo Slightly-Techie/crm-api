@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from api.api_models.user_response import UserResponse
 from app import app
