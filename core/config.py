@@ -16,7 +16,7 @@ class Settings:
     POSTGRES_DB : str = os.getenv("POSTGRES_DB","tdd")
     DATABASE_URL = os.getenv("DATABASE_URL",f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
     SECRET: str = os.getenv("SECRET")
-    PRODUCTION_ENV : bool = os.getenv("PRODUCTION_ENV")
+    PRODUCTION_ENV : bool = os.getenv("PRODUCTION_ENV", False)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60*24*30)
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ERRORS: dict = {

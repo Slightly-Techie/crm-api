@@ -35,3 +35,5 @@ app.include_router(profile_route,prefix="/api/v1")
 
 # pip cache purge
 # pip config set global.no-cache-dir false
+
+
