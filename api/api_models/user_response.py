@@ -18,7 +18,7 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
-class ProfileResponse(BaseModel):
+class profile(BaseModel):
     email: Optional[EmailStr] 
     first_name: Optional[str] 
     last_name: Optional[str] 
