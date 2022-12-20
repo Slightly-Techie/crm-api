@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy.orm import Session
-from api.api_models.user_response import UserResponse,ProfileResponse
+from api.api_models.user import UserResponse,Profile
 from db.database import get_db
 from db.models.users import User
 
@@ -16,7 +16,7 @@ async def get_profile(id:int,db: Session = Depends(get_db)) -> UserResponse:
         raise HTTPException(status_code=404,detail="Id does not exist")    
 
 @profile_route.put("/profile")
-async def update_profile(id:int,userDetails:ProfileResponse,db:Session = Depends(get_db)):
+async def update_profile(id:int,userDetails:Profile,db:Session = Depends(get_db)):
     user_exists =  db.query(User).filter(User.id == id).first()
     try:
         if user_exists:
