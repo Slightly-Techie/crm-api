@@ -10,7 +10,7 @@ def test_get_profile():
     assert res.status_code == 200
 
 def test_update_profile():
-    res = testclient.put("/api/v1/users/profile/?id=1",json={"github_profile":"https://github.com/Slightly-Techie/","twitter_profile":"https://twitter.com/slightlytechie","linkedin_profile":"https://linkedin.com/slightlytechie","portfolio_url":""})
+    res = testclient.put("/api/v1/users/profile/?id=1",json={"github_profile":"https://github.com/Slightly-Techie/","twitter_profile":"https://twitter.com/slightlytechie","linkedin_profile":"https://linkedin.com/slightlytechie"})
    
     assert res.status_code == 200
    

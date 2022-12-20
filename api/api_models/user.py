@@ -13,7 +13,7 @@ class UserSignUp(BaseModel):
     linkedin_profile: Optional[str] = Field(None)
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
-   
+
 
 class UserResponse(BaseModel):
     id: int = Field(...)
