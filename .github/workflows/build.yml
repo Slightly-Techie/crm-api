@@ -10,11 +10,6 @@ jobs:
       name: Build and Test
       runs-on: ubuntu-latest
 
-      env:
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_USER: postgres
-        POSTGRES_DATABASE: github_actions_db
-
       services:
         postgres:
           image: postgres
@@ -22,7 +17,11 @@ jobs:
             - 5432:5432
           env:
             POSTGRES_PASSWORD: postgres
-            
+            POSTGRES_USER: postgres
+            POSTGRES_DATABASE: github_actions_db
+            POSTGRES_HOST: localhost
+
+
           options: >-
              --health-cmd pg_isready 
              --health-interval 10s 
