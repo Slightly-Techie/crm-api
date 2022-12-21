@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+# command to run
+
 jobs:
   build:
       name: Build and Test
