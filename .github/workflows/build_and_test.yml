@@ -1,9 +1,7 @@
-name: CRM API BUILD AND TEST
+name: BUILD AND TEST
 on:
   pull_request:
     types: [opened, synchronize]
-
-
 
 jobs:
   build:
