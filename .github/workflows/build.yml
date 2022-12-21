@@ -40,7 +40,8 @@ jobs:
             poetry install
 
         - name: Connect to postgres
-          run: python /test/database.py
+          working-directory: ./test
+          run: python database.py
 
         - name: Test with pytest
           run: |
