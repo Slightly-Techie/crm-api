@@ -13,6 +13,7 @@ jobs:
       env:
         TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/github_actions_db" 
         POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
 
       services:
         postgres:
