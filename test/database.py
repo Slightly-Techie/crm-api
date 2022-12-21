@@ -9,19 +9,14 @@ from fastapi.testclient import TestClient
 import os
 
 
-TEST_SQLALCHEMY_DATABASE_URL=""
+# TEST_SQLALCHEMY_DATABASE_URL=""
 
-if os.environ.get('GITHUB_WORKFLOW'):
-    POSTGRES_HOST= "localhost"
-    POSTGRES_PORT= "5432"
-    POSTGRES_USER= "postgres"
-    POSTGRES_PASSWORD = "postgres"
-    POSTGRES_DB= "github_actions_db"
-    
-    TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}" 
+# if os.environ.get('GITHUB_WORKFLOW'):
+#     TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}" 
 
-else:
-    TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}_test"
+# # else:
+
+TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}_test"
 
 engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
 
