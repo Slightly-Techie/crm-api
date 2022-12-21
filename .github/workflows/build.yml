@@ -10,7 +10,6 @@ jobs:
       name: Build and Test
       runs-on: ubuntu-latest
 
-
       services:
         postgres:
           image: postgres
@@ -39,9 +38,6 @@ jobs:
             poetry config virtualenvs.create false
             poetry install
 
-        - name: Connect to postgres
-          working-directory: ./test
-          run: python database.py
 
         - name: Test with pytest
           run: |
