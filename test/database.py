@@ -13,7 +13,7 @@ POSTGRES_PASSWORD="postgres"
 POSTGRES_PORT = "5432"
 POSTGRES_DB="github_actions_db"
 
-if os.getenv('CI'):
+if os.getenv("RUNNER_OS"):
     TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 else:
     TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}_test"
