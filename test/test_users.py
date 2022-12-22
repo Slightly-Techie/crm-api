@@ -4,6 +4,7 @@ from jose import jwt
 from core.config import settings
 
 
+
 def test_sign_up(client):
     res=client.post(
       "/api/v1/users/register/" , json={"first_name": "Slightly", "last_name": "Techie", "email": "slightlytechie@gmail.com", "password": "food", "password_confirmation": "food"}
@@ -29,6 +30,7 @@ def test_log_in(client,test_user):
     assert res.status_code == 200
     assert sub == str(test_user.get("id"))
     assert res_login.token_type == "Bearer"
+
 
 @pytest.mark.parametrize("email, password, status_code",[
   ("incorrectemail@gmail.com", "food", 400),
