@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from api.api_models.user_sign_up import UserSignUp
+from api.api_models.user import UserSignUp
 from db.models.users import User
 
 

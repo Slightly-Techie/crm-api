@@ -9,8 +9,8 @@ from db.models.users import User
 from db.database import get_db
 from db.repository.users import create_new_user
 
-from api.api_models.user_sign_up import UserSignUp, Token
-from api.api_models.user_response import UserResponse
+from api.api_models.user import UserSignUp, Token
+from api.api_models.user import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from utils.utils import verify_password
 from utils.oauth2 import get_access_token
@@ -32,6 +32,8 @@ def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
     user.password = hash_passwd
     new_user = create_new_user(user, db)
+    
+
 
     return new_user
 

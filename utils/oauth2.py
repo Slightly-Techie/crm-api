@@ -2,7 +2,7 @@
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 
-from api.api_models.user_sign_up import TokenData
+from api.api_models.user import TokenData
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from core.config import settings
