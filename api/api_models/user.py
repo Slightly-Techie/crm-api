@@ -30,7 +30,7 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
-class Profile (BaseModel):
+class ProfileUpdate(BaseModel):
     email: Optional[EmailStr] 
     first_name: Optional[str] 
     last_name: Optional[str] 
@@ -40,6 +40,11 @@ class Profile (BaseModel):
     portfolio_url: Optional[str]
     profile_pic_url: Optional[str] 
 
+    class Config:
+      orm_mode = True
+
+class ProfileResponse(ProfileUpdate):
+  id : int = Field(...)
 
 
 class UserLogin(BaseModel):
