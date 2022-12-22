@@ -33,6 +33,8 @@ def test_log_in(client,test_user):
     assert sub == str(test_user.get("id"))
     assert res_login.token_type == "Bearer"
 
+    
+
 @pytest.mark.parametrize("email, password, status_code",[
   ("incorrectemail@gmail.com", "food", 400),
   ("slightlytechie@gmail.com", "incorrectpassword", 400),
