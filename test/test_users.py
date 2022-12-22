@@ -1,5 +1,4 @@
 from api.api_models import user
-from api.api_models import user
 import pytest
 from jose import jwt
 from core.config import settings

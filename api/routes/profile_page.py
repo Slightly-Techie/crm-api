@@ -25,8 +25,8 @@ async def update_profile(id:int,userDetails:Profile,db:Session = Depends(get_db)
             user_exists.update(update_data)
                         
             db.commit()
-
-            return {"message" : "Profile update successful"}
+       
+            return user_exists.first()
                     
         else:
                 raise HTTPException(status_code=404,detail=settings.ERRORS.get("INVALID ID"))                       
