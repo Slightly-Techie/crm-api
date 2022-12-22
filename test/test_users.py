@@ -15,10 +15,6 @@ def test_sign_up(client):
     assert res.status_code == 201
 
 
-# @pytest.mark.parametrize("first_name, last_name, email, password, password_confirmation")
-# def test_incorrect_sign_up(client):
-
-
 def test_log_in(client,test_user):
     res=client.post(
       "/api/v1/users/login" , data={"username": test_user.get("email"), "password": test_user.get("password")}
@@ -41,5 +37,4 @@ def test_log_in(client,test_user):
 ])
 def test_incorrect_log_in(client, email, password, status_code):
     res = client.post("/api/v1/users/login", data={"username": email, "password": password})
-    print(res.json())
     assert res.status_code == status_code
