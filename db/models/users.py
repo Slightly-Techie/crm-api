@@ -1,7 +1,5 @@
 from db.database import Base
 from sqlalchemy import Column, String, Integer, TIMESTAMP, text
-from sqlalchemy.orm import relationship
-
 
 class User(Base):
     __tablename__ = "users"
@@ -10,6 +8,7 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     password = Column(String, nullable=False)
+    mastodon_profile = Column(String)
     github_profile = Column(String)
     twitter_profile = Column(String)
     linkedin_profile = Column(String)
