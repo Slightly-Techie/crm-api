@@ -40,8 +40,8 @@ def client(session):
 def test_user(client):
     user = {"first_name": "Slightly", "last_name": "Techie", "email": "slightlytechie@gmail.com",
     "password": "food", 
-    "password_confirmation": "food"
-    ,"github_profile":"https://github.com/Slightly-Techie/"}
+    "password_confirmation": "food",
+    "github_profile":"https://github.com/Slightly-Techie/"}
     res = client.post( "/api/v1/users/register/", json=user)
 
     assert res.status_code == 201
