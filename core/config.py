@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from pathlib import Path
 env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 class Settings:
     PROJECT_NAME:str = "Job Board"
@@ -22,7 +22,9 @@ class Settings:
     ERRORS: dict = {
         "INVALID_CREDENTIALS": "Invalid Credentials",
         "PASSWORD_MATCH_DETAIL": "Passwords do not match",
-        "USER_EXISTS": "User with email already exists"
+        "USER_EXISTS": "User with email already exists",
+        "INVALID ID":"ID does not exist",
+        "UNKNOWN ERROR":"Something went wrong"
     }
     
 settings = Settings()
