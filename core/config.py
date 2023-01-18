@@ -22,7 +22,9 @@ class Settings:
     ERRORS: dict = {
         "INVALID_CREDENTIALS": "Invalid Credentials",
         "PASSWORD_MATCH_DETAIL": "Passwords do not match",
-        "USER_EXISTS": "User with email already exists"
+        "USER_EXISTS": "User with email already exists",
+        "INVALID ID":"ID does not exist",
+        "UNKNOWN ERROR":"Something went wrong"
     }
     
 settings = Settings()

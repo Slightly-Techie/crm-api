@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from api.routes.auth import auth_router
+from api.routes.profile_page import profile_route
 from db.database import engine
 from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +30,7 @@ def index():
 
 
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(profile_route,prefix="/api/v1")
 
 
 # pip cache purge
