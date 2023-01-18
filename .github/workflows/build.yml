@@ -21,7 +21,6 @@ jobs:
             POSTGRES_DB: github_actions_db
             POSTGRES_HOST: localhost
 
-
           options: >-
              --health-cmd pg_isready 
              --health-interval 10s 

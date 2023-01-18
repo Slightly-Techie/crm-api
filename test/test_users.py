@@ -44,5 +44,4 @@ def test_log_in(client,test_user):
 ])
 def test_incorrect_log_in(client, email, password, status_code):
     res = client.post("/api/v1/users/login", data={"username": email, "password": password})
-    print(res.json())
     assert res.status_code == status_code
