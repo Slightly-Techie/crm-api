@@ -1,8 +1,8 @@
 """include socials
 
-Revision ID: 8c2308e15cec
-Revises: 7ad775b30557
-Create Date: 2023-01-19 22:54:46.787786
+Revision ID: 2f6e42bda54b
+Revises: ff8d9d20c435
+Create Date: 2023-01-19 23:21:47.668020
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8c2308e15cec'
-down_revision = '7ad775b30557'
+revision = '2f6e42bda54b'
+down_revision = 'ff8d9d20c435'
 branch_labels = None
 depends_on = None
 
