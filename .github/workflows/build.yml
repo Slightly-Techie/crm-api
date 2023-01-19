@@ -46,6 +46,7 @@ jobs:
             poetry install
 
             alembic upgrade head
+            alembic heads
 
         - name: Test with pytest
           run: |
