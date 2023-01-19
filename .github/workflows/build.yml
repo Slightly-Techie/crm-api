@@ -5,8 +5,6 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-
-
 jobs:
   build:
       name: Build and Test
@@ -44,14 +42,12 @@ jobs:
             pip install poetry pytest
             poetry config virtualenvs.create false
             poetry install
+        
+            alembic upgrade head
 
-            if [ -d migrations ]; then
-              echo "Directory exists"
-            else 
-              alembic init migrations
-              sed -i '/^config = .*/a config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)' migrations/env.py
-            fi 
 
         - name: Test with pytest
           run: |
             pytest
+
+          

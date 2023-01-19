@@ -11,7 +11,7 @@ processes = []
 
 
 [deploy]
-  release_command = "alembic revision --autogenerate && alembic upgrade head"
+  release_command = "alembic upgrade head"
                  
 [experimental]
   allowed_public_ports = []
