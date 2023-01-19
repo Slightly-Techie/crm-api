@@ -6,7 +6,8 @@ from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
 origins = [
