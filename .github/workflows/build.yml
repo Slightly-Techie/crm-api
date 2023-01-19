@@ -43,8 +43,9 @@ jobs:
             poetry config virtualenvs.create false
             poetry install
         
-            alembic upgrade head
-
+        - name: Run alembic upgrade
+          run: alembic upgrade head
+        
 
         - name: Test with pytest
           run: |
