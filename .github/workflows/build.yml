@@ -6,6 +6,7 @@ on:
     types: [opened, synchronize]
 
 
+
 jobs:
   build:
       name: Build and Test
@@ -48,9 +49,8 @@ jobs:
               echo "Directory exists"
             else 
               alembic init migrations
+              sed -i '/^config = .*/a config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)' migrations/env.py
             fi 
-
-            alembic revision --autogenerate
 
         - name: Test with pytest
           run: |
