@@ -9,8 +9,9 @@ processes = []
 [env]
   PORT = "8080"
 
+
 [deploy]
-  release_command = [ "alembic revision --autogenerate -m 'add upgrade' ", "alembic upgrade head"] 
+  release_command = "alembic upgrade head"
                  
 [experimental]
   allowed_public_ports = []

@@ -5,5 +5,3 @@ __pycache__
 .env
 test.env
 test.db
-alembic/
-alembic.ini
