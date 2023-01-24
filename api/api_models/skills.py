@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+
 class SkillBase(BaseModel):
     name: str
 
@@ -15,8 +16,25 @@ class Skill(SkillBase):
     class Config:
         orm_mode: True
 
+class UserBase(BaseModel):
+    email: str
+
+class UserCreate(UserBase):
+    password: str
+
+
+class User(UserBase):
+    id: int
+    skills: list[Skill]
+
+
+    class Config:
+        orm_mode = True
+
+
+
 class SkillSchema(SkillBase):
-    users: list[BaseModel]
+    users: list[UserBase]
 
 
 class UserSchema(BaseModel):
