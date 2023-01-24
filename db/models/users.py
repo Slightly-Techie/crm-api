@@ -1,5 +1,6 @@
 from db.database import Base
 from sqlalchemy import Column, String, Integer, TIMESTAMP, text
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
@@ -15,3 +16,5 @@ class User(Base):
     profile_pic_url = Column(String)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
+
+    skills = relationship('Skill', secondary="users_skills", black_populates='users')   
