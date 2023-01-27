@@ -11,7 +11,7 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     role_id = Column(Integer, ForeignKey('roles.id'), nullable=False)
-    role = relationship("Role")
+    role = Column(String, nullable=False)
     password = Column(String, nullable=False)
     github_profile = Column(String)
     twitter_profile = Column(String)
@@ -28,4 +28,4 @@ class Role(Base):
     name = Column(String, nullable=False)
 
 
-Role.users = relationship("User", order_by=User.id, back_populates="role")
+#Role.users = relationship("User", order_by=User.id, back_populates="role")
