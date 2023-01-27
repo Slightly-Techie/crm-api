@@ -1,4 +1,3 @@
-
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 
@@ -35,7 +34,7 @@ def verify_token(token: str, credential_exception ):
     sub = payload.get('sub')
     if sub is None:
       raise credential_exception 
-    token_data = TokenData(sub=sub)
+    token_data = TokenData(id=sub)
   except JWTError:
     raise credential_exception
   
