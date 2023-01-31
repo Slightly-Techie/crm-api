@@ -1,7 +1,7 @@
 from db.database import Base
 from sqlalchemy import Column, ForeignKey, String, Integer, TIMESTAMP, text, Enum
 from sqlalchemy.orm import relationship
-from utils.utils import RoleEnum
+
 
 
 
@@ -27,7 +27,7 @@ class User(Base):
 class Role(Base):
     __tablename__ = "roles"
     id = Column(Integer, primary_key=True)
-    name = Column(Enum(RoleEnum), nullable=False)
+    name = Column(String, nullable=False)
 
 
 

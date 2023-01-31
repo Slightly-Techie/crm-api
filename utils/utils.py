@@ -1,4 +1,3 @@
-import enum
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -12,7 +11,6 @@ def verify_password(plain_password, password):
     return pwd_context.verify(plain_password, password)
 
 
-class RoleEnum(enum.Enum):
+class RoleChoices:
     ADMIN = 'admin'
-    MANAGER = 'manager'
     USER = 'user'

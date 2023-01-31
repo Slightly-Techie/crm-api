@@ -1,19 +1,15 @@
 from .oauth2 import get_current_user
 from fastapi import Depends
 from api.api_models.user import UserResponse
-from utils.utils import RoleEnum
+from utils.utils import RoleChoices
 from core.exceptions import ForbiddenError
 
 # Admin permission dependency
-def admin_permission(user: UserResponse = Depends(get_current_user)):
-	if user.role.name != RoleEnum.ADMIN:
+def is_admin(user: UserResponse = Depends(get_current_user)):
+	if user.role.name != RoleChoices.ADMIN:
 		raise ForbiddenError()
 
-
-# Manager permission dependency
-def manager_permission(user: UserResponse = Depends(get_current_user)):
-	if user.role.name != RoleEnum.MANAGER:
-		raise ForbiddenError()
+	return user
 
 
 def is_authenticated(user: UserResponse = Depends(get_current_user)):
@@ -22,4 +18,35 @@ def is_authenticated(user: UserResponse = Depends(get_current_user)):
 	#
 	# Usage: @app.<method>("<route>", dependencies=[Depends(is_authenticated)] )
 
-	pass
+	return user
+
+
+# Function to check ownership or admin
+def is_owner_or_admin(user, obj):
+	'''
+	params:
+		user: current user model
+		obj: object model with user field
+
+	return:
+		bool
+	'''
+	if not hasattr(user, 'role'):
+		raise ForbiddenError()
+
+	if user.role.name == RoleChoices.ADMIN:
+		return True
+
+	if user.id == obj.user_id:
+		return True
+
+	raise ForbiddenError()
+
+
+# Function to check if user is owner 
+def is_owner(user, obj):
+	if user.id == obj.user_id:
+		return True
+
+	raise ForbiddenError()
+

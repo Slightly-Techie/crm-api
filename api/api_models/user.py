@@ -1,12 +1,12 @@
 from pydantic import BaseModel, EmailStr, Field # validator
 from datetime import datetime
 from typing import Optional
-from utils.utils import RoleEnum
+
 
 
 class Role(BaseModel):
   id: int = Field(...)
-  name: RoleEnum  = Field(...)
+  name: str  = Field(...)
 
   
 class UserSignUp(BaseModel):
