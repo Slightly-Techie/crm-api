@@ -1,10 +1,12 @@
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field # validator
 from datetime import datetime
 from typing import Optional
+from utils.utils import RoleEnum
 
 
 class Role(BaseModel):
-  name: str = Field(...)
+  id: int = Field(...)
+  name: RoleEnum  = Field(...)
 
   
 class UserSignUp(BaseModel):
@@ -13,7 +15,7 @@ class UserSignUp(BaseModel):
     last_name: str = Field(..., min_length=2)
     password: str = Field(...)
     password_confirmation: str = Field(...)
-    role: Role
+    role_id: int
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
@@ -24,9 +26,9 @@ class UserSignUp(BaseModel):
         orm_mode = True
         validate_assignment = True
         
-    @validator("role", pre=True, always=True)
-    def set_role(cls, role):
-        return role or "user"
+    # @validator("role", pre=True, always=True)
+    # def set_role(cls, role):
+    #     return role or "user"
 
 
 class UserResponse(BaseModel):

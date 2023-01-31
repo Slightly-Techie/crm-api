@@ -44,8 +44,10 @@ def verify_token(token: str, credential_exception ):
   
   return token_data
 
+
+# Get currently logged in User
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
-    credentials_exception = HTTPException(
+    credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
@@ -53,8 +55,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     token = verify_token(token, credentials_exception)
     user = db.query(User).filter(User.id == token.id).first()
-    print(user)
     if not user:
-      raise HTTPException(404, "User not found")
-
+      raise credential_exception
     return user
+
+
