@@ -36,7 +36,7 @@ class UserResponse(BaseModel):
     email: Optional[EmailStr] = Field(...)
     first_name: Optional[str] = Field(...)
     last_name: Optional[str] = Field(...)
-    role: Role
+    # role: Role = Field(None)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
