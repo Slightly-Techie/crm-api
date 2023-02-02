@@ -1,17 +1,16 @@
-from pydantic import BaseModel, EmailStr, Field # validator
+from pydantic import BaseModel, EmailStr, Field  # validator
 from datetime import datetime
 from typing import Optional
 
 
-
 class Role(BaseModel):
-  id: int = Field(...)
-  name: str  = Field(...)
+    id: int = Field(...)
+    name: str = Field(...)
 
-  class Config:
-    orm_mode = True
+    class Config:
+        orm_mode = True
 
-  
+
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -28,10 +27,10 @@ class UserSignUp(BaseModel):
     class Config:
         orm_mode = True
         validate_assignment = True
-        
-    # @validator("role", pre=True, always=True)
+
+    # @validator(2, pre=True, always=True)
     # def set_role(cls, role):
-    #     return role or "user"
+    #     return role or 2
 
 
 class UserResponse(BaseModel):
@@ -50,31 +49,34 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ProfileUpdate(BaseModel):
-    email: Optional[EmailStr] 
-    first_name: Optional[str] 
-    last_name: Optional[str] 
-    github_profile: Optional[str] 
-    twitter_profile: Optional[str] 
-    linkedin_profile: Optional[str] 
+    email: Optional[EmailStr]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    github_profile: Optional[str]
+    twitter_profile: Optional[str]
+    linkedin_profile: Optional[str]
     portfolio_url: Optional[str]
-    profile_pic_url: Optional[str] 
+    profile_pic_url: Optional[str]
 
     class Config:
-      orm_mode = True
+        orm_mode = True
+
 
 class ProfileResponse(ProfileUpdate):
-  id : int = Field(...)
+    id: int = Field(...)
 
 
 class UserLogin(BaseModel):
-  email: EmailStr = Field(...)
-  password: str = Field(...)
+    email: EmailStr = Field(...)
+    password: str = Field(...)
 
 
 class Token(BaseModel):
-  token: str = Field(...)
-  token_type: str = Field(...)
+    token: str = Field(...)
+    token_type: str = Field(...)
+
 
 class TokenData(BaseModel):
-  id: Optional[str] = Field(default=None)
+    id: Optional[str] = Field(default=None)
