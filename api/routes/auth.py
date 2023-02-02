@@ -60,8 +60,6 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
 def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
     if not user:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-    print(vars(user))
     return user
 
 

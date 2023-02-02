@@ -8,6 +8,9 @@ class Role(BaseModel):
   id: int = Field(...)
   name: str  = Field(...)
 
+  class Config:
+    orm_mode = True
+
   
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
@@ -15,7 +18,7 @@ class UserSignUp(BaseModel):
     last_name: str = Field(..., min_length=2)
     password: str = Field(...)
     password_confirmation: str = Field(...)
-    role_id: int
+    role_id: Optional[int] = Field(None)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
@@ -36,7 +39,7 @@ class UserResponse(BaseModel):
     email: Optional[EmailStr] = Field(...)
     first_name: Optional[str] = Field(...)
     last_name: Optional[str] = Field(...)
-    # role: Role = Field(None)
+    role: Optional[Role] = Field(None)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
