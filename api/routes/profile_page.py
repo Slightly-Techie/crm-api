@@ -8,7 +8,7 @@ from db.models.users import User
 from utils.oauth2 import get_current_user
 
 
-profile_route = APIRouter(tags=["user_details"],prefix="/users")
+profile_route = APIRouter(tags=["User"],prefix="/users")
 
 @profile_route.get("/profile",response_model=ProfileResponse)
 async def get_profile(id:int,db: Session = Depends(get_db)) -> ProfileResponse:
