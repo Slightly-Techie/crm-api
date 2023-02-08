@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db.database import create_roles
 
 
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 create_roles()
 
 app = FastAPI()
