@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field  # validator
+from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
 from typing import Optional
+from utils.utils import RoleChoices
 
 
 class Role(BaseModel):
@@ -28,9 +29,16 @@ class UserSignUp(BaseModel):
         orm_mode = True
         validate_assignment = True
 
-    # @validator(2, pre=True, always=True)
-    # def set_role(cls, role):
-    #     return role or 2
+    @validator("role_id", pre=True, always=True)
+    def set_role_id(cls, role_id):
+        from db.database import SessionLocal
+        from db.models.users import Role as _Role
+        db = SessionLocal()
+        check_role = db.query(_Role).filter(_Role.name == RoleChoices.USER).first()
+
+        db.close()
+
+        return role_id or check_role.id
 
 
 class UserResponse(BaseModel):

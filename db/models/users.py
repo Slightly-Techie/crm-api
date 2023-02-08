@@ -26,6 +26,6 @@ class User(Base):
 class Role(Base):
     __tablename__ = "roles"
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, unique=True, nullable=False)
 
     users = relationship("User", order_by=User.id, back_populates="role")

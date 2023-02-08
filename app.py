@@ -4,9 +4,11 @@ from api.routes.profile_page import profile_route
 from db.database import engine
 from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
+from db.database import create_roles
 
 
 # Base.metadata.create_all(bind=engine)
+create_roles()
 
 app = FastAPI()
 

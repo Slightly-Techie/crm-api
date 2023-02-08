@@ -14,3 +14,4 @@ def verify_password(plain_password, password):
 class RoleChoices:
     ADMIN = 'admin'
     USER = 'user'
+    GUEST = 'guest'
