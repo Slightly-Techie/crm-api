@@ -7,7 +7,7 @@ from database import get_db
 
 admin = APIRouter(tags=["admin"])
 
-@admin.get('/api/v1/admin/users/')
+@admin.get('/api/v1/users/')
 def get_all_users(db: Session = Depends(get_db), limit: int=50, offset: int=0) -> List[None] | List[User]:
 
     return db.scalars(select(User).offset(offset).limit(limit)).all()

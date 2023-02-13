@@ -1,4 +1,5 @@
 from api.api_models import user
+from fastapi import HTTPException
 import pytest
 from jose import jwt
 from core.config import settings
@@ -38,3 +39,31 @@ def test_log_in(client,test_user):
 def test_incorrect_log_in(client, email, password, status_code):
     res = client.post("/api/v1/users/login", data={"username": email, "password": password})
     assert res.status_code == status_code
+    
+    
+def test_get_user_list(client):
+    
+    post_request = client.post(
+      "/api/v1/users/register/", 
+      json={
+          "first_name": "Slightly",
+          "last_name": "Techie", 
+          "email": "slightlytechie@gmail.com", 
+          "password": "food", 
+          "password_confirmation": "food"
+        }
+    )
+    new_user = user.UserResponse(**post_request.json())
+    
+    get_request = client.get("/api/v1/users")
+    
+    # topology of the final response unknown yet.
+    # uncertain if status_code will be included with the list of users
+    # appended at the beginning of the function.
+    # json format unknown at the moment to make final assertions.
+    # but i believe the following will do.
+    assert get_request.json()
+    assert get_request.json().status_code == 202
+    assert get_request.json().first_name == new_user.first_name
+    
+    
