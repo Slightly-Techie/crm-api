@@ -11,7 +11,7 @@ def verify_password(plain_password, password):
     return pwd_context.verify(plain_password, password)
 
 
-class RoleChoices:
+class RoleChoices():
     ADMIN = 'admin'
     USER = 'user'
     GUEST = 'guest'

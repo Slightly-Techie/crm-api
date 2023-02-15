@@ -30,11 +30,9 @@ def get_db():
         db.close()
 
 
-def create_roles():
-    
+def create_roles():   
     from db.models.users import Role
     from utils.utils import RoleChoices
-
 
     db = SessionLocal()
 

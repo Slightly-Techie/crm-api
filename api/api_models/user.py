@@ -35,7 +35,6 @@ class UserSignUp(BaseModel):
         from db.models.users import Role as _Role
         db = SessionLocal()
         check_role = db.query(_Role).filter(_Role.name == RoleChoices.USER).first()
-        print(check_role)
         db.close()
         if not check_role:
             return role_id
