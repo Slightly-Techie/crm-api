@@ -44,9 +44,9 @@ jobs:
             pip install poetry pytest
             poetry config virtualenvs.create false
             poetry install
-      
 
+        - name: Run migration
+          run: alembic upgrade head
+      
         - name: Test with pytest
-          run: |
-            alembic upgrade head
-            pytest
+          run: pytest
