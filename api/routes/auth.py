@@ -11,13 +11,14 @@ from db.repository.users import create_new_user
 
 from api.api_models.user import UserSignUp, Token
 from api.api_models.user import UserResponse
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from utils.utils import verify_password
 from utils.oauth2 import get_access_token
 from core.config import settings
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 def signup(user: UserSignUp, db: Session = Depends(get_db)):
@@ -52,19 +53,5 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     token = get_access_token(str(user_data.id))
 
     return Token(token=token, token_type="Bearer")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

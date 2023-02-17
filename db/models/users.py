@@ -17,4 +17,4 @@ class User(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
 
-    skills = relationship('Skill', secondary="users_skills", black_populates='users')   
+    skills = relationship('UserSkills',  back_populates='users')   
