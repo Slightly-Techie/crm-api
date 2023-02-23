@@ -1,4 +1,4 @@
-
+from fastapi import HTTPException, status
 
 
 class ValidationError(Exception):
@@ -9,3 +9,10 @@ class ValidationError(Exception):
 
 class UserNotFoundError(ValidationError):
   pass
+
+
+
+class ForbiddenError(HTTPException):
+  def __init__(self, status_code: int = status.HTTP_403_FORBIDDEN, detail:str = "User not authorised"):
+    super().__init__(status_code, detail)
+ 
