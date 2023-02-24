@@ -1,12 +1,14 @@
+from typing import List
 from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy.orm import Session
 from api.api_models.user import ProfileUpdate,ProfileResponse
 from core.config import settings
 from db.database import get_db
 from db.models.users import User
+from utils.oauth2 import get_current_user
 
 
-profile_route = APIRouter(tags=["user_details"],prefix="/users")
+profile_route = APIRouter(tags=["User"],prefix="/users")
 
 @profile_route.get("/profile",response_model=ProfileResponse)
 async def get_profile(id:int,db: Session = Depends(get_db)) -> ProfileResponse:
@@ -33,5 +35,10 @@ async def update_profile(id:int,userDetails:ProfileUpdate,db:Session = Depends(g
     except:
         raise HTTPException(status_code=400,detail=settings.ERRORS.get("UNKNOWN ERROR"))
         
+@profile_route.get("/", response_model=List[ProfileResponse])
+def get_all_profile(db:Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> List[ProfileResponse]:
+    
+    user = db.query(User).all()
 
+    return user
 
