@@ -6,26 +6,39 @@ from typing import Optional
 class SkillBase(BaseModel):
     name: str
 
+    class Config:
+        orm_mode = True
+
+
+class UserBase(BaseModel):
+    pass
+
+    class Config:
+        orm_mode = True
+
+
 class SkillCreate(SkillBase):
     name: str
     
 
-class SkillResponse(SkillBase):
+
+class Skills(BaseModel):
     id: int
-    
+    name: str
+    user_id: int
 
     class Config:
-        orm_mode: True
-        allow_population_by_field_name = True
+        orm_mode = True
 
-class UserBase(BaseModel):
-   pass
+
+# class UserBase(BaseModel):
+#    pass
   
 
 
-class User(UserBase):
+class Users(UserBase):
     id: int
-    skills: list[SkillResponse]
+    skills: list[Skills] = []
 
 
     class Config:
@@ -35,8 +48,13 @@ class User(UserBase):
 
 
 class SkillSchema(SkillBase):
-    users: list[UserBase]
+    users: list[UserBase] = []
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
 
 
-class UserSchema(BaseModel):
-    skills: list[SkillBase]
+
+
+

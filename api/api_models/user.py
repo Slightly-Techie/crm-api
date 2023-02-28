@@ -12,6 +12,28 @@ class Role(BaseModel):
         orm_mode = True
 
 
+class Skills(BaseModel):
+    id:int
+    name: str
+    
+
+    class Config:
+        orm_mode = True
+
+class UserSkills(BaseModel):
+    id: int
+    skills: list[Skills] = []
+
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+
+
+
+
+
+
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -52,6 +74,7 @@ class UserResponse(BaseModel):
     linkedin_profile: Optional[str] = Field(None)
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
+    #Skill: list[Skills] = list[UserSkills]
     created_at: datetime = Field(...)
 
     class Config:

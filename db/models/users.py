@@ -3,6 +3,8 @@ from sqlalchemy import Column, String, Integer, TIMESTAMP, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, String, Integer, TIMESTAMP, text, Enum
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
+
 
 
 class User(Base):
@@ -21,12 +23,12 @@ class User(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
 
-    skills = relationship('UserSkills',  back_populates='users')   
+     
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
-
-    role = relationship("Role", back_populates="users")
+    skills = relationship('Skill',secondary = "users_skills",  back_populates='users') 
+    role = relationship("Role",  back_populates="users")
 
 
 class Role(Base):
@@ -35,3 +37,26 @@ class Role(Base):
     name = Column(String, unique=True, nullable=False)
 
     users = relationship("User", order_by=User.id, back_populates="role")
+
+
+class UserSkills(Base):
+    __tablename__ = 'users_skills'
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key = True)
+    skill_id = Column(Integer, ForeignKey('skills.id'), primary_key = True)
+    # users = relationship('User',  back_populates='skills')  
+    # skills = relationship('Skill',   back_populates='users')   
+
+
+class Skill(Base):
+    __tablename__ = 'skills'
+    id = Column(Integer, primary_key = True, index = True)
+    name = Column(String)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    created_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+
+    users = relationship('User', secondary = "users_skills", back_populates='skills')  
+
+    
