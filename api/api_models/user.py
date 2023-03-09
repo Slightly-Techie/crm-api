@@ -22,7 +22,7 @@ class Skills(BaseModel):
 
 class UserSkills(BaseModel):
     id: int
-    skills: list[Skills] = []
+    skills: list[Skills] 
 
 
     class Config:
@@ -74,7 +74,7 @@ class UserResponse(BaseModel):
     linkedin_profile: Optional[str] = Field(None)
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
-    #Skill: list[Skills] = list[UserSkills]
+    skills: list[Skills]
     created_at: datetime = Field(...)
 
     class Config:

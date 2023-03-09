@@ -43,10 +43,7 @@ class UserSkills(Base):
     __tablename__ = 'users_skills'
     user_id = Column(Integer, ForeignKey('users.id'), primary_key = True)
     skill_id = Column(Integer, ForeignKey('skills.id'), primary_key = True)
-    # users = relationship('User',  back_populates='skills')  
-    # skills = relationship('Skill',   back_populates='users')   
-
-
+   
 class Skill(Base):
     __tablename__ = 'skills'
     id = Column(Integer, primary_key = True, index = True)
