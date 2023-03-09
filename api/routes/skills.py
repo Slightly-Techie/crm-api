@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI,HTTPException, APIRouter
 from sqlalchemy.orm import Session, joinedload
 
-from api.api_models.skills import  SkillCreate, Skills, Users, SkillSchema
+from api.api_models.skills import  SkillCreate
 
 from db.database import get_db
 from utils.permissions import is_authenticated
@@ -14,9 +14,9 @@ from api.api_models.user import UserResponse
 
 
 def create_user_skills(db:Session, skill:  SkillCreate, user_id: int): 
-    uppercase = skill.name.upper()
-    skill.name = uppercase
-    find_skill = db.query(Skill).filter(Skill.name == uppercase).first()
+    lowercase = skill.name.lower()
+    skill.name = lowercase
+    find_skill = db.query(Skill).filter(Skill.name == lowercase).first()
     if(find_skill):  
         db_user = UserSkills(user_id = user_id, skill_id = find_skill.id)
         db.add(db_user)
@@ -47,21 +47,10 @@ def create_skill_for_user( skill: SkillCreate, user=Depends(get_current_user), d
 
 
 
-@skill_route.get('/skill')
-def get_skill( skill_id: int, db:Session = Depends(get_db)):
-   db_skill = db.query(Skill).filter(Skill.id == skill_id).\
-        options(joinedload(Skill.users)).first()
-   return db_skill
-
-
-
-
 @skill_route.get('/user', response_model = UserResponse)
 def get_skill( user=Depends(get_current_user), db:Session = Depends(get_db)):
     db_query =  db.query(User).filter(User.id == user.id).\
-        options(joinedload(User.skills)).first()
-   
-    
+        options(joinedload(User.skills)).first()   
     return db_query
 
 
