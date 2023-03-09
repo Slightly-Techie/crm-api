@@ -14,6 +14,7 @@ from api.api_models.user import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from utils.utils import verify_password
 from utils.oauth2 import get_access_token
+from utils.permissions import is_authenticated
 from core.config import settings
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
@@ -52,6 +53,16 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     token = get_access_token(str(user_data.id))
 
     return Token(token=token, token_type="Bearer")
+
+
+
+@auth_router.get("/me", response_model=UserResponse)
+def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
+    if not user:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+    return user
+
+
 
 
 
