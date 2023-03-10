@@ -11,8 +11,8 @@ from utils.oauth2 import get_current_user
 profile_route = APIRouter(tags=["User"],prefix="/users")
 
 @profile_route.get("/profile",response_model=ProfileResponse)
-async def get_profile(id:int,db: Session = Depends(get_db)) -> ProfileResponse:
-    user_details =  db.query(User).filter(User.id ==  id).first()
+async def get_profile(current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> ProfileResponse:
+    user_details =  db.query(User).filter(User.id == current_user.id).first()
     if user_details:
         return user_details
     else:
