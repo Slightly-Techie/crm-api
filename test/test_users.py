@@ -41,29 +41,22 @@ def test_incorrect_log_in(client, email, password, status_code):
     assert res.status_code == status_code
     
     
-def test_get_user_list(client):
+def test_get_user_list(client, login_user):
+    # Get logged in user token
+    # This uses fixture test_user as default logged in user
+    user_cred = login_user()
+
+    # Construct header
+    header = {"Authorization": f"Bearer {user_cred.get('token')}"}
     
-    post_request = client.post(
-      "/api/v1/users/register/", 
-      json={
-          "first_name": "Slightly",
-          "last_name": "Techie", 
-          "email": "slightlytechie@gmail.com", 
-          "password": "food", 
-          "password_confirmation": "food"
-        }
-    )
-    new_user = user.UserResponse(**post_request.json())
-    
-    get_request = client.get("/api/v1/users")
+    get_request = client.get("/api/v1/users", headers=header)
     
     # topology of the final response unknown yet.
     # uncertain if status_code will be included with the list of users
     # appended at the beginning of the function.
     # json format unknown at the moment to make final assertions.
     # but i believe the following will do.
-    assert get_request.json()
-    assert get_request.json().status_code == 202
-    assert get_request.json().first_name == new_user.first_name
+    assert get_request.status_code == 200
+    assert len(get_request.json()) == 1
     
     

@@ -48,3 +48,19 @@ def test_user(client):
     new_user = res.json()
     new_user["password"] = user.get("password")
     return new_user
+
+
+@pytest.fixture
+def login_user(client, test_user, email="", password=""):
+    email = email or test_user.get('email')
+    password = password or test_user.get('password')
+
+    def login_fn(email:str=email, password:str=password):
+        res = client.post("/api/v1/users/login", data={"username":email, "password": password})
+        return res.json()
+
+    return login_fn
+
+
+
+
