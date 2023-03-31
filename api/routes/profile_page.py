@@ -19,8 +19,8 @@ async def get_profile(current_user: User = Depends(get_current_user),db: Session
         raise HTTPException(status_code=404,detail=settings.ERRORS.get("INVALID ID"))    
 
 @profile_route.put("/profile",response_model=ProfileResponse)
-async def update_profile(id:int,userDetails:ProfileUpdate,db:Session = Depends(get_db)):
-    user_exists =  db.query(User).filter(User.id == id)
+async def update_profile(userDetails:ProfileUpdate,current_user: User = Depends(get_current_user),db:Session = Depends(get_db)):
+    user_exists =  db.query(User).filter(User.id == current_user.id)
     try:
         if user_exists.first():
             update_data = userDetails.dict(exclude_unset=True) #convert json into a python dict and exclude fields not specified
@@ -28,8 +28,7 @@ async def update_profile(id:int,userDetails:ProfileUpdate,db:Session = Depends(g
                         
             db.commit()
        
-            return user_exists.first()
-                    
+            return user_exists.first()         
         else:
                 raise HTTPException(status_code=404,detail=settings.ERRORS.get("INVALID ID"))                       
     except:
