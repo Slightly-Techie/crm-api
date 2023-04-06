@@ -11,16 +11,16 @@ from utils.oauth2 import get_current_user
 profile_route = APIRouter(tags=["User"],prefix="/users")
 
 @profile_route.get("/profile",response_model=ProfileResponse)
-async def get_profile(id:int,db: Session = Depends(get_db)) -> ProfileResponse:
-    user_details =  db.query(User).filter(User.id ==  id).first()
+async def get_profile(current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> ProfileResponse:
+    user_details =  db.query(User).filter(User.id == current_user.id).first()
     if user_details:
         return user_details
     else:
         raise HTTPException(status_code=404,detail=settings.ERRORS.get("INVALID ID"))    
 
 @profile_route.put("/profile",response_model=ProfileResponse)
-async def update_profile(id:int,userDetails:ProfileUpdate,db:Session = Depends(get_db)):
-    user_exists =  db.query(User).filter(User.id == id)
+async def update_profile(userDetails:ProfileUpdate,current_user: User = Depends(get_current_user),db:Session = Depends(get_db)):
+    user_exists =  db.query(User).filter(User.id == current_user.id)
     try:
         if user_exists.first():
             update_data = userDetails.dict(exclude_unset=True) #convert json into a python dict and exclude fields not specified
@@ -28,8 +28,7 @@ async def update_profile(id:int,userDetails:ProfileUpdate,db:Session = Depends(g
                         
             db.commit()
        
-            return user_exists.first()
-                    
+            return user_exists.first()         
         else:
                 raise HTTPException(status_code=404,detail=settings.ERRORS.get("INVALID ID"))                       
     except:
