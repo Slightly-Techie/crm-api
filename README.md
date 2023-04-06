@@ -136,3 +136,4 @@ visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fl
 - [@KwesiDadson](https://github.com/blitzblade)
 - [@EmmanuelTiboah](https://github.com/eeTiboah)
 - [@EssilfieQuansah](https://github.com/benessilfie)
+- [@RachealKuranchie](https://github.com/Racheal777)
