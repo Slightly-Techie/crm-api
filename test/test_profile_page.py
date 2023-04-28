@@ -4,15 +4,13 @@ from api.api_models import user
 from app import app
 
 
-def test_get_profile(client,test_user):
-    res=client.post(
-      "/api/v1/users/login" , data={"username": test_user.get("email"), "password": test_user.get("password")}
-    )
-    res_login = user.Token(**res.json())
-    profile_res = client.get("/api/v1/users/profile/", headers={"authorization": f"Bearer {res_login.token}"})
+def test_get_user_by_id(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    user_id = test_user["id"]
+    profile_res = client.get(f"/api/v1/users/profile/{user_id}")
 
-    assert profile_res.json().get("email") == test_user.get("email")
     assert profile_res.status_code == 200
+    assert profile_res.json()["email"] == test_user["email"]
 
 def test_update_profile(client,test_user):
     res=client.post(
@@ -36,5 +34,11 @@ def test_update_profile(client,test_user):
 
     assert test_user.get("github_profile") == "https://github.com/Slightly-Techie/"
     assert res.status_code == 200
+
+def test_get_current_user(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    profile_res = client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token}"})
     
-   
+    assert profile_res.status_code == 200
+    assert profile_res.json()["email"] == test_user["email"] 

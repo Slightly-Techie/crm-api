@@ -90,6 +90,7 @@ class ProfileUpdate(BaseModel):
     linkedin_profile: Optional[str]
     portfolio_url: Optional[str]
     profile_pic_url: Optional[str]
+    skills: Optional[list[Skills]]
 
     class Config:
         orm_mode = True
@@ -97,7 +98,7 @@ class ProfileUpdate(BaseModel):
 
 class ProfileResponse(ProfileUpdate):
     id: int = Field(...)
-
+    created_at: datetime = Field(...)
 
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
