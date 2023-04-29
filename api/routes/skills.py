@@ -14,14 +14,14 @@ from api.api_models.user import UserResponse
 
 skill_route = APIRouter(tags=["User"],prefix="/users")
 
-@skill_route.get('/user')
-def get_skill( user=Depends(get_current_user), db:Session = Depends(get_db)):
+@skill_route.get('/skills')
+def get_skills( user=Depends(get_current_user), db:Session = Depends(get_db)):
     db_query =  db.query(User).filter(User.id == user.id).\
         options(joinedload(User.skills)).first()   
     return {"skills": db_query.skills}
 
 
-@skill_route.post('/skills/', response_model=SkillCreate, status_code=status.HTTP_201_CREATED)
+@skill_route.post('/skills', response_model=SkillCreate, status_code=status.HTTP_201_CREATED)
 def create_skill(skill: SkillCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not current_user:
         raise HTTPException(status_code=401, detail='Unauthorized')
