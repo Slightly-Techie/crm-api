@@ -9,7 +9,7 @@ from db.models.users import User
 from db.database import get_db
 from db.repository.users import create_new_user
 
-from api.api_models.user import UserSignUp, Token
+from api.api_models.user import ProfileResponse, UserSignUp, Token
 from api.api_models.user import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from utils.utils import verify_password
@@ -57,10 +57,10 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
 
 
 
-@auth_router.get("/me", response_model=UserResponse)
+@auth_router.get("/me", response_model=ProfileResponse)
 def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
     if not user:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     return user
 
 
