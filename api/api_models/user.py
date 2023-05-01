@@ -41,11 +41,15 @@ class UserSignUp(BaseModel):
     password: str = Field(...)
     password_confirmation: str = Field(...)
     role_id: Optional[int] = Field(None)
+    yoe: int = Field(...)
+    bio: str = Field(...)
+    phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
+    is_active: bool = False
 
     class Config:
         orm_mode = True
@@ -69,6 +73,9 @@ class UserResponse(BaseModel):
     first_name: Optional[str] = Field(...)
     last_name: Optional[str] = Field(...)
     role: Optional[Role] = Field(None)
+    yoe: int = Field(...)
+    bio: str = Field(...)
+    phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
@@ -76,6 +83,7 @@ class UserResponse(BaseModel):
     profile_pic_url: Optional[str] = Field(None)
     skills: list[Skills]
     created_at: datetime = Field(...)
+    is_active: bool = Field(...)
 
     class Config:
         orm_mode = True
@@ -85,6 +93,9 @@ class ProfileUpdate(BaseModel):
     email: Optional[EmailStr]
     first_name: Optional[str]
     last_name: Optional[str]
+    yoe: Optional[int]
+    bio: Optional[str]
+    phone_number: Optional[str]
     github_profile: Optional[str]
     twitter_profile: Optional[str]
     linkedin_profile: Optional[str]
@@ -99,6 +110,7 @@ class ProfileUpdate(BaseModel):
 class ProfileResponse(ProfileUpdate):
     id: int = Field(...)
     created_at: datetime = Field(...)
+    is_active: bool = Field(...)
 
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
