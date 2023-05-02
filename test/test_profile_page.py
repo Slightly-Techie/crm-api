@@ -31,9 +31,13 @@ def test_update_profile(client,test_user):
           "linkedin_profile":"https://linkedin.com/slightlytechie"
       })
     
+    get_res = client.get(
+        "/api/v1/users/me",
+        headers={"authorization": f"Bearer {res_login.token}"}
+    )
 
-    assert test_user.get("github_profile") == "https://github.com/Slightly-Techie/"
-    assert res.status_code == 200
+    assert get_res.status_code == 200
+    assert get_res.json()["github_profile"] == "https://github.com/Slightly-Techie/"
 
 def test_get_current_user(client, test_user):
     login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
