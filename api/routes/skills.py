@@ -9,7 +9,7 @@ from utils.permissions import is_authenticated
 from utils.oauth2 import get_current_user
 
 from db.models.users import User, Skill, UserSkills
-from api.api_models.user import UserResponse
+from api.api_models.user import Skills, UserResponse
 
 
 skill_route = APIRouter(tags=["User"],prefix="/users")
@@ -21,7 +21,7 @@ def get_skills( user=Depends(get_current_user), db:Session = Depends(get_db)):
     return {"skills": db_query.skills}
 
 
-@skill_route.post('/skills', response_model=SkillCreate, status_code=status.HTTP_201_CREATED)
+@skill_route.post('/skills', response_model=Skills, status_code=status.HTTP_201_CREATED)
 def create_skill(skill: SkillCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not current_user:
         raise HTTPException(status_code=401, detail='Unauthorized')
