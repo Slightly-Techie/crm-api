@@ -33,6 +33,8 @@ class User(Base):
     is_active = Column(Boolean, nullable=False)
     skills = relationship('Skill',secondary = "users_skills",  back_populates='users') 
     role = relationship("Role",  back_populates="users")
+    tags = relationship('Tag', secondary='users_tags', back_populates='users')
+
 
 
 class Role(Base):
@@ -60,4 +62,20 @@ class Skill(Base):
 
     users = relationship('User', secondary = "users_skills", back_populates='skills')  
 
+
+class UserTag(Base):
+    __tablename__ = 'users_tags'
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    tag_id = Column(Integer, ForeignKey('tags.id'), primary_key=True)
+
+
+class Tag(Base):
+    __tablename__ = 'tags'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    created_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    users = relationship('User', secondary='users_tags', back_populates='tags')
     

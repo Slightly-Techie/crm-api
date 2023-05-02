@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
 from typing import Optional
+from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 
 
@@ -30,10 +31,19 @@ class UserSkills(BaseModel):
         allow_population_by_field_name = True
 
 
+class Tags(TagBase):
+    id: int = Field(...)
 
 
+class UserTags(TagBase):
+    id: int = Field(...)
+    tags: list[Tags]
 
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
 
+        
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -82,6 +92,7 @@ class UserResponse(BaseModel):
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
     skills: list[Skills]
+    tags: list[Tags]
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
 
@@ -101,7 +112,6 @@ class ProfileUpdate(BaseModel):
     linkedin_profile: Optional[str]
     portfolio_url: Optional[str]
     profile_pic_url: Optional[str]
-    skills: Optional[list[Skills]]
 
     class Config:
         orm_mode = True
@@ -109,6 +119,8 @@ class ProfileUpdate(BaseModel):
 
 class ProfileResponse(ProfileUpdate):
     id: int = Field(...)
+    skills: list[Skills]
+    tags: list[Tags]
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
 

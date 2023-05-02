@@ -23,7 +23,7 @@ def test_update_profile(client,test_user):
     res_login = user.Token(**res.json())
 
     res = client.put(
-        "/api/v1/users/profile/",
+        "/api/v1/users/profile",
         headers={"authorization": f"Bearer {res_login.token}"},
         json={
           "github_profile":"https://github.com/Slightly-Techie/",
