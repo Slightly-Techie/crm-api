@@ -9,7 +9,6 @@ from db.database import create_roles
 from api.routes.tags import tag_route
 
 
-Base.metadata.create_all(bind=engine)
 # Base.metadata.create_all(bind=engine)
 create_roles()
 
