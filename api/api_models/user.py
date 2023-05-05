@@ -51,7 +51,7 @@ class UserSignUp(BaseModel):
     password: str = Field(...)
     password_confirmation: str = Field(...)
     role_id: Optional[int] = Field(None)
-    yoe: int = Field(...)
+    years_of_experience: int = Field(...)
     bio: str = Field(...)
     phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
@@ -83,7 +83,7 @@ class UserResponse(BaseModel):
     first_name: Optional[str] = Field(...)
     last_name: Optional[str] = Field(...)
     role: Optional[Role] = Field(None)
-    yoe: int = Field(...)
+    years_of_experience: int = Field(...)
     bio: str = Field(...)
     phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
@@ -104,7 +104,7 @@ class ProfileUpdate(BaseModel):
     email: Optional[EmailStr]
     first_name: Optional[str]
     last_name: Optional[str]
-    yoe: Optional[int]
+    years_of_experience: Optional[int]
     bio: Optional[str]
     phone_number: Optional[str]
     github_profile: Optional[str]

@@ -50,7 +50,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'skill_id')
     )
-    op.add_column('users', sa.Column('yoe', sa.Integer(), nullable=False))
+    op.add_column('users', sa.Column('years_of_experience', sa.Integer(), nullable=False))
     op.add_column('users', sa.Column('bio', sa.Text(), nullable=False))
     op.add_column('users', sa.Column('phone_number', sa.String(), nullable=False))
     op.add_column('users', sa.Column('is_active', sa.Boolean(), nullable=False))
@@ -62,7 +62,7 @@ def downgrade() -> None:
     op.drop_column('users', 'is_active')
     op.drop_column('users', 'phone_number')
     op.drop_column('users', 'bio')
-    op.drop_column('users', 'yoe')
+    op.drop_column('users', 'years_of_experience')
     op.drop_table('users_skills')
     op.drop_table('users_tags')
     op.drop_index(op.f('ix_skills_id'), table_name='skills')

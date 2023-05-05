@@ -44,7 +44,7 @@ def test_user(client):
         "email": "slightlytechie@gmail.com",
         "password": "food",
         "password_confirmation": "food",
-        "yoe": 5,
+        "years_of_experience": 5,
         "bio": "I am almost a techie",
         "phone_number": "233567895423",
         "is_active": True
@@ -65,7 +65,7 @@ def inactive_user(client):
         "email": "jondoe@gmail.com",
         "password": "jondoe",
         "password_confirmation": "jondoe",
-        "yoe": 1,
+        "years_of_experience": 1,
         "bio": "bio not needed",
         "phone_number": "233557932846",
         "is_active": False
