@@ -15,7 +15,7 @@ class User(Base):
     last_name = Column(String, nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     password = Column(String, nullable=False)
-    years_of_experience = Column(Integer, nullable=False)
+    years_of_experience = Column(Integer)
     bio = Column(Text, nullable=False)
     phone_number = Column(String, nullable=False)
     github_profile = Column(String)
