@@ -1,4 +1,3 @@
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from db.database import Base, get_db
@@ -32,17 +31,46 @@ def client(session):
             yield session
         finally:
             session.close()
+
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
 
 
 @pytest.fixture
 def test_user(client):
-    user = {"first_name": "Slightly", "last_name": "Techie", "email": "slightlytechie@gmail.com",
-    "password": "food", 
-    "password_confirmation": "food",
-    "github_profile":"https://github.com/Slightly-Techie/"}
-    res = client.post( "/api/v1/users/register/", json=user)
+    user = {
+        "first_name": "Slightly",
+        "last_name": "Techie",
+        "email": "slightlytechie@gmail.com",
+        "password": "food",
+        "password_confirmation": "food",
+        "years_of_experience": 5,
+        "bio": "I am almost a techie",
+        "phone_number": "233567895423",
+        "is_active": True
+    }
+    res = client.post("/api/v1/users/register/", json=user)
+
+    assert res.status_code == 201
+    new_user = res.json()
+    new_user["password"] = user.get("password")
+    return new_user
+
+
+@pytest.fixture
+def inactive_user(client):
+    user = {
+        "first_name": "Jon",
+        "last_name": "Doe",
+        "email": "jondoe@gmail.com",
+        "password": "jondoe",
+        "password_confirmation": "jondoe",
+        "years_of_experience": 1,
+        "bio": "bio not needed",
+        "phone_number": "233557932846",
+        "is_active": False
+    }
+    res = client.post("/api/v1/users/register/", json=user)
 
     assert res.status_code == 201
     new_user = res.json()

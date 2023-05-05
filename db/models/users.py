@@ -1,5 +1,5 @@
 from db.database import Base
-from sqlalchemy import Column, String, Integer, TIMESTAMP, text
+from sqlalchemy import Boolean, Column, String, Integer, TIMESTAMP, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, String, Integer, TIMESTAMP, text, Enum
 from sqlalchemy.orm import relationship
@@ -15,6 +15,9 @@ class User(Base):
     last_name = Column(String, nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     password = Column(String, nullable=False)
+    years_of_experience = Column(Integer, nullable=False)
+    bio = Column(Text, nullable=False)
+    phone_number = Column(String, nullable=False)
     github_profile = Column(String)
     twitter_profile = Column(String)
     linkedin_profile = Column(String)
@@ -27,8 +30,11 @@ class User(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+    is_active = Column(Boolean, nullable=False)
     skills = relationship('Skill',secondary = "users_skills",  back_populates='users') 
     role = relationship("Role",  back_populates="users")
+    tags = relationship('Tag', secondary='users_tags', back_populates='users')
+
 
 
 class Role(Base):
@@ -56,4 +62,20 @@ class Skill(Base):
 
     users = relationship('User', secondary = "users_skills", back_populates='skills')  
 
+
+class UserTag(Base):
+    __tablename__ = 'users_tags'
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    tag_id = Column(Integer, ForeignKey('tags.id'), primary_key=True)
+
+
+class Tag(Base):
+    __tablename__ = 'tags'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    created_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    users = relationship('User', secondary='users_tags', back_populates='tags')
     

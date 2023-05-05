@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
 from typing import Optional
+from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 
 
@@ -30,10 +31,19 @@ class UserSkills(BaseModel):
         allow_population_by_field_name = True
 
 
+class Tags(TagBase):
+    id: int = Field(...)
 
 
+class UserTags(TagBase):
+    id: int = Field(...)
+    tags: list[Tags]
 
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
 
+        
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -41,11 +51,15 @@ class UserSignUp(BaseModel):
     password: str = Field(...)
     password_confirmation: str = Field(...)
     role_id: Optional[int] = Field(None)
+    years_of_experience: int = Field(...)
+    bio: str = Field(...)
+    phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
+    is_active: bool = False
 
     class Config:
         orm_mode = True
@@ -69,13 +83,18 @@ class UserResponse(BaseModel):
     first_name: Optional[str] = Field(...)
     last_name: Optional[str] = Field(...)
     role: Optional[Role] = Field(None)
+    years_of_experience: int = Field(...)
+    bio: str = Field(...)
+    phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
     linkedin_profile: Optional[str] = Field(None)
     portfolio_url: Optional[str] = Field(None)
     profile_pic_url: Optional[str] = Field(None)
     skills: list[Skills]
+    tags: list[Tags]
     created_at: datetime = Field(...)
+    is_active: bool = Field(...)
 
     class Config:
         orm_mode = True
@@ -85,12 +104,14 @@ class ProfileUpdate(BaseModel):
     email: Optional[EmailStr]
     first_name: Optional[str]
     last_name: Optional[str]
+    years_of_experience: Optional[int]
+    bio: Optional[str]
+    phone_number: Optional[str]
     github_profile: Optional[str]
     twitter_profile: Optional[str]
     linkedin_profile: Optional[str]
     portfolio_url: Optional[str]
     profile_pic_url: Optional[str]
-    skills: Optional[list[Skills]]
 
     class Config:
         orm_mode = True
@@ -98,7 +119,10 @@ class ProfileUpdate(BaseModel):
 
 class ProfileResponse(ProfileUpdate):
     id: int = Field(...)
+    skills: list[Skills]
+    tags: list[Tags]
     created_at: datetime = Field(...)
+    is_active: bool = Field(...)
 
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
