@@ -50,7 +50,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'skill_id')
     )
-    op.add_column('users', sa.Column('years_of_experience', sa.Integer(), nullable=False))
+    op.add_column('users', sa.Column('years_of_experience', sa.Integer(), nullable=True))
     op.add_column('users', sa.Column('bio', sa.Text(), nullable=False))
     op.add_column('users', sa.Column('phone_number', sa.String(), nullable=False))
     op.add_column('users', sa.Column('is_active', sa.Boolean(), nullable=False))
