@@ -27,9 +27,19 @@ def create_access_token(data: dict):
   encoded_jwt = jwt.encode(to_encode, settings.SECRET, algorithm=settings.ALGORITHM)
   return encoded_jwt
 
+def create_refresh_token(data: dict):
+  to_encode = data.copy()
+  expire = datetime.now() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+  to_encode.update({"exp": expire})
+  token = jwt.encode(to_encode, settings.REFRESH_SECRET, algorithm=settings.ALGORITHM)
+  return token
 
 def get_access_token(sub: str):
     token = create_access_token({"sub": sub})
+    return token
+
+def get_refresh_token(sub: str):
+    token = create_refresh_token({"sub": sub})
     return token
 
 def verify_token(token: str, credential_exception ):
@@ -44,6 +54,12 @@ def verify_token(token: str, credential_exception ):
   
   return token_data
 
+def verify_refresh_token(token: str):
+    payload = jwt.decode(token, settings.REFRESH_SECRET, algorithms=settings.ALGORITHM)
+    sub = payload.get('sub')
+    if sub is None:
+       return False
+    return TokenData(id=sub)
 
 # Get currently logged in User
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
