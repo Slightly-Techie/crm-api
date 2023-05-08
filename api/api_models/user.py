@@ -14,17 +14,16 @@ class Role(BaseModel):
 
 
 class Skills(BaseModel):
-    id:int
+    id: int
     name: str
-    
 
     class Config:
         orm_mode = True
 
+
 class UserSkills(BaseModel):
     id: int
-    skills: list[Skills] 
-
+    skills: list[Skills]
 
     class Config:
         orm_mode = True
@@ -43,7 +42,7 @@ class UserTags(TagBase):
         orm_mode = True
         allow_population_by_field_name = True
 
-        
+
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -51,7 +50,7 @@ class UserSignUp(BaseModel):
     password: str = Field(...)
     password_confirmation: str = Field(...)
     role_id: Optional[int] = Field(None)
-    bio: str = Field(...)
+    bio: Optional[str] = Field(None)
     phone_number: str = Field(...)
     years_of_experience: Optional[int] = Field(None)
     github_profile: Optional[str] = Field(None)
@@ -70,7 +69,8 @@ class UserSignUp(BaseModel):
         from db.database import SessionLocal
         from db.models.users import Role as _Role
         db = SessionLocal()
-        check_role = db.query(_Role).filter(_Role.name == RoleChoices.USER).first()
+        check_role = db.query(_Role).filter(
+            _Role.name == RoleChoices.USER).first()
         db.close()
         if not check_role:
             return role_id
@@ -84,7 +84,7 @@ class UserResponse(BaseModel):
     last_name: Optional[str] = Field(...)
     role: Optional[Role] = Field(None)
     years_of_experience: Optional[int] = Field(None)
-    bio: str = Field(...)
+    bio: Optional[str] = Field(None)
     phone_number: str = Field(...)
     github_profile: Optional[str] = Field(None)
     twitter_profile: Optional[str] = Field(None)
@@ -123,6 +123,7 @@ class ProfileResponse(ProfileUpdate):
     tags: list[Tags]
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
+
 
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
