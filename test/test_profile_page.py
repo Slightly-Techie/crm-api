@@ -83,11 +83,7 @@ def test_current_inactive_user(client, inactive_user):
 def test_update_profile_status(client, test_user, inactive_user):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
-
-    print(test_user)
-    print(inactive_user)
     token = login_res.json()["token"]
-    print(token)
     user_id = inactive_user["id"]
     profile_res = client.put(
         f"/api/v1/users/profile/{user_id}/activate", headers={"Authorization": f"Bearer {token}"})
