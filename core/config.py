@@ -19,9 +19,13 @@ class Settings:
     DATABASE_URL = os.getenv(
         "DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
     SECRET: str = os.getenv("SECRET", "ABnfjEINSKl3ECmsnoINEnwmkWAS")
+    REFRESH_SECRET: str = os.getenv(
+        "REFRESH_SECRET", "NIk10kHWwa2Fbl6Pt46E+OSiC1h6")
     PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", False)
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = os.getenv(
+        "REFRESH_TOKEN_EXPIRE_MINUTES", 60*24*30)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv(
-        "ACCESS_TOKEN_EXPIRE_MINUTES", 60*24*30)
+        "ACCESS_TOKEN_EXPIRE_MINUTES", 60*24*2)
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ERRORS: dict = {
         "INVALID_CREDENTIALS": "Invalid Credentials",
