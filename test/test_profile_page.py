@@ -81,12 +81,51 @@ def test_current_inactive_user(client, inactive_user):
 
 
 def test_update_profile_status(client, test_user, inactive_user):
+    # Given a test_user who is an admin and an inactive_user
+    login_data = {"username": test_user["email"],
+                  "password": test_user["password"]}
+
+    # When the test_user logs in and updates the inactive_user's profile status to active
+    login_res = client.post("/api/v1/users/login", data=login_data)
+    token = login_res.json()["token"]
+    user_id = inactive_user["id"]
+    headers = {"Authorization": f"Bearer {token}"}
+    activate_res = client.put(
+        f"/api/v1/users/profile/{user_id}/activate", headers=headers)
+
+    # Then the inactive_user's profile status should be active
+    assert activate_res.status_code == 200
+    assert activate_res.json()["is_active"] is True
+
+
+def test_activate_already_active_user(client, test_user):
+    # Given a test_user who is an admin and an active_user
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]
-    user_id = inactive_user["id"]
+    user_id = test_user["id"]
+
+    # When the test_user tries to activate the active_user's profile
     profile_res = client.put(
         f"/api/v1/users/profile/{user_id}/activate", headers={"Authorization": f"Bearer {token}"})
 
-    assert profile_res.status_code == 200
-    assert profile_res.json()["is_active"] == True
+    # Then the active_user's profile status should not change
+    assert profile_res.status_code == 400
+    assert profile_res.json()["detail"] == "User is already active"
+
+
+def test_activate_invalid_user_profile(client, test_user):
+    # Given a test_user who is an admin and an invalid user ID
+    login_res = client.post(
+        "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    user_id = 9999
+
+    # When the test_user tries to activate the invalid user's profile
+    response = client.put(
+        f"/api/v1/users/profile/{user_id}/activate",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    # Then the response should be unsuccessful with a 404 Not Found status code
+    assert response.status_code == 404
