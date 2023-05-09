@@ -20,15 +20,11 @@ origins = [
     "https://crm-web.fly.dev"
 ]
 
-regex_origin = [
-    "https:\/\/.*\.uffizzi\.com"
-]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_origin_regex=regex_origin,
+    allow_origin_regex="https:\/\/.*\.uffizzi\.com",
     allow_methods=["GET", "POST", "PUT", "DELETE", "UPDATE", "OPTIONS"],
     allow_headers=["*"],
 )
