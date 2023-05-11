@@ -1,4 +1,3 @@
-from ast import List
 from fastapi import Depends, HTTPException, APIRouter, status
 from sqlalchemy.orm import Session, joinedload
 

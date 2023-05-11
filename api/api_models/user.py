@@ -149,13 +149,6 @@ class FeedUpdate(BaseModel):
     content: Optional[str]
 
 
-class FeedOut(BaseModel):
-    Feed: Feeds
-
-    class Config:
-        orm_mode = True
-
-
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)

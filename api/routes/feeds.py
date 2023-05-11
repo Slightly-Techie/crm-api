@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from db.database import get_db
 from utils.oauth2 import get_current_user
 from db.models.users import User, Feed
-from api.api_models.user import FeedCreate, FeedOut, FeedUpdate, Feeds
+from api.api_models.user import FeedCreate, FeedUpdate, Feeds
+from sqlalchemy import select
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination.links import Page
 
 
 feed_route = APIRouter(tags=["Feed"], prefix="/feed")
@@ -40,7 +43,7 @@ def update_feed_by_id(feed_id: int, updated_feed: FeedUpdate, db: Session = Depe
 
 
 @feed_route.delete("/{feed_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post_by_id(feed_id: int, db: Session = Depends(get_db), current_user= Depends(get_current_user)):
+def delete_feed_by_id(feed_id: int, db: Session = Depends(get_db), current_user= Depends(get_current_user)):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
     if feed == None:
@@ -55,3 +58,18 @@ def delete_post_by_id(feed_id: int, db: Session = Depends(get_db), current_user=
 
     feed_query.delete()
     db.commit()
+
+
+@feed_route.get("/{feed_id}", status_code=status.HTTP_200_OK, response_model=Feeds)
+def get_feed_by_id(feed_id: int, db: Session = Depends(get_db)):
+    feed_query = db.query(Feed).filter(Feed.id == feed_id)
+    feed = feed_query.first()
+    if not feed:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"feed with id: {feed_id} was not found")
+    
+    return feed
+
+
+@feed_route.get("/", response_model=Page[Feeds])
+def get_all_feeds(limit: int, skip: int = 0, db: Session = Depends(get_db)):
+    return paginate(db, select(Feed).order_by(Feed.created_at))
