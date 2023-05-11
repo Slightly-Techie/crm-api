@@ -78,4 +78,19 @@ class Tag(Base):
     updated_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     users = relationship('User', secondary='users_tags', back_populates='tags')
+
+
+class Feed(Base):
+    __tablename__ = 'feeds'
+    id = Column(Integer, primary_key=True, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    feed_pic_url = Column(String)
+    created_at = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    updated_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user = relationship("User")
     

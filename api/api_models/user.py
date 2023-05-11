@@ -43,6 +43,17 @@ class UserTags(TagBase):
         allow_population_by_field_name = True
 
 
+class FeedBase(BaseModel):
+    title: str
+    content: str
+    feed_pic_url: Optional[str] = Field(None)
+    
+
+
+class FeedCreate(FeedBase):
+    pass
+
+
 class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -123,6 +134,26 @@ class ProfileResponse(ProfileUpdate):
     tags: list[Tags]
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
+
+
+class Feeds(FeedBase):
+    id: int
+    created_at: datetime
+    user_id: int
+
+    class Config:
+        orm_mode = True
+
+class FeedUpdate(BaseModel):
+    title: Optional[str]
+    content: Optional[str]
+
+
+class FeedOut(BaseModel):
+    Feed: Feeds
+
+    class Config:
+        orm_mode = True
 
 
 class UserLogin(BaseModel):
