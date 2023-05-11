@@ -73,6 +73,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(User).filter(User.id == token.id).first()
     if not user:
       raise credential_exception
+    if not user.is_active:
+          # Redirect the user to a default URL
+          raise HTTPException(status_code=302, headers={"Location": "/inactive"})
     return user
-
-
+    
