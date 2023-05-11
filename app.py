@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from api.routes.auth import auth_router
 from api.routes.skills import skill_route
 from api.routes.profile_page import profile_route
+from api.routes.feeds import feed_route
 from db.database import engine
 from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +40,7 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(profile_route,prefix="/api/v1")
 app.include_router(skill_route,prefix="/api/v1")
 app.include_router(tag_route,prefix="/api/v1")
+app.include_router(feed_route,prefix="/api/v1")
 
 
 # pip cache purge
