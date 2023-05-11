@@ -136,10 +136,20 @@ class ProfileResponse(ProfileUpdate):
     is_active: bool = Field(...)
 
 
+class FeedOwner(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    profile_pic_url: str
+
+    class Config:
+        orm_mode = True
+
+
 class Feeds(FeedBase):
     id: int
     created_at: datetime
-    user_id: int
+    user: FeedOwner
 
     class Config:
         orm_mode = True
