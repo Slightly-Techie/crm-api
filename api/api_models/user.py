@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 
@@ -153,6 +153,14 @@ class Feeds(FeedBase):
 
     class Config:
         orm_mode = True
+
+class PaginatedResponse(BaseModel):
+    feeds: list[Feeds]
+    total: int
+    page: int
+    size: int
+    pages: int
+    links: Optional[Dict[str, Optional[str]]]
 
 class FeedUpdate(BaseModel):
     title: Optional[str]

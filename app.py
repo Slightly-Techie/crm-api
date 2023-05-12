@@ -8,7 +8,6 @@ from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
 from db.database import create_roles
 from api.routes.tags import tag_route
-from fastapi_pagination import add_pagination
 
 
 # Base.metadata.create_all(bind=engine)
@@ -21,8 +20,6 @@ origins = [
     "http://localhost:3000",
     "https://crm-web.fly.dev"
 ]
-
-add_pagination(app)
 
 app.add_middleware(
     CORSMiddleware,

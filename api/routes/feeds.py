@@ -1,12 +1,10 @@
-from fastapi import Depends, HTTPException, APIRouter, status
+from fastapi import Depends, HTTPException, APIRouter, status, Query
 from sqlalchemy.orm import Session
 from db.database import get_db
 from utils.oauth2 import get_current_user
 from db.models.users import User, Feed
-from api.api_models.user import FeedCreate, FeedUpdate, Feeds
-from sqlalchemy import select
-from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi_pagination.links import Page
+from api.api_models.user import FeedCreate, FeedUpdate, Feeds, PaginatedResponse
+from sqlalchemy import desc, select
 
 
 feed_route = APIRouter(tags=["Feed"], prefix="/feed")
@@ -70,6 +68,33 @@ def get_feed_by_id(feed_id: int, db: Session = Depends(get_db)):
     return feed
 
 
-@feed_route.get("/", response_model=Page[Feeds])
-def get_all_feeds(limit: int, skip: int = 0, db: Session = Depends(get_db)):
-    return paginate(db, select(Feed).order_by(Feed.created_at))
+@feed_route.get("/", response_model=PaginatedResponse)
+def get_all_feeds(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
+    total_feeds = db.query(Feed).count()
+    pages = (total_feeds - 1) // limit + 1
+    offset = (page - 1) * limit
+    feeds = db.query(Feed).order_by(desc(Feed.created_at)).offset(offset).limit(limit).all()
+
+    # Determine pagination links
+    links = {
+        "first": f"/api/v1/feed/?limit={limit}&page=1",
+        "last": f"/api/v1/feed/?limit={limit}&page={pages}",
+        "self": f"/api/v1/feed/?limit={limit}&page={page}",
+        "next": None,
+        "prev": None,
+    }
+
+    if page < pages:
+        links["next"] = f"/api/v1/feed/?limit={limit}&page={page + 1}"
+
+    if page > 1:
+        links["prev"] = f"/api/v1/feed/?limit={limit}&page={page - 1}"
+
+    return PaginatedResponse(
+        feeds=feeds,
+        total=total_feeds,
+        page=page,
+        size=limit,
+        pages=pages,
+        links=links,
+    )

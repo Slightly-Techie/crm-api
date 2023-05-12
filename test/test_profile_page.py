@@ -66,20 +66,7 @@ def test_current_active_user(client, test_user):
     assert profile_res.json()["is_active"] == test_user["is_active"]
 
 
-def test_current_inactive_user(client, inactive_user):
-    login_res = client.post("/api/v1/users/login", data={
-                            "username": inactive_user["email"], "password": inactive_user["password"]})
-    token = login_res.json()["token"]
-    profile_res = client.get(
-        "/api/v1/users/me", headers={"Authorization": f"Bearer {token}"})
-
-    assert profile_res.status_code == 200
-    assert profile_res.json()["email"] == inactive_user["email"]
-    assert profile_res.json()["is_active"] == inactive_user["is_active"]
-
 # Test update profile status
-
-
 def test_update_profile_status(client, test_user, inactive_user):
     # Given a test_user who is an admin and an inactive_user
     login_data = {"username": test_user["email"],

@@ -1,0 +1,21 @@
+def test_get_all_feeds(client, test_feeds):
+    response = client.get("/api/v1/feed/")
+    assert response.status_code == 200
+    feeds = response.json()
+    assert len(feeds["feeds"]) == len(test_feeds)
+
+    for i, feed in enumerate(feeds["feeds"]):
+        assert feed["title"] == test_feeds[::-1][i].title
+        assert feed["content"] == test_feeds[::-1][i].content
+        assert feed["user"]["id"] == test_feeds[::-1][i].user.id
+
+
+def test_get_all_feeds_pagination(client, test_feeds, session):
+    response = client.get("/api/v1/feed/?limit=2&skip=0&page=1&size=50")
+    assert response.status_code == 200
+    feeds = response.json()
+    assert len(feeds["feeds"]) == 2
+    
+    assert feeds["feeds"][0]["title"] == test_feeds[::-1][0].title
+    assert feeds["feeds"][1]["content"] == test_feeds[::-1][1].content
+    assert feeds["feeds"][1]["user"]["id"] == test_feeds[::-1][1].user.id
