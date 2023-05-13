@@ -1,3 +1,4 @@
+import pytest
 from api.api_models.user import Feeds
 
 
@@ -37,3 +38,26 @@ def test_get_one_feed(client, test_feeds):
 def test_get_one_post_does_not_exist(client, test_feeds):
     res = client.get(f"api/v1/feed/10000")
     assert res.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "title, content, feed_pic_url",
+    [
+        ("title1", "content1", "pic1"),
+        ("title2", "content2", "pic2"),
+        ("title3", "content3", None),
+    ],
+)
+def test_create_feed(client, test_user, test_feeds, title, content, feed_pic_url):
+    payload = {"title": title, "content": content, "feed_pic_url": feed_pic_url,}
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.post("/api/v1/feed/", json=payload, headers={'Authorization': f'Bearer {token}'})
+
+    feed = Feeds(**res.json())
+
+    assert res.status_code == 201
+    assert feed.title == title
+    assert feed.content == content
+    assert feed.feed_pic_url == feed_pic_url
+    assert feed.user.id == test_user["id"]
