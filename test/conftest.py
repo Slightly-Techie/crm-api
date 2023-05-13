@@ -135,12 +135,9 @@ def test_feeds(test_user, test_user1, session):
         {"title": "title4", "content": "content4", "user_id": test_user1["id"]},
     ]
 
-    feeds = []
-    for feed in feed_data:
-        feed_obj = Feed(**feed)
-        db.add(feed_obj)
-        db.commit()
-        db.refresh(feed_obj)
-        feeds.append(feed_obj)
+    feeds = [Feed(**feed) for feed in feed_data]
+    db.add_all(feeds)
+    db.commit()
+    feeds = db.query(Feed).all()
 
     return feeds
