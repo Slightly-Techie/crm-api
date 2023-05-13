@@ -1,5 +1,5 @@
 import pytest
-from api.api_models.user import Feeds
+from api.api_models.user import Feeds, FeedUpdate
 from db.models.users import Feed
 
 
@@ -36,7 +36,7 @@ def test_get_one_feed(client, test_feeds):
     assert res.status_code == 200
 
 
-def test_get_one_post_does_not_exist(client, test_feeds):
+def test_get_one_feed_does_not_exist(client, test_feeds):
     res = client.get(f"api/v1/feed/10000")
     assert res.status_code == 404
 
@@ -96,3 +96,37 @@ def test_delete_other_user_feed(client, test_feeds, test_user):
     res = client.delete(f"/api/v1/feed/{test_feeds[3].id}", headers={'Authorization': f'Bearer {token}'})
 
     assert res.status_code == 403
+
+
+def test_update_feed(client, test_feeds, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    data = {"title": "update title", "content": "update content", "feed_pic_url": "updated_pic"}
+
+    res = client.put(f"/api/v1/feed/{test_feeds[0].id}", json=data, headers={'Authorization': f'Bearer {token}'})
+    updated_feed = FeedUpdate(**res.json())
+    assert res.status_code == 201
+    assert updated_feed.title == data["title"]
+    assert updated_feed.content == data["content"]
+
+
+def test_update_other_user_feed(client, test_user1, test_feeds, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    data = {"title": "update title", "content": "update content", "feed_pic_url": "updated_pic"}
+
+    res = client.put(f"/api/v1/feed/{test_feeds[3].id}", json=data, headers={'Authorization': f'Bearer {token}'})
+    assert res.status_code == 403
+
+def test_unauthorized_user_update_feed(client, test_feeds, test_user):
+    res = client.put(f"/api/v1/feed/{test_feeds[0].id}")
+
+    assert res.status_code == 401
+
+def test_authorized_user_update_feed_does_not_exist(client, test_feeds, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    data = {"title": "update title", "content": "update content", "feed_pic_url": "updated_pic"}
+
+    res = client.put("/api/v1/feed/10000", json=data, headers={'Authorization': f'Bearer {token}'})
+    assert res.status_code == 404
