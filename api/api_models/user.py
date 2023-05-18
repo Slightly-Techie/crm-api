@@ -140,7 +140,7 @@ class FeedOwner(BaseModel):
     id: int
     first_name: str
     last_name: str
-    profile_pic_url: str
+    profile_pic_url: Optional[str]
 
     class Config:
         orm_mode = True
