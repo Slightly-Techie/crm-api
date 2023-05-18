@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 
@@ -41,6 +41,17 @@ class UserTags(TagBase):
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
+
+
+class FeedBase(BaseModel):
+    title: str
+    content: str
+    feed_pic_url: Optional[str] = Field(None)
+    
+
+
+class FeedCreate(FeedBase):
+    pass
 
 
 class UserSignUp(BaseModel):
@@ -123,6 +134,37 @@ class ProfileResponse(ProfileUpdate):
     tags: list[Tags]
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
+
+
+class FeedOwner(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    profile_pic_url: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
+class Feeds(FeedBase):
+    id: int
+    created_at: datetime
+    user: FeedOwner
+
+    class Config:
+        orm_mode = True
+
+class PaginatedResponse(BaseModel):
+    feeds: list[Feeds]
+    total: int
+    page: int
+    size: int
+    pages: int
+    links: Optional[Dict[str, Optional[str]]]
+
+class FeedUpdate(BaseModel):
+    title: Optional[str]
+    content: Optional[str]
 
 
 class UserLogin(BaseModel):
