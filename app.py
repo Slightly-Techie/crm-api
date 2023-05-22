@@ -19,7 +19,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "https://crm-web.fly.dev",
-    "https://app.slightlytechie.com/"
+    "https://app.slightlytechie.com"
 ]
 
 app.add_middleware(
