@@ -74,7 +74,7 @@ def refresh_token(request: Request, db: Session = Depends(get_db)):
     
 @auth_router.post('/logout')
 def logout(response: Response):
-    response.delete_cookie(key="st.token")
+    response.set_cookie(key="st.token", value="", httponly=True, max_age=10, samesite="none", secure=True)
     return {"message": "Logout Successful"}
 
 @auth_router.get("/me", response_model=ProfileResponse)
