@@ -136,6 +136,15 @@ class ProfileResponse(ProfileUpdate):
     is_active: bool = Field(...)
 
 
+class PaginatedUsers(BaseModel):
+    users: list[ProfileResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+    links: Optional[Dict[str, Optional[str]]]
+
+
 class FeedOwner(BaseModel):
     id: int
     first_name: str
