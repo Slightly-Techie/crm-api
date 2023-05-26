@@ -174,6 +174,33 @@ class FeedUpdate(BaseModel):
     content: Optional[str]
 
 
+class TechieOTM(BaseModel):
+    user_id: int = Field(...)
+    points: int = Field(...)
+
+    class Config:
+        orm_mode = True
+
+
+class TechieOTMResponse(TechieOTM):
+    id: int = Field(...)
+    user = FeedOwner
+    points: int = Field(...)
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class TechieOTMPaginated(BaseModel):
+    techies: list[TechieOTMResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+    links: Optional[Dict[str, Optional[str]]]
+
+
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)
