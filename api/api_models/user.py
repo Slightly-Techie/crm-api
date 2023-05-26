@@ -44,7 +44,6 @@ class UserTags(TagBase):
 
 
 class FeedBase(BaseModel):
-    title: str
     content: str
     feed_pic_url: Optional[str] = Field(None)
     
@@ -172,7 +171,6 @@ class PaginatedResponse(BaseModel):
     links: Optional[Dict[str, Optional[str]]]
 
 class FeedUpdate(BaseModel):
-    title: Optional[str]
     content: Optional[str]
 
 

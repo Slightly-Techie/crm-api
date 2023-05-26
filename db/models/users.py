@@ -83,7 +83,6 @@ class Tag(Base):
 class Feed(Base):
     __tablename__ = 'feeds'
     id = Column(Integer, primary_key=True, nullable=False)
-    title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     feed_pic_url = Column(String)
     created_at = Column(
