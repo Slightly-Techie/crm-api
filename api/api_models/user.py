@@ -174,7 +174,7 @@ class FeedUpdate(BaseModel):
     content: Optional[str]
 
 
-class TechieOTM(BaseModel):
+class TechieOTMCreate(BaseModel):
     user_id: int = Field(...)
     points: int = Field(...)
 
@@ -182,10 +182,10 @@ class TechieOTM(BaseModel):
         orm_mode = True
 
 
-class TechieOTMResponse(TechieOTM):
-    id: int = Field(...)
-    user = FeedOwner
-    points: int = Field(...)
+class TechieOTMResponse(BaseModel):
+    id: int
+    user: FeedOwner
+    points: int
     created_at: datetime
 
     class Config:
