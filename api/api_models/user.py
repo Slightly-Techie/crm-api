@@ -209,6 +209,7 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     token: str = Field(...)
     token_type: str = Field(...)
+    is_active: bool = Field(...)
 
 
 class TokenData(BaseModel):
