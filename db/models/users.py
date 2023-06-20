@@ -28,7 +28,7 @@ class User(Base):
     created_at = Column(TIMESTAMP(timezone=True),
         nullable=False, server_default=text('now()')) 
     updated_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_onupdate=text("now()"))
+        TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'), server_onupdate=text("now()"))
     is_active = Column(Boolean)
 
 
@@ -104,7 +104,7 @@ class Stack(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_onupdate=func.now())
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now(), server_onupdate=func.now())
 
     users = relationship('User', back_populates='stack')
 

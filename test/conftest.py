@@ -7,8 +7,9 @@ import pytest
 from fastapi.testclient import TestClient
 from db.models.users import Feed, Role
 from utils.utils import RoleChoices
+from api.api_models import user
 
-TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB_TEST}"
 
 engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
 
@@ -17,14 +18,14 @@ TestingSessionLocal = sessionmaker(
 
 
 @pytest.fixture()
-def session():
-    Base.metadata.drop_all(bind=engine)
+def session(): 
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
         yield db
     finally:
         db.close()
+        Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture()
@@ -141,3 +142,13 @@ def test_feeds(test_user, test_user1, session):
     feeds = db.query(Feed).all()
 
     return feeds
+
+@pytest.fixture
+def user_cred(client, test_user):
+    res=client.post(
+      "/api/v1/users/login" , data={"username": test_user.get("email"), "password": test_user.get("password")}
+    )
+    user_credentials = user.Token(**res.json())
+
+    return user_credentials
+    

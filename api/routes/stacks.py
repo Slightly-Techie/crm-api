@@ -13,7 +13,7 @@ stack_router = APIRouter(tags=["Stacks"], prefix="/stacks")
 
 # Return all stacks
 @stack_router.get("/", response_model=list[stack_schemas.Stacks])
-async def read_stacks(db:Session = Depends(get_db), page:int = 1, limit: int = 100):
+async def list_stacks(db:Session = Depends(get_db), page:int = 1, limit: int = 100):
 	# calculate skip value
 	page = page if page >= 1 else 1
 	skip = (page - 1) * limit
@@ -24,7 +24,7 @@ async def read_stacks(db:Session = Depends(get_db), page:int = 1, limit: int = 1
 
 # create a new Stack
 @stack_router.post("/", response_model=stack_schemas.Stacks, status_code=status.HTTP_201_CREATED)
-async def create_stack(stack:stack_schemas.StackCreate, user:User = Depends(is_admin)):
+async def create_stack(stack:stack_schemas.StackCreate, user:User = Depends(is_admin), db: Session = Depends(get_db)):
 	new_stack = Stack(**dict(stack))
 
 	db.add(new_stack)
@@ -61,8 +61,8 @@ async def update_stack(stack_id:int, payload: stack_schemas.StackCreate, user: U
 
 
 # delete stack
-@stack_router.patch("/{stack_id}", response_model=stack_schemas.Stacks)
-async def update_stack(stack_id:int, user: User = Depends(is_admin), db: Session = Depends(get_db)):
+@stack_router.delete("/{stack_id}", response_model=stack_schemas.Stacks)
+async def delete_stack(stack_id:int, user: User = Depends(is_admin), db: Session = Depends(get_db)):
 	stack_query = db.query(Stack).filter(Stack.id == stack_id)
 	old_stack = stack_query.first()
 

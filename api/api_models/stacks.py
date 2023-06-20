@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class Stacks(BaseModel):
 	id: str = Field(...)
 	name: str = Field(...)
-	created_at: str = Field(...)
-	updated_at: str = Field(...)
+	created_at: datetime = Field(...)
+	updated_at: datetime = Field(...)
 
 
 	class Config:
