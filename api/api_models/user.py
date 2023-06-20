@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, Optional
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
+from .stacks import Stacks
 
 
 class Role(BaseModel):
@@ -106,6 +107,7 @@ class UserResponse(BaseModel):
     tags: list[Tags]
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
+    stack: Optional[Stacks] = Field(None)
 
     class Config:
         orm_mode = True

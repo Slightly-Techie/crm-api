@@ -8,6 +8,7 @@ from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
 from db.database import create_roles
 from api.routes.tags import tag_route
+from api.routes.stacks  import stack_router
 
 
 # Base.metadata.create_all(bind=engine)
@@ -46,6 +47,7 @@ app.include_router(profile_route,prefix="/api/v1")
 app.include_router(skill_route,prefix="/api/v1")
 app.include_router(tag_route,prefix="/api/v1")
 app.include_router(feed_route,prefix="/api/v1")
+app.include_router(stack_router, prefix='/api/v1')
 
 
 # pip cache purge
