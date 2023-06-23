@@ -1,8 +1,8 @@
-"""modified announcements
+"""add: announcements
 
-Revision ID: c0c5706274a5
-Revises: 16f0964a6fdb
-Create Date: 2023-06-22 21:26:38.799504
+Revision ID: 6e4acbf663c3
+Revises: 99f4fc5a9a7b
+Create Date: 2023-06-23 02:34:45.694647
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c0c5706274a5'
-down_revision = '16f0964a6fdb'
+revision = '6e4acbf663c3'
+down_revision = '99f4fc5a9a7b'
 branch_labels = None
 depends_on = None
 
