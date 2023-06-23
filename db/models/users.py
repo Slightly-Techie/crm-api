@@ -100,7 +100,7 @@ class Announcement(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
-    announcement_pic_url = Column(String)
+    image_url = Column(String)
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True),
