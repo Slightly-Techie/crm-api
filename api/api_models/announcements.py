@@ -21,6 +21,9 @@ class AnnouncementUpdate(BaseModel):
     title: Optional[str]
     content: Optional[str]
 
+    class Config:
+        orm_mode = True
+
 class PaginatedResponse(BaseModel):
     items: list[AnnouncementResponse]
     total: int

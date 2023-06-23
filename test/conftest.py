@@ -5,7 +5,7 @@ from core.config import settings
 from app import app
 import pytest
 from fastapi.testclient import TestClient
-from db.models.users import Feed, Role
+from db.models.users import Feed, Role, Announcement
 from utils.utils import RoleChoices
 
 TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
@@ -141,3 +141,20 @@ def test_feeds(test_user, test_user1, session):
     feeds = db.query(Feed).all()
 
     return feeds
+
+@pytest.fixture
+def test_announcements(test_user, test_user1, session):
+    db = session
+    announcement_data = [
+        {"title": "title1", "content": "content1", "user_id": test_user["id"]},
+        {"title": "title2", "content": "content2", "user_id": test_user["id"]},
+        {"title": "title3", "content": "content3", "user_id": test_user1["id"]},
+        {"title": "title4", "content": "content4", "image_url": "image1" ,"user_id": test_user1["id"]},
+    ]
+
+    announcements = [Announcement(**announcement) for announcement in announcement_data]
+    db.add_all(announcements)
+    db.commit()
+    announcements = db.query(Announcement).all()
+
+    return announcements

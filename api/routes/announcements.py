@@ -66,8 +66,8 @@ def get_announcement_by_id(announcement_id: int, db: Session = Depends(get_db)):
 @announcement_route.put("/{announcement_id}", status_code=status.HTTP_200_OK, response_model=AnnouncementResponse)
 def update_announcement_by_id(announcement_id: int, announcement: AnnouncementUpdate, current_user = Depends(is_admin), db: Session = Depends(get_db)):
     announcement_query = db.query(Announcement).filter(Announcement.id == announcement_id)
-    announcement = announcement_query.first()
-    if not announcement:
+    old_announcement = announcement_query.first()
+    if not old_announcement:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"announcement with id: {announcement_id} was not found")
     
     announcement_query.update(announcement.dict())
