@@ -95,3 +95,15 @@ def test_delete_stack(session, client, user_cred, stack_factory):
 
 	assert res.status_code == status.HTTP_204_NO_CONTENT
 
+
+def test_duplicate_stack(session, client, user_cred, stack_factory):
+	stack = stack_factory("backend")
+	url = app.url_path_for("create_stack")
+
+	data = {"name": "backend"}
+
+	res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+	assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+

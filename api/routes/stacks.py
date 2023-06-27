@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from api.api_models import stacks as stack_schemas
 from utils.permissions import is_admin
 
@@ -26,10 +26,12 @@ async def list_stacks(db:Session = Depends(get_db), page:int = 1, limit: int = 1
 @stack_router.post("/", response_model=stack_schemas.Stacks, status_code=status.HTTP_201_CREATED)
 async def create_stack(stack:stack_schemas.StackCreate, user:User = Depends(is_admin), db: Session = Depends(get_db)):
 	new_stack = Stack(**dict(stack))
-
-	db.add(new_stack)
-	db.commit()
-	db.refresh(new_stack)
+	try:
+		db.add(new_stack)
+		db.commit()
+		db.refresh(new_stack)
+	except Exception as e:
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.__str__())
 
 	return new_stack
 
@@ -52,10 +54,12 @@ async def update_stack(stack_id:int, payload: stack_schemas.StackCreate, user: U
 
 	if not old_stack:
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Stack not found')
-
-	stack_query.update(payload.dict(exclude_unset=True))
-	db.commit()
-	db.refresh(old_stack)
+	try:
+		stack_query.update(payload.dict(exclude_unset=True))
+		db.commit()
+		db.refresh(old_stack)
+	except Exception as e:
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=dict(e.__str__()))
 
 	return old_stack
 

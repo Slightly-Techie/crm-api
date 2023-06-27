@@ -100,7 +100,7 @@ class Feed(Base):
 class Stack(Base):
     __tablename__ = 'stacks'
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String)
+    name = Column(String, nullable=False, unique=True)
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
