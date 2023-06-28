@@ -85,7 +85,6 @@ class Tag(Base):
 class Feed(Base):
     __tablename__ = 'feeds'
     id = Column(Integer, primary_key=True, nullable=False)
-    title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     feed_pic_url = Column(String)
     created_at = Column(
@@ -106,6 +105,17 @@ class Stack(Base):
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now(), server_onupdate=func.now())
 
     users = relationship('User', back_populates='stack')
+
+
+class TechieOTM(Base):
+    __tablename__ = "techie_of_the_month"
+    id = Column(Integer, primary_key=True, nullable=False)
+    created_at = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    points = Column(Integer, nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user = relationship("User")
 
 
 class Announcement(Base):

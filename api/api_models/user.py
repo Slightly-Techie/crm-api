@@ -45,7 +45,6 @@ class UserTags(TagBase):
 
 
 class FeedBase(BaseModel):
-    title: str
     content: str
     feed_pic_url: Optional[str] = Field(None)
     
@@ -138,6 +137,15 @@ class ProfileResponse(ProfileUpdate):
     is_active: bool = Field(...)
 
 
+class PaginatedUsers(BaseModel):
+    users: list[ProfileResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+    links: Optional[Dict[str, Optional[str]]]
+
+
 class FeedOwner(BaseModel):
     id: int
     first_name: str
@@ -165,8 +173,34 @@ class PaginatedResponse(BaseModel):
     links: Optional[Dict[str, Optional[str]]]
 
 class FeedUpdate(BaseModel):
-    title: Optional[str]
     content: Optional[str]
+
+
+class TechieOTMCreate(BaseModel):
+    user_id: int = Field(...)
+    points: int = Field(...)
+
+    class Config:
+        orm_mode = True
+
+
+class TechieOTMResponse(BaseModel):
+    id: int
+    user: FeedOwner
+    points: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class TechieOTMPaginated(BaseModel):
+    techies: list[TechieOTMResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+    links: Optional[Dict[str, Optional[str]]]
 
 
 class UserLogin(BaseModel):
@@ -177,6 +211,7 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     token: str = Field(...)
     token_type: str = Field(...)
+    is_active: bool = Field(...)
 
 
 class TokenData(BaseModel):
