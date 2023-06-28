@@ -62,6 +62,7 @@ class UserSignUp(BaseModel):
     password: str = Field(...)
     password_confirmation: str = Field(...)
     role_id: Optional[int] = Field(None)
+    stack_id: Optional[int] = Field(None)
     bio: Optional[str] = Field(None)
     phone_number: str = Field(...)
     years_of_experience: Optional[int] = Field(None)
