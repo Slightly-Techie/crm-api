@@ -61,6 +61,7 @@ class UserSignUp(BaseModel):
     password: str = Field(...)
     password_confirmation: str = Field(...)
     role_id: Optional[int] = Field(None)
+    stack_id: Optional[int] = Field(None)
     bio: Optional[str] = Field(None)
     phone_number: str = Field(...)
     years_of_experience: Optional[int] = Field(None)
@@ -133,6 +134,7 @@ class ProfileResponse(ProfileUpdate):
     id: int = Field(...)
     skills: list[Skills]
     tags: list[Tags]
+    stack: Optional[Stacks] = Field(None)
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
 
