@@ -125,6 +125,7 @@ class ProfileUpdate(BaseModel):
     linkedin_profile: Optional[str]
     portfolio_url: Optional[str]
     profile_pic_url: Optional[str]
+    stack_id: Optional[int] = Field(None)
 
     class Config:
         orm_mode = True
