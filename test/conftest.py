@@ -130,10 +130,10 @@ def test_user1(client):
 def test_feeds(test_user, test_user1, session):
     db = session
     feed_data = [
-        {"title": "title1", "content": "content1", "user_id": test_user["id"]},
-        {"title": "title2", "content": "content2", "feed_pic_url": "feed_pic", "user_id": test_user["id"]},
-        {"title": "title3", "content": "content3", "user_id": test_user1["id"]},
-        {"title": "title4", "content": "content4", "user_id": test_user1["id"]},
+        {"content": "content1", "user_id": test_user["id"]},
+        {"content": "content2", "feed_pic_url": "feed_pic", "user_id": test_user["id"]},
+        {"content": "content3", "user_id": test_user1["id"]},
+        {"content": "content4", "user_id": test_user1["id"]},
     ]
 
     feeds = [Feed(**feed) for feed in feed_data]

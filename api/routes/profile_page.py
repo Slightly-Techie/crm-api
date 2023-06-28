@@ -1,7 +1,8 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from api.api_models.user import ProfileUpdate, ProfileResponse
+from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse
 from core.config import settings
 from db.database import get_db
 from db.models.users import User
@@ -42,12 +43,35 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
 
-@profile_route.get("/", response_model=List[ProfileResponse])
-def get_all_profile(db: Session = Depends(get_db), current_user: User = Depends(is_admin)) -> List[ProfileResponse]:
+@profile_route.get("/", response_model=PaginatedUsers)
+def get_all_profile(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
+    total_users = db.query(User).count()
+    pages = (total_users - 1) // limit + 1
+    offset = (page - 1) * limit
+    users = db.query(User).order_by(desc(User.created_at)).offset(offset).limit(limit).all()
 
-    user = db.query(User).all()
+    links = {
+        "first": f"/api/v1/users/?limit={limit}&page=1",
+        "last": f"/api/v1/users/?limit={limit}&page={pages}",
+        "self": f"/api/v1/users/?limit={limit}&page={page}",
+        "next": None,
+        "prev": None,
+    }
 
-    return user
+    if page < pages:
+        links["next"] = f"/api/v1/users/?limit={limit}&page={page + 1}"
+
+    if page > 1:
+        links["prev"] = f"/api/v1/users/?limit={limit}&page={page - 1}"
+
+    return PaginatedUsers(
+        users=users,
+        total=total_users,
+        page=page,
+        size=limit,
+        pages=pages,
+        links=links,
+    )
 
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)

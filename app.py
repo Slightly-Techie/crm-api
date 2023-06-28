@@ -3,6 +3,7 @@ from api.routes.auth import auth_router
 from api.routes.skills import skill_route
 from api.routes.profile_page import profile_route
 from api.routes.feeds import feed_route
+from api.routes.techieotm import techieotm_router
 from api.routes.announcements import announcement_route
 from db.database import engine
 from db.database import Base
@@ -48,8 +49,10 @@ app.include_router(profile_route,prefix="/api/v1")
 app.include_router(skill_route,prefix="/api/v1")
 app.include_router(tag_route,prefix="/api/v1")
 app.include_router(feed_route,prefix="/api/v1")
+app.include_router(techieotm_router, prefix="/api/v1")
 app.include_router(stack_router, prefix='/api/v1')
 app.include_router(announcement_route,prefix="/api/v1")
+
 
 
 # pip cache purge
