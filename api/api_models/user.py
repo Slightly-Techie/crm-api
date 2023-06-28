@@ -134,6 +134,7 @@ class ProfileResponse(ProfileUpdate):
     id: int = Field(...)
     skills: list[Skills]
     tags: list[Tags]
+    stack: Optional[Stacks] = Field(None)
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
 
