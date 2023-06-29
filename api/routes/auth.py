@@ -54,8 +54,12 @@ def login(response: Response,user: OAuth2PasswordRequestForm = Depends(), db: Se
     token = get_access_token(str(user_data.id))
     refresh_token = get_refresh_token(str(user_data.id))
 
-    response.set_cookie(key="st.token", value=refresh_token, httponly=True, max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60, samesite="none", secure=True)
-    return Token(token=token, token_type="Bearer", is_active=user_data.is_active)
+    return Token(
+        token=token,
+        refresh_token=refresh_token,
+        token_type="Bearer",
+        is_active=user_data.is_active
+    )
 
 @auth_router.get('/refresh', response_model=Token)
 def refresh_token(request: Request, db: Session = Depends(get_db)):
@@ -68,7 +72,12 @@ def refresh_token(request: Request, db: Session = Depends(get_db)):
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
         token = get_access_token(str(user.id))
-        return Token(token=token, token_type="Bearer", is_active=user.is_active)
+        return Token(
+            token=token,
+            refresh_token=refresh_token,
+            token_type="Bearer",
+            is_active=user.is_active
+        )
     except:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     

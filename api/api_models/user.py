@@ -215,7 +215,7 @@ class Token(BaseModel):
     token: str = Field(...)
     token_type: str = Field(...)
     is_active: bool = Field(...)
-
+    refresh_token: str = Field(...)
 
 class TokenData(BaseModel):
     id: Optional[str] = Field(default=None)
