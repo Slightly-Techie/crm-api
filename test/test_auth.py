@@ -72,11 +72,10 @@ def test_user_gets_token_and_refreshtoken(client, test_user):
         "/api/v1/users/login",
         data={"username": test_user["email"], "password": test_user["password"]},
     )
-    access_token = login_response.json()["refresh_token"]
+    refresh_token = login_response.json()["refresh_token"]
     response = client.post(
         "/api/v1/users/refresh",
-        json={"refresh_token": f"{access_token}"},
-        headers={"Authorization": f"Bearer {access_token}"},
+        json={"refresh_token": f"{refresh_token}"},
     )
 
     assert response.status_code == 200
