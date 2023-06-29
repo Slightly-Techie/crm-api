@@ -68,16 +68,19 @@ def test_user_login_invalid(client, test_user):
     assert res_body["detail"] == settings.ERRORS.get("INVALID_CREDENTIALS")
 
 def test_user_gets_token_and_refreshtoken(client, test_user):
-    res = client.post("/api/v1/users/login", data={
-        "username": test_user.get("email"),
-        "password": test_user.get("password")
-    })
-    res_body = res.json()
-    cookie = res.cookies.get("st.token")
+    login_response = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user["email"], "password": test_user["password"]},
+    )
+    refresh_token = login_response.json()["refresh_token"]
+    response = client.post(
+        "/api/v1/users/refresh",
+        json={"refresh_token": f"{refresh_token}"},
+    )
 
-    token = res_body["token"]
-    payload = jwt.decode(token, settings.SECRET, algorithms=settings.ALGORITHM)
+    assert response.status_code == 200
 
-    assert res.status_code == 200
-    assert cookie is not None
-    assert payload.get("sub") is not None
+    refresh_token_response = response.json()
+
+    assert "token" in refresh_token_response
+    assert "refresh_token" in refresh_token_response
