@@ -13,7 +13,7 @@ from api.routes.tags import tag_route
 from api.routes.stacks  import stack_router
 
 
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 create_roles()
 
 app = FastAPI()
