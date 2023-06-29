@@ -9,7 +9,7 @@ from db.models.users import User
 from db.database import get_db
 from db.repository.users import create_new_user
 
-from api.api_models.user import ProfileResponse, UserSignUp, Token
+from api.api_models.user import ProfileResponse, RefreshTokenRequest, UserSignUp, Token
 from api.api_models.user import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from utils.utils import verify_password
@@ -61,9 +61,9 @@ def login(response: Response,user: OAuth2PasswordRequestForm = Depends(), db: Se
         is_active=user_data.is_active
     )
 
-@auth_router.get('/refresh', response_model=Token)
-def refresh_token(request: Request, db: Session = Depends(get_db)):
-    refresh_token = request.cookies.get("st.token")
+@auth_router.post('/refresh', response_model=Token)
+def refresh_token(refresh_token_data: RefreshTokenRequest, db: Session = Depends(get_db)):
+    refresh_token = refresh_token_data.refresh_token
     if not refresh_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     try:
@@ -73,14 +73,14 @@ def refresh_token(request: Request, db: Session = Depends(get_db)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
         token = get_access_token(str(user.id))
         return Token(
-            token=token,
-            refresh_token=refresh_token,
-            token_type="Bearer",
-            is_active=user.is_active
-        )
+        token=token,
+        refresh_token=refresh_token,
+        token_type="Bearer",
+        is_active=user.is_active
+    )
     except:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
-    
+
 @auth_router.post('/logout')
 def logout(response: Response):
     response.set_cookie(key="st.token", value="", httponly=True, max_age=10, samesite="none", secure=True)

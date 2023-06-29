@@ -219,3 +219,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = Field(default=None)
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(...)
