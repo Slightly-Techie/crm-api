@@ -5,6 +5,7 @@ from api.routes.profile_page import profile_route
 from api.routes.feeds import feed_route
 from api.routes.techieotm import techieotm_router
 from api.routes.announcements import announcement_route
+from api.routes.project import project_router
 from db.database import engine
 from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,7 +54,6 @@ app.include_router(feed_route,prefix="/api/v1")
 app.include_router(techieotm_router, prefix="/api/v1")
 app.include_router(stack_router, prefix='/api/v1')
 app.include_router(announcement_route,prefix="/api/v1")
-app.include_router(project_router,prefix="/api/v1")
 
 
 

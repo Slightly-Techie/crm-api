@@ -1,10 +1,11 @@
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse
 from core.config import settings
 from db.database import get_db
-from db.models.users import User
+from db.models.users import Project, User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
@@ -44,11 +45,21 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
 
 
 @profile_route.get("/", response_model=PaginatedUsers)
-def get_all_profile(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
+def get_all_profile(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), project_id: Optional[int] = Query(None), db: Session = Depends(get_db)):
+    if project_id:
+        project = db.query(Project).filter(Project.id == project_id)
+        if not project.first():
+            raise HTTPException(status_code=404, detail="Project not found")
+
+    query = db.query(User).order_by(desc(User.created_at))
+    
+    if project_id:
+        query = query.join(User.projects).filter(Project.id == project_id)
+
     total_users = db.query(User).count()
     pages = (total_users - 1) // limit + 1
     offset = (page - 1) * limit
-    users = db.query(User).order_by(desc(User.created_at)).offset(offset).limit(limit).all()
+    users = query.offset(offset).limit(limit).all()
 
     links = {
         "first": f"/api/v1/users/?limit={limit}&page=1",

@@ -1,10 +1,12 @@
 from db.database import get_db
-from db.models.projects import Project
+from db.models.users import Project
 from .oauth2 import get_current_user
+from fastapi import Depends, HTTPException
 from fastapi import Depends, HTTPException
 from api.api_models.user import UserResponse
 from utils.utils import RoleChoices
 from core.exceptions import ForbiddenError
+from sqlalchemy.orm import Session
 from sqlalchemy.orm import Session
 
 
@@ -26,14 +28,8 @@ def is_admin(user: UserResponse = Depends(is_authenticated)):
 
 	return user
 
-def is_project_manager(project_id: int, db: Session = Depends(get_db), user: UserResponse = Depends(get_current_user)):
-    project = db.query(Project).filter(Project.id == project_id, Project.manager_id == user.id)
-    if not project.first():
-        raise HTTPException(status_code=403, detail="Only the project manager can perform this action")
 
     return user
-
-
 
 # Function to check ownership or admin
 def is_owner_or_admin(user, obj):

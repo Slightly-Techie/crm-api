@@ -1,14 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from api.api_models.projects import CreateProject, MembersResponse, ProjectResponse, UpdateProject, ProjectMember
+from api.api_models.projects import CreateProject, ProjectResponse, UpdateProject
 from sqlalchemy.orm import Session
 from db.database import get_db
-from db.models.users import User
-from db.models.projects import Project
-from db.models.users_projects import UserProject
+from db.models.users import Project, User
 from utils.permissions import is_admin, is_project_manager
-from utils.enums import ProjectTeam
 
 
 project_router = APIRouter(tags=["Project"], prefix="/projects")
@@ -74,68 +71,38 @@ def get_all(db: Session = Depends(get_db)):
 
     return projects
 
-@project_router.post("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
-def add_user_to_project(project_id: int, user_id: int, user_project_data: ProjectMember, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
-    # Check if the project exists
-    project = db.query(Project).filter(Project.id == project_id).first()
+@project_router.put("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
+def add_user(project_id: int, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
+    project_query = db.query(Project).filter(Project.id == project_id)
+    project = project_query.first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
-    # Check if the user exists
-    user = db.query(User).filter(User.id == user_id).first()
+    user_query = db.query(User).filter(User.id == user_id)
+    user = user_query.first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Create a UserProject entry with the specified role
-    user_project = UserProject(user_id=user_id, project_id=project_id, team=user_project_data.team)
-    db.add(user_project)
+    project.users.append(user)
     db.commit()
 
-    return {"message": "User added to project with team specified"}
+    return {"message": "User added to project"}
 
-@project_router.delete("/{project_id}/remove/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_user_from_project(project_id: int, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
-    # Check if the project exists
-    project = db.query(Project).filter(Project.id == project_id).first()
+@project_router.put("/{project_id}/remove/{user_id}", status_code=status.HTTP_202_ACCEPTED)
+def remove_user(project_id: int, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
+    project_query = db.query(Project).filter(Project.id == project_id)
+    project = project_query.first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
-    # Check if the user exists
-    user = db.query(User).filter(User.id == user_id).first()
+    user_query = db.query(User).filter(User.id == user_id)
+    user = user_query.first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    # Query the UserProject table to find the entry linking the user to the project
-    user_project_entry = db.query(UserProject).filter(UserProject.user_id == user_id, UserProject.project_id == project_id).first()
-    
-    if user_project_entry:
-        # Delete the entry if it exists
-        db.delete(user_project_entry)
-        db.commit()
-    else:
+    if user not in project.users:
         raise HTTPException(status_code=404, detail="User is not associated with the project")
     
-    return None
+    project.users.remove(user)
+    db.commit()
 
-@project_router.get("/{project_id}/members", response_model=List[MembersResponse])
-def get_project_members(project_id: int, team: Optional[ProjectTeam] = None, db: Session = Depends(get_db)):
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    user_project_query = db.query(UserProject).filter(UserProject.project_id == project_id)
-    
-    if team:
-        user_project_query = user_project_query.filter(UserProject.team == team)
-    
-    user_project_rows = user_project_query.all()
-    user_ids = [row.user_id for row in user_project_rows]
-
-    members = db.query(User).filter(User.id.in_(user_ids)).all()
-
-    user_responses = [
-        MembersResponse(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
-        for user in members
-    ]
-
-    return user_responses
+    return {"message": "User removed from project"}
