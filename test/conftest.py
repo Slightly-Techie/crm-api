@@ -25,7 +25,7 @@ def session():
         yield db
     finally:
         db.close()
-        Base.metadata.drop_all(bind=engine)
+        Base.metadata.drop_all(bind=engine, checkfirst=False, cascade='all, drop')
 
 
 @pytest.fixture()
