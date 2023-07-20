@@ -171,3 +171,19 @@ def test_announcements(test_user, test_user1, session):
 
     return announcements
 
+@pytest.fixture
+def test_projects(test_user, test_user1, session):
+    db = session
+    project_data = [
+        {"name": "Project 1", "description": "Description for Project 1", "manager_id": test_user1["id"],},
+        {"name": "Project 2", "description": "Description for Project 2", "manager_id": test_user1["id"],},
+        {"name": "Project 3", "description": "Description for Project 3", "manager_id": test_user1["id"],},
+        {"name": "Project 4", "description": "Description for Project 4", "manager_id": test_user1["id"],},
+    ]
+
+    project = [Project(**project) for project in project_data]
+    db.add_all(projects)
+    db.commit()
+    projects = db.query(Project).all()
+
+    return projects
