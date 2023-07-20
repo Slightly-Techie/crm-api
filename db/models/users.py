@@ -151,5 +151,5 @@ class Project(Base):
 
 class UserProject(Base):
     __tablename__ = 'users_projects'
-    project_id = Column(Integer, ForeignKey("projects.id"), primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
