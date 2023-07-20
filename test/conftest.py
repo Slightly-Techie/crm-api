@@ -5,9 +5,7 @@ from core.config import settings
 from app import app
 import pytest
 from fastapi.testclient import TestClient
-from db.models.roles import Role
-from db.models.feeds import Feed
-from db.models.announcements import Announcement
+from db.models.users import Feed, Role, Announcement, Project
 from utils.utils import RoleChoices
 from api.api_models import user
 
@@ -181,7 +179,7 @@ def test_projects(test_user, test_user1, session):
         {"name": "Project 4", "description": "Description for Project 4", "manager_id": test_user1["id"],},
     ]
 
-    project = [Project(**project) for project in project_data]
+    projects = [Project(**project) for project in project_data]
     db.add_all(projects)
     db.commit()
     projects = db.query(Project).all()
