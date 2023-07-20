@@ -71,7 +71,7 @@ def get_all(db: Session = Depends(get_db)):
 
     return projects
 
-@project_router.put("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
+@project_router.post("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
 def add_user(project_id: int, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
     project_query = db.query(Project).filter(Project.id == project_id)
     project = project_query.first()
@@ -88,7 +88,7 @@ def add_user(project_id: int, user_id: int, db: Session = Depends(get_db), curre
 
     return {"message": "User added to project"}
 
-@project_router.put("/{project_id}/remove/{user_id}", status_code=status.HTTP_202_ACCEPTED)
+@project_router.delete("/{project_id}/remove/{user_id}", status_code=status.HTTP_202_ACCEPTED)
 def remove_user(project_id: int, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
     project_query = db.query(Project).filter(Project.id == project_id)
     project = project_query.first()
