@@ -7,7 +7,7 @@ from utils.utils import get_password_hash
 from db.models.users import User
 
 from db.database import get_db
-from db.repository.users import create_new_user, update_user
+from db.repository.users import create_new_user
 
 from api.api_models.user import ProfileResponse, RefreshTokenRequest, UserSignUp, Token, ForgotPasswordRequest, ResetPasswordRequest
 from api.api_models.user import UserResponse
@@ -108,8 +108,6 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
     return {"msg": "Reset token sent to email"}
 
 @auth_router.post('/reset-password')
-# url?token=token&new_password=new_password
-# When you use py
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
     try:
         email = verify_reset_token(request.token) 
@@ -120,7 +118,7 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
         hashed_password = get_password_hash(request.new_password)
         user.password = hashed_password
 
-        db.commit()  # Save the updated user's password to the database
+        db.commit()
 
         return {"message": "Password reset successful"}
     except HTTPException as e:
