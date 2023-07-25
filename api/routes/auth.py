@@ -7,15 +7,17 @@ from utils.utils import get_password_hash
 from db.models.users import User
 
 from db.database import get_db
-from db.repository.users import create_new_user
+from db.repository.users import create_new_user, update_user
 
-from api.api_models.user import ProfileResponse, RefreshTokenRequest, UserSignUp, Token
+from api.api_models.user import ProfileResponse, RefreshTokenRequest, UserSignUp, Token, ForgotPasswordRequest, ResetPasswordRequest
 from api.api_models.user import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from utils.utils import verify_password
-from utils.oauth2 import get_access_token, get_refresh_token, verify_refresh_token
+from utils.oauth2 import get_access_token, get_refresh_token, verify_refresh_token, create_reset_token, verify_reset_token
 from utils.permissions import is_authenticated
 from core.config import settings
+from utils.mail_service import send_reset_password_email
+
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
 
@@ -91,3 +93,37 @@ def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     return user
+
+
+@auth_router.post('/forgot-password')
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    email = request.email
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    reset_token = create_reset_token(email)
+    send_reset_password_email(email, reset_token) 
+    return {"msg": "Reset token sent to email"}
+
+@auth_router.post('/reset-password')
+# url?token=token&new_password=new_password
+# When you use py
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
+    try:
+        email = verify_reset_token(request.token) 
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+        hashed_password = get_password_hash(request.new_password)
+        user.password = hashed_password
+
+        db.commit()  # Save the updated user's password to the database
+
+        return {"message": "Password reset successful"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while resetting the password.")

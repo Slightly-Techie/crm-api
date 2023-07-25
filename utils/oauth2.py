@@ -80,3 +80,20 @@ def get_current_user(token: str = Depends(oauth2_scheme),
           raise HTTPException(status_code=302, headers={"Location": "/inactive"})
     return user
     
+# Generate a Reset Token
+def create_reset_token(email: str) -> str:
+    delta = timedelta(minutes=15)
+    now = datetime.utcnow()
+    payload = {
+        "sub": email,
+        "iat": now,
+        "exp": now + delta
+    }
+    return jwt.encode(payload, settings.SECRET, algorithm=settings.ALGORITHM)
+
+def verify_reset_token(token: str) -> str:
+        payload = jwt.decode(token, settings.SECRET, algorithms=settings.ALGORITHM)
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
+        return email

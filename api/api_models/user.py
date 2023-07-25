@@ -223,3 +223,10 @@ class TokenData(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(...)
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr = Field(...)
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(...)
+    new_password: str = Field(...)
