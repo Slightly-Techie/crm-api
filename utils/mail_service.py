@@ -22,13 +22,13 @@ def send_reset_password_email(email: str, reset_token: str) -> Tuple[str, str]:
 
     text = f"Click on this link to reset your password: {reset_password_url}"
     html = f"""\
-    <html>
-        <body>
-            <p>Click on this link to reset your password:</p>
-            <p><a href="{reset_password_url}">{reset_password_url}</a></p>
-        </body>
-    </html>
-    """
+                    <html>
+                        <body>
+                            <p>Click on this link to reset your password:</p>
+                            <p><a href="{reset_password_url}">{reset_password_url}</a></p>
+                        </body>
+                    </html>
+            """
 
     part1 = MIMEText(text, "plain")
     part2 = MIMEText(html, "html")
