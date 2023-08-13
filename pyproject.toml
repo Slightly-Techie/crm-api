@@ -33,6 +33,7 @@ alembic = "1.9.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 fastapi-pagination = "^0.12.3"
 pytest-mock = "^3.11.1"
+yagmail = "^0.15.293"
 
 
 [tool.poetry.group.dev.dependencies]
