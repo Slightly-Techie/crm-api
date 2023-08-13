@@ -5,8 +5,8 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from jose import jwt
 
-from api.api_models.user import ForgotPasswordRequest
-from api.routes.auth import forgot_password
+from api.api_models.user import ForgotPasswordRequest, ResetPasswordRequest
+from api.routes.auth import forgot_password, reset_password
 from app import app
 from core.config import settings
 from db.models.users import User
@@ -143,3 +143,10 @@ def test_forgot_password_user_not_found(test_user, mocker):
         forgot_password(ForgotPasswordRequest(email=test_user.get("email")), db=db)
     assert e.value.status_code == 404
     assert e.value.detail == 'User not found'
+
+def test_reset_password_invalid_token():
+    with pytest.raises(HTTPException) as e:
+        reset_password(ResetPasswordRequest(token='invalid_token', new_password='new_password'))
+    assert e.value.status_code == 400
+    assert e.value.detail == 'Invalid token'
+
