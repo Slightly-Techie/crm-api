@@ -1,13 +1,16 @@
-from fastapi import HTTPException
 from datetime import datetime, timedelta
+
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
+from jose import jwt
+
+from api.api_models.user import ForgotPasswordRequest
+from api.routes.auth import forgot_password
 from app import app
 from core.config import settings
 from db.models.users import User
 from utils.oauth2 import create_reset_token, verify_reset_token
-
-from jose import jwt
 
 client = TestClient(app)
 
@@ -119,3 +122,24 @@ def test_verify_reset_token_expired_token():
     with pytest.raises(HTTPException) as exc:
         verify_reset_token(expired_token)
     assert exc.value.status_code == 400
+
+def test_forgot_password_email_sent_to_correct_address(test_user, mocker):
+    expected_email = test_user.get("email")
+    expected_token = "reset_token"
+
+    mock_send_reset_password_email = mocker.patch('api.routes.auth.send_reset_password_email')
+    mock_reset_token = mocker.patch('api.routes.auth.create_reset_token', return_value=expected_token)
+
+    db = mocker.Mock()
+    db.query.return_value.filter.return_value.first.return_value = User(email=expected_email)
+
+    forgot_password(ForgotPasswordRequest(email=expected_email), db=db)
+    mock_send_reset_password_email.assert_called_once_with(expected_email, mock_reset_token.return_value)
+
+def test_forgot_password_user_not_found(test_user, mocker):
+    db = mocker.Mock()
+    db.query.return_value.filter.return_value.first.return_value = None
+    with pytest.raises(HTTPException) as e:
+        forgot_password(ForgotPasswordRequest(email=test_user.get("email")), db=db)
+    assert e.value.status_code == 404
+    assert e.value.detail == 'User not found'
