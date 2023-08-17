@@ -2,7 +2,7 @@ import pytest
 from api.api_models.announcements import AnnouncementResponse
 
 def test_get_all_announcements(client, test_announcements):
-    response = client.get("/api/v1/announcements?limit=4&page=1&size=50")
+    response = client.get("/api/v1/announcements/?limit=50&page=1")
     assert response.status_code == 200
     announcements = response.json()
     assert len(announcements["items"]) == len(test_announcements)

@@ -144,12 +144,12 @@ class Project(Base):
     updated_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     
-    manager_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    manager_id = Column(Integer, ForeignKey("users.id"))
     manager = relationship("User", back_populates="managed_projects")
     users = relationship("User", secondary="users_projects", back_populates="projects")
 
 
 class UserProject(Base):
     __tablename__ = 'users_projects'
-    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
