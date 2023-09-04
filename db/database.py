@@ -36,7 +36,7 @@ def get_db():
 
 
 def create_roles():   
-    from db.models.users import Role
+    from db.models.roles import Role
     from utils.utils import RoleChoices
 
     db = SessionLocal()

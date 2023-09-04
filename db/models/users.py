@@ -1,10 +1,8 @@
 from db.database import Base
 from sqlalchemy import Boolean, Column, String, Integer, TIMESTAMP, Text, text
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, ForeignKey, String, Integer, TIMESTAMP, text, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
 from sqlalchemy.sql import func
-from sqlalchemy.ext.associationproxy import association_proxy
 
 
 
@@ -37,14 +35,6 @@ class User(Base):
     tags = relationship('Tag', secondary='users_tags', back_populates='users')
     stack = relationship("Stack", back_populates='users')
 
-
-
-class Role(Base):
-    __tablename__ = "roles"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
-
-    users = relationship("User", order_by=User.id, back_populates="role")
 
 
 class UserSkills(Base):
