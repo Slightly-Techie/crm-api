@@ -2,8 +2,6 @@ from db.database import Base
 from sqlalchemy import Boolean, Column, String, Integer, TIMESTAMP, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
-from sqlalchemy.sql import func
-
 
 
 class User(Base):
