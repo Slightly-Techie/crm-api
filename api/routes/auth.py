@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 
 from sqlalchemy.orm import Session
 
@@ -91,21 +91,3 @@ def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     return user
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
