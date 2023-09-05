@@ -1,8 +1,7 @@
 from fastapi import Depends, HTTPException, APIRouter, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, select
+from sqlalchemy import desc
 from db.database import get_db
-from utils.oauth2 import get_current_user
 from db.models.announcements import Announcement
 from api.api_models.announcements import AnnouncementCreate, AnnouncementResponse, PaginatedResponse, AnnouncementUpdate
 from utils.permissions import is_admin
