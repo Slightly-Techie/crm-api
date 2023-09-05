@@ -2,7 +2,8 @@ from fastapi import Depends, HTTPException, APIRouter, status, Query
 from sqlalchemy.orm import Session
 from db.database import get_db
 from utils.oauth2 import get_current_user
-from db.models.users import User, Feed
+from db.models.users import User
+from db.models.feeds import Feed
 from api.api_models.user import FeedCreate, FeedUpdate, Feeds, PaginatedResponse
 from sqlalchemy import desc, select
 

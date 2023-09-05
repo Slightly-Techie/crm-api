@@ -35,20 +35,7 @@ class User(Base):
     role = relationship("Role",  back_populates="users")
     tags = relationship('Tag', secondary='users_tags', back_populates='users')
     stack = relationship("Stack", back_populates='users')  
-
-
-class Feed(Base):
-    __tablename__ = 'feeds'
-    id = Column(Integer, primary_key=True, nullable=False)
-    content = Column(String, nullable=False)
-    feed_pic_url = Column(String)
-    created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    updated_at = Column(TIMESTAMP(timezone=True),
-                        nullable=False, server_default=text('now()'))
-    user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    user = relationship("User")  
+  
 
 
 class TechieOTM(Base):
