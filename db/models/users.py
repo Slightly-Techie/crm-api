@@ -50,18 +50,6 @@ class Feed(Base):
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     user = relationship("User")  
 
-class Stack(Base):
-    __tablename__ = 'stacks'
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False, unique=True)
-    created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
-    updated_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, 
-            server_default=func.now(), server_onupdate=func.now())
-
-    users = relationship('User', back_populates='stack')
-
 
 class TechieOTM(Base):
     __tablename__ = "techie_of_the_month"
