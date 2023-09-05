@@ -3,7 +3,8 @@ from api.api_models.tags import TagCreate
 from api.api_models.user import Tags
 from db.database import get_db
 from sqlalchemy.orm import Session, joinedload
-from db.models.users import Tag, User, UserTag
+from db.models.users import Tag, User
+from db.models.users_tags import UserTag
 
 from utils.oauth2 import get_current_user
 
@@ -19,7 +20,8 @@ def get_current_user_tags(user=Depends(get_current_user), db:Session = Depends(g
     return {"tags": db_query.tags}
 
 @tag_route.post('/tags', response_model=Tags, status_code=status.HTTP_201_CREATED)
-def create_tag(tag: TagCreate, current_user=Depends(get_current_user), db:Session=Depends(get_db)):
+def create_tag(tag: TagCreate, current_user=Depends(get_current_user), 
+        db:Session=Depends(get_db)):
     if not current_user:
         raise HTTPException(status_code=401, detail='Unauthorized')
 

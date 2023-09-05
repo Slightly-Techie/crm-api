@@ -37,12 +37,6 @@ class User(Base):
     stack = relationship("Stack", back_populates='users')  
 
 
-class UserTag(Base):
-    __tablename__ = 'users_tags'
-    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    tag_id = Column(Integer, ForeignKey('tags.id'), primary_key=True)
-
-
 class Tag(Base):
     __tablename__ = 'tags'
     id = Column(Integer, primary_key=True, index=True)
