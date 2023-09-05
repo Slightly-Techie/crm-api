@@ -5,7 +5,9 @@ from core.config import settings
 from app import app
 import pytest
 from fastapi.testclient import TestClient
-from db.models.users import Feed, Role, Announcement
+from db.models.roles import Role
+from db.models.feeds import Feed
+from db.models.announcements import Announcement
 from utils.utils import RoleChoices
 from api.api_models import user
 
