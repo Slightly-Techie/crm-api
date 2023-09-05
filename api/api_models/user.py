@@ -79,7 +79,7 @@ class UserSignUp(BaseModel):
     @validator("role_id", pre=True, always=True)
     def set_role_id(cls, role_id):
         from db.database import SessionLocal
-        from db.models.users import Role as _Role
+        from db.models.roles import Role as _Role
         db = SessionLocal()
         check_role = db.query(_Role).filter(
             _Role.name == RoleChoices.USER).first()
