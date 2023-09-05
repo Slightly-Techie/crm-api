@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session, joinedload
 from api.api_models.skills import  SkillCreate
 
 from db.database import get_db
-from utils.permissions import is_authenticated
 from utils.oauth2 import get_current_user
 
-from db.models.users import User, Skill
+from db.models.users import User
+from db.models.skills import Skill
 from db.models.user_skills import UserSkill
-from api.api_models.user import Skills, UserResponse
+from api.api_models.user import Skills
 
 
 skill_route = APIRouter(tags=["User"],prefix="/users")
@@ -22,7 +22,8 @@ def get_skills( user=Depends(get_current_user), db:Session = Depends(get_db)):
 
 
 @skill_route.post('/skills', response_model=Skills, status_code=status.HTTP_201_CREATED)
-def create_skill(skill: SkillCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_skill(skill: SkillCreate, db: Session = Depends(get_db), 
+                 current_user: User = Depends(get_current_user)):
     if not current_user:
         raise HTTPException(status_code=401, detail='Unauthorized')
 
@@ -47,8 +48,10 @@ def create_skill(skill: SkillCreate, db: Session = Depends(get_db), current_user
 
 
 @skill_route.delete("/skills/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_skill_by_id(skill_id: int, user=Depends(get_current_user), db:Session = Depends(get_db)):
-    db_skill =  db.query(UserSkills).filter(UserSkills.skill_id == skill_id)
+def delete_skill_by_id(skill_id: int, user=Depends(get_current_user), 
+        db:Session = Depends(get_db)):
+    
+    db_skill =  db.query(UserSkill).filter(UserSkill.skill_id == skill_id)
     skill = db_skill.first()
 
     if not skill:
