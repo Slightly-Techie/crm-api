@@ -13,6 +13,7 @@ class UserNotFoundError(ValidationError):
 
 
 class ForbiddenError(HTTPException):
-  def __init__(self, status_code: int = status.HTTP_403_FORBIDDEN, detail:str = "User not authorised"):
+  def __init__(self, status_code: int = status.HTTP_403_FORBIDDEN, 
+      detail:str = "User not authorised"):
     super().__init__(status_code, detail)
  
