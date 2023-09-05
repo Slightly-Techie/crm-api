@@ -2,10 +2,9 @@ from fastapi import Depends, HTTPException, APIRouter, status, Query
 from sqlalchemy.orm import Session
 from db.database import get_db
 from utils.oauth2 import get_current_user
-from db.models.users import User
 from db.models.feeds import Feed
 from api.api_models.user import FeedCreate, FeedUpdate, Feeds, PaginatedResponse
-from sqlalchemy import desc, select
+from sqlalchemy import desc
 
 
 feed_route = APIRouter(tags=["Feed"], prefix="/feed")
@@ -45,7 +44,7 @@ def update_feed_by_id(feed_id: int, updated_feed: FeedUpdate, db: Session = Depe
 def delete_feed_by_id(feed_id: int, db: Session = Depends(get_db), current_user= Depends(get_current_user)):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
-    if feed == None:
+    if feed is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"feed with id: {feed_id} was not found"
         )
