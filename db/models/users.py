@@ -36,11 +36,6 @@ class User(Base):
     stack = relationship("Stack", back_populates='users')
 
 
-
-class UserSkills(Base):
-    __tablename__ = 'users_skills'
-    user_id = Column(Integer, ForeignKey('users.id'), primary_key = True)
-    skill_id = Column(Integer, ForeignKey('skills.id'), primary_key = True)
    
 class Skill(Base):
     __tablename__ = 'skills'

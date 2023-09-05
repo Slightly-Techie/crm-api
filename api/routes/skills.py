@@ -7,7 +7,8 @@ from db.database import get_db
 from utils.permissions import is_authenticated
 from utils.oauth2 import get_current_user
 
-from db.models.users import User, Skill, UserSkills
+from db.models.users import User, Skill
+from db.models.user_skills import UserSkill
 from api.api_models.user import Skills, UserResponse
 
 
