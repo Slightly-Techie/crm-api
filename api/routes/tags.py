@@ -3,7 +3,8 @@ from api.api_models.tags import TagCreate
 from api.api_models.user import Tags
 from db.database import get_db
 from sqlalchemy.orm import Session, joinedload
-from db.models.users import Tag, User
+from db.models.users import User
+from db.models.tags import Tag
 from db.models.users_tags import UserTag
 
 from utils.oauth2 import get_current_user
