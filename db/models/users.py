@@ -38,16 +38,6 @@ class User(Base):
   
 
 
-class TechieOTM(Base):
-    __tablename__ = "techie_of_the_month"
-    id = Column(Integer, primary_key=True, nullable=False)
-    created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    points = Column(Integer, nullable=False)
-    user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    user = relationship("User")
-
 
 class Announcement(Base):
     __tablename__ = 'announcements'
