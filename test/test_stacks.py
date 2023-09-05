@@ -1,7 +1,7 @@
 import pytest
 from fastapi import status
 from app import app
-from db.models.users import Stack
+from db.models.stacks import Stack
 
 
 
