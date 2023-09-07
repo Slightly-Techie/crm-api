@@ -21,6 +21,7 @@
 - [About](#about)
 - [Getting Started](#getting_started)
 - [Running the tests](#tests)
+- [Project Structure](#structure)
 - [Contributing](#contributing)
 - [Usage](#usage)
 - [Built Using](#built_using)
@@ -145,6 +146,85 @@ pytest
 ```
 
 > Make sure your `test.env` file is correctly configured with test-specific environment variables.
+
+## ⚙️ Project Structure <a name = "structure"></a>
+```s
+│   app.py
+│   Dockerfile
+│   fly.toml
+│   poetry.lock
+│   pyproject.toml
+│   README.md
+│   test_app.py
+│   __init__.py
+│
+├───.github
+│   └───workflows
+│           build.yml
+│           fly.yml
+│
+├───Alembic
+│   │   env.py
+│   │   README
+│   │   script.py.mako
+│
+├───api
+│   │   __init__.py
+│   │
+│   ├───api_models
+│   │   │   announcements.py
+│   │   │   skills.py
+│   │   │   stacks.py
+│   │   │   tags.py
+│   │   │   user.py
+│   │
+│   ├───routes
+│   │   │   announcements.py
+│   │   │   auth.py
+│   │   │   feeds.py
+│   │   │   profile_page.py
+│   │   │   skills.py
+│   │   │   stacks.py
+│   │   │   tags.py
+│   │   │   techieotm.py
+│   │   │   __init__.py
+│
+├───core
+│   │   config.py
+│   │   exceptions.py
+│
+├───db
+│   │   database.py
+│   │   __init__.py
+│   ├───models
+│   │    users.py
+│   └───repository
+│        users.py
+├───docs
+│       TODO.md
+│
+├───test
+│   │   conftest.py
+│   │   test_announcements.py
+│   │   test_auth.py
+│   │   test_feeds.py
+│   │   test_profile_page.py
+│   │   test_skills.py
+│   │   test_stacks.py
+│   │   test_tags.py
+│   │   test_techieotm.py
+│   │   test_users.py
+│   │   utils_test.py
+│   │   __init__.py
+│
+└───utils
+    │   oauth2.py
+    │   permissions.py
+    │   utils.py
+    │   __init__.py
+
+
+```
 
 ## ✏️ Contributing <a name = "contributing"></a>
 We welcome contributions from the community. To contribute to the CRM API project, follow these guidelines:
