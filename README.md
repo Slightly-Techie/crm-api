@@ -34,10 +34,10 @@ This project is a CRM API for Slightly Techie. It is built using [these](#built_
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
-- Poetry
-- Postgres
-- Python 3.10^
-- AutoPEP8
+- Poetry: Dependency manager for Python.
+- Postgres: A relational database.
+- Python 3.10^: The Python programming language.
+- AutoPEP8: An auto-formatter for Python code.
 
 
 ### Setting up a development environment
@@ -87,7 +87,7 @@ poetry install
 poetry add <package-name>
 ```
 
-#### Step 5: Create a `.env` file in the root directory and add the following environment variables
+#### Step 5: Create a `.env` file in the project's root directory and add the following environment variables, replacing the placeholders with your specific values:
 
 ```bash
 POSTGRES_USER= #e.g postgres
@@ -113,9 +113,50 @@ POSTGRES_DB= #e.g st_crm_db
 uvicorn app:app --reload
 ```
 
+### Step 8: Interact with the Database
+To interact with the database, you can use tools like psql, pgAdmin or any database client that supports PostgreSQL. Here are some basic commands:
+
+- Connect to the database:
+
+```bash
+psql -U postgres -d st_crm_db
+```
+
+- List all tables:
+
+```bash
+\d
+```
+
+- Execute SQL queries:
+
+```bash
+SELECT * FROM table_name;
+```
+
 
 ## 🔧 Running the tests <a name = "tests"></a>
-Explain how to run the automated tests for this system.
+To ensure the code is functioning correctly, you can run tests by executing the following command:
+
+```bash
+pytest
+```
+
+Make sure your `test.env` file is correctly configured with test-specific environment variables.
+
+## ✏️ Contributing
+We welcome contributions from the community. To contribute to the CRM API project, follow these guidelines:
+
+### Coding Standards
+- Follow the PEP 8 coding style for Python.
+- Ensure your code is well-documented with clear comments and docstrings.
+- Use meaningful variable and function names.
+
+### Branch Naming Conventions
+**Create a new branch for your feature or bug fix using the format below.**
+```bash
+<initials/issue_no/feature> eg. # RG/121/Fixed-login-page
+```
 
 ## 🎈 Usage <a name="usage"></a>
 visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fly.dev/docs)
