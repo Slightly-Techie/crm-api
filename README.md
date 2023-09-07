@@ -20,7 +20,7 @@
 - [TODO](#todo)
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Running the tests](#test)
+- [Running the tests](#tests)
 - [Contributing](#contributing)
 - [Usage](#usage)
 - [Built Using](#built_using)
