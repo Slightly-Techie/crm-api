@@ -20,6 +20,8 @@
 - [TODO](#todo)
 - [About](#about)
 - [Getting Started](#getting_started)
+- [Running the tests](#test)
+- [Contributing](#contributing)
 - [Usage](#usage)
 - [Built Using](#built_using)
 - [Team](#team)
@@ -142,9 +144,9 @@ To ensure the code is functioning correctly, you can run tests by executing the 
 pytest
 ```
 
-Make sure your `test.env` file is correctly configured with test-specific environment variables.
+> Make sure your `test.env` file is correctly configured with test-specific environment variables.
 
-## ✏️ Contributing
+## ✏️ Contributing <a name = "contributing"></a>
 We welcome contributions from the community. To contribute to the CRM API project, follow these guidelines:
 
 ### Coding Standards
@@ -155,8 +157,22 @@ We welcome contributions from the community. To contribute to the CRM API projec
 ### Branch Naming Conventions
 **Create a new branch for your feature or bug fix using the format below.**
 ```bash
-<initials/issue_no/feature> eg. # RG/121/Fixed-login-page
+git checkout -b <initials/issue_no/feature> eg. # RG/121/Fixed-login-page
 ```
+
+### Pull Requests
+- Commit your changes to your branch with a clear and descriptive commit message:
+```bash
+git add .
+git commit -m "Made this in this file"
+```
+- Push your branch to the repository on GitHub:
+```bash
+git push -u origin <name-of-branch>
+```
+- Open a pull request in the original repository, providing a detailed description of your changes and any relevant information.
+
+> please try building the project on your local machine to confirm everything works before pushing...Thanks
 
 ## 🎈 Usage <a name="usage"></a>
 visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fly.dev/docs)
@@ -178,3 +194,7 @@ visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fl
 - [@EmmanuelTiboah](https://github.com/eeTiboah)
 - [@EssilfieQuansah](https://github.com/benessilfie)
 - [@RachealKuranchie](https://github.com/Racheal777)
+- [@JerryAgbesi](https://github.com/JerryAgbesi)
+- [@Kryzbone](https://github.com/kryzbone)
+- [@GreatnessMensah](https://github.com/greatnessmensah)
+- [@CozyBrian](https://github.com/CozyBrian)
