@@ -20,6 +20,9 @@
 - [TODO](#todo)
 - [About](#about)
 - [Getting Started](#getting_started)
+- [Running the tests](#tests)
+- [Project Structure](#structure)
+- [Contributing](#contributing)
 - [Usage](#usage)
 - [Built Using](#built_using)
 - [Team](#team)
@@ -34,10 +37,10 @@ This project is a CRM API for Slightly Techie. It is built using [these](#built_
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
-- Poetry
-- Postgres
-- Python 3.10^
-- AutoPEP8
+- Poetry: Dependency manager for Python.
+- Postgres: A relational database.
+- Python 3.10^: The Python programming language.
+- AutoPEP8: An auto-formatter for Python code.
 
 
 ### Setting up a development environment
@@ -87,7 +90,7 @@ poetry install
 poetry add <package-name>
 ```
 
-#### Step 5: Create a `.env` file in the root directory and add the following environment variables
+#### Step 5: Create a `.env` file in the project's root directory and add the following environment variables, replacing the placeholders with your specific values:
 
 ```bash
 POSTGRES_USER= #e.g postgres
@@ -113,9 +116,143 @@ POSTGRES_DB= #e.g st_crm_db
 uvicorn app:app --reload
 ```
 
+### Step 8: Interact with the Database
+To interact with the database, you can use tools like psql, pgAdmin or any database client that supports PostgreSQL. Here are some basic commands:
+
+- Connect to the database:
+
+```bash
+psql -U postgres -d st_crm_db
+```
+
+- List all tables:
+
+```bash
+\d
+```
+
+- Execute SQL queries:
+
+```bash
+SELECT * FROM table_name;
+```
+
 
 ## 🔧 Running the tests <a name = "tests"></a>
-Explain how to run the automated tests for this system.
+To ensure the code is functioning correctly, you can run tests by executing the following command:
+
+```bash
+pytest
+```
+
+> Make sure your `test.env` file is correctly configured with test-specific environment variables.
+
+## ⚙️ Project Structure <a name = "structure"></a>
+```s
+│   app.py
+│   Dockerfile
+│   fly.toml
+│   poetry.lock
+│   pyproject.toml
+│   README.md
+│   test_app.py
+│   __init__.py
+│
+├───.github
+│   └───workflows
+│           build.yml
+│           fly.yml
+│
+├───Alembic
+│   │   env.py
+│   │   README
+│   │   script.py.mako
+│
+├───api
+│   │   __init__.py
+│   │
+│   ├───api_models
+│   │   │   announcements.py
+│   │   │   skills.py
+│   │   │   stacks.py
+│   │   │   tags.py
+│   │   │   user.py
+│   │
+│   ├───routes
+│   │   │   announcements.py
+│   │   │   auth.py
+│   │   │   feeds.py
+│   │   │   profile_page.py
+│   │   │   skills.py
+│   │   │   stacks.py
+│   │   │   tags.py
+│   │   │   techieotm.py
+│   │   │   __init__.py
+│
+├───core
+│   │   config.py
+│   │   exceptions.py
+│
+├───db
+│   │   database.py
+│   │   __init__.py
+│   ├───models
+│   │    users.py
+│   └───repository
+│        users.py
+├───docs
+│       TODO.md
+│
+├───test
+│   │   conftest.py
+│   │   test_announcements.py
+│   │   test_auth.py
+│   │   test_feeds.py
+│   │   test_profile_page.py
+│   │   test_skills.py
+│   │   test_stacks.py
+│   │   test_tags.py
+│   │   test_techieotm.py
+│   │   test_users.py
+│   │   utils_test.py
+│   │   __init__.py
+│
+└───utils
+    │   oauth2.py
+    │   permissions.py
+    │   utils.py
+    │   __init__.py
+
+
+```
+
+## ✏️ Contributing <a name = "contributing"></a>
+We welcome contributions from the community. To contribute to the CRM API project, follow these guidelines:
+
+### Coding Standards
+- Follow the PEP 8 coding style for Python.
+- Ensure your code is well-documented with clear comments and docstrings.
+- Use meaningful variable and function names.
+
+### Branch Naming Conventions
+**Create a new branch for your feature or bug fix using the format below.**
+```bash
+git checkout -b <initials/issue_no/feature> eg. # RG/121/Fixed-login-page
+```
+
+### Pull Requests
+- Commit your changes to your branch with a clear and descriptive commit message:
+```bash
+git add .
+git commit -m "Made this in this file"
+```
+- Push your branch to the repository on GitHub:
+```bash
+git push -u origin <name-of-branch>
+```
+- Open a pull request in the original repository, providing a detailed description of your changes and any relevant information.
+
+> please try building the project on your local machine to confirm everything works before pushing...Thanks
 
 ## 🎈 Usage <a name="usage"></a>
 visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fly.dev/docs)
@@ -137,3 +274,7 @@ visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fl
 - [@EmmanuelTiboah](https://github.com/eeTiboah)
 - [@EssilfieQuansah](https://github.com/benessilfie)
 - [@RachealKuranchie](https://github.com/Racheal777)
+- [@JerryAgbesi](https://github.com/JerryAgbesi)
+- [@Kryzbone](https://github.com/kryzbone)
+- [@GreatnessMensah](https://github.com/greatnessmensah)
+- [@CozyBrian](https://github.com/CozyBrian)
