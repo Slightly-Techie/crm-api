@@ -1,9 +1,8 @@
 import pytest
 from fastapi import status
 from app import app
-from db.models.users import Stack
+from db.models.stacks import Stack
 
-from .test_users import test_log_in
 
 
 # Factory to create stacks

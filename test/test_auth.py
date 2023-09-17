@@ -1,9 +1,4 @@
-from fastapi.testclient import TestClient
-from api.api_models.user import ProfileResponse
-from api.api_models import user
-from app import app
 from core.config import settings
-from jose import jwt
 
 user_signup_payload = {
     "first_name": "Slightly",

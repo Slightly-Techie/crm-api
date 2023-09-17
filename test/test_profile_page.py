@@ -1,7 +1,4 @@
-from fastapi.testclient import TestClient
-from api.api_models.user import ProfileResponse
 from api.api_models import user
-from app import app
 
 
 def test_get_user_by_id(client, test_user):

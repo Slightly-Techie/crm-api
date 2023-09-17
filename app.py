@@ -41,7 +41,7 @@ def index():
 
 @app.get('/inactive')
 def redirect():
-    return {"msg": "Your account would be activated after a successful interview, thank you for your patience"}
+    return {"msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
 
 
 app.include_router(auth_router, prefix="/api/v1")

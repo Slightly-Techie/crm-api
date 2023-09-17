@@ -1,6 +1,5 @@
 import pytest
 from api.api_models.user import Feeds, FeedUpdate
-from db.models.users import Feed
 
 
 def test_get_all_feeds(client, test_feeds):
