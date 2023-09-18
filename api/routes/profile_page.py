@@ -85,3 +85,20 @@ def update_profile_status(user_id: int, db: Session = Depends(get_db), current_u
     user.is_active = True
     db.commit()
     return user
+
+
+
+@profile_route.get("/user_info", response_model=dict)
+def get_user_info(email: str, admin_user: User = Depends(is_admin), db: Session = Depends(get_db)):
+    user_details = db.query(User).filter(User.email == email).first()
+    if user_details:
+        return {
+            "status": 200,
+            "data": {
+                "first_name": user_details.first_name,
+                "last_name": user_details.last_name,
+                "phone_number": user_details.phone_number
+            }
+        }
+    else:
+        raise HTTPException(status_code=404, detail="USER NOT FOUND")
