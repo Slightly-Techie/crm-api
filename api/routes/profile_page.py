@@ -89,7 +89,7 @@ def update_profile_status(user_id: int, db: Session = Depends(get_db), current_u
 
 
 @profile_route.get("/user_info", response_model=dict)
-def get_user_info(email: str, admin_user: User = Depends(is_admin), db: Session = Depends(get_db)):
+def get_user_info(email: str, db: Session = Depends(get_db)):
     user_details = db.query(User).filter(User.email == email).first()
     if user_details:
         return {
