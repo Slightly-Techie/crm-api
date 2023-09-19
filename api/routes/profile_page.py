@@ -7,6 +7,7 @@ from db.database import get_db
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
+from utils.enums import UserStatus
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -102,3 +103,15 @@ def get_user_info(email: str, db: Session = Depends(get_db)):
         }
     else:
         raise HTTPException(status_code=404, detail="USER NOT FOUND")
+
+
+@profile_route.put("/profile/{user_id}/status", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
+def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=404, detail=settings.ERRORS.get("INVALID ID"))
+
+    user.status = new_status
+    db.commit()
+    return user
