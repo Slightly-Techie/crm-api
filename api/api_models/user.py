@@ -138,6 +138,7 @@ class ProfileResponse(ProfileUpdate):
     stack: Optional[Stacks] = Field(None)
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
+    status: str = Field(...)
 
 
 class PaginatedUsers(BaseModel):
