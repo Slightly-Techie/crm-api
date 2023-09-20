@@ -110,7 +110,7 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
-            status_code=404, detail=settings.ERRORS.get("INVALID ID"))
+            status_code=404, detail=settings.ERRORS.get("USER NOT FOUND"))
 
     user.status = new_status
     db.commit()
