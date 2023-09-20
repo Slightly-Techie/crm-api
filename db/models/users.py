@@ -2,6 +2,8 @@ from db.database import Base
 from sqlalchemy import Boolean, Column, String, Integer, TIMESTAMP, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
+from utils.enums import UserStatus
+from sqlalchemy import Enum as SQLAlchemyEnum
 
 
 class User(Base):
@@ -27,6 +29,7 @@ class User(Base):
         TIMESTAMP(timezone=True), 
             nullable=False, server_default=text('now()'), server_onupdate=text("now()"))
     is_active = Column(Boolean)
+    status = Column(SQLAlchemyEnum(UserStatus), default=UserStatus.TO_CONTACT, nullable=False)
 
 
     skills = relationship('Skill',secondary = "users_skills",  back_populates='users') 
