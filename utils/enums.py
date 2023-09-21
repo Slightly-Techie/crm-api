@@ -2,11 +2,11 @@ from enum import Enum
 
 class UserStatus(str, Enum):
     
-    TO_CONTACT = "To contact"
-    IN_REVIEW = "In review"
-    INTERVIEWED = "Interviewed"
-    ACCEPTED = "Accepted"
-    NO_SHOW = "No show"
-    REJECTED = "Rejected"
-    TO_BE_ONBOARDED = "To be onboarded"
-    CONTACTED = "Contacted"
+    TO_CONTACT = "TO CONTACT"
+    IN_REVIEW = "IN REVIEW"
+    INTERVIEWED = "INTERVIEWED"
+    ACCEPTED = "ACCEPTED"
+    NO_SHOW = "NO SHOW"
+    REJECTED = "REJECTED"
+    TO_BE_ONBOARDED = "TO BE ONBOARDED"
+    CONTACTED = "CONTACTED"
