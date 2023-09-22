@@ -1,8 +1,8 @@
-"""Add column for status
+"""Create column for status
 
-Revision ID: d2bedfd6f55a
+Revision ID: c91ffab06013
 Revises: 8ea2339c4916
-Create Date: 2023-09-20 01:25:12.261136
+Create Date: 2023-09-21 22:51:48.489633
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd2bedfd6f55a'
+revision = 'c91ffab06013'
 down_revision = '8ea2339c4916'
 branch_labels = None
 depends_on = None
@@ -23,3 +23,6 @@ def upgrade():
 def downgrade():
     # Remove the 'status' column if needed.
     op.drop_column('users', 'status')
+
+
+
