@@ -1,6 +1,5 @@
 from fastapi import status
-from datetime import datetime
-from db.models.users import TechieOTM
+from db.models.techie_of_the_month import TechieOTM
 
 
 def test_create_techie_of_the_month(client, test_user, test_user1):

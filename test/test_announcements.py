@@ -1,5 +1,5 @@
 import pytest
-from api.api_models.announcements import AnnouncementResponse, AnnouncementCreate, AnnouncementUpdate
+from api.api_models.announcements import AnnouncementResponse
 
 def test_get_all_announcements(client, test_announcements):
     response = client.get("/api/v1/announcements?limit=4&page=1&size=50")

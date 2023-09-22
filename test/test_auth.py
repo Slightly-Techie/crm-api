@@ -13,6 +13,7 @@ from db.models.users import User
 from utils.oauth2 import create_reset_token, verify_reset_token
 
 client = TestClient(app)
+from core.config import settings
 
 user_signup_payload = {
     "first_name": "Slightly",

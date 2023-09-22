@@ -1,0 +1,12 @@
+from enum import Enum
+
+class UserStatus(str, Enum):
+    
+    TO_CONTACT = "TO CONTACT"
+    IN_REVIEW = "IN REVIEW"
+    INTERVIEWED = "INTERVIEWED"
+    ACCEPTED = "ACCEPTED"
+    NO_SHOW = "NO SHOW"
+    REJECTED = "REJECTED"
+    TO_BE_ONBOARDED = "TO BE ONBOARDED"
+    CONTACTED = "CONTACTED"

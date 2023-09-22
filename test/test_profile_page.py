@@ -1,7 +1,4 @@
-from fastapi.testclient import TestClient
-from api.api_models.user import ProfileResponse
 from api.api_models import user
-from app import app
 
 
 def test_get_user_by_id(client, test_user):
@@ -116,3 +113,19 @@ def test_activate_invalid_user_profile(client, test_user):
 
     # Then the response should be unsuccessful with a 404 Not Found status code
     assert response.status_code == 404
+    
+def test_get_user_info(client, test_user):
+    # Given a test_user
+    email = test_user["email"]
+
+    # When the test_user requests user information based on email
+    response = client.get(
+        f"/api/v1/users/user_info?email={email}"
+    )
+
+    # Then the response should be successful with a 200 OK status code
+    assert response.status_code == 200
+    assert "first_name" in response.json()["data"]
+    assert "last_name" in response.json()["data"]
+    assert "phone_number" in response.json()["data"]
+

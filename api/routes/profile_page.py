@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -8,6 +7,7 @@ from db.database import get_db
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
+from utils.enums import UserStatus
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -84,5 +84,34 @@ def update_profile_status(user_id: int, db: Session = Depends(get_db), current_u
         raise HTTPException(
             status_code=400, detail=settings.ERRORS.get("USER ALREADY ACTIVE"))
     user.is_active = True
+    db.commit()
+    return user
+
+
+
+@profile_route.get("/user_info", response_model=dict)
+def get_user_info(email: str, db: Session = Depends(get_db)):
+    user_details = db.query(User).filter(User.email == email).first()
+    if user_details:
+        return {
+            "status": 200,
+            "data": {
+                "first_name": user_details.first_name,
+                "last_name": user_details.last_name,
+                "phone_number": user_details.phone_number
+            }
+        }
+    else:
+        raise HTTPException(status_code=404, detail="USER NOT FOUND")
+
+
+@profile_route.put("/profile/{user_id}/status", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
+def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=404, detail=settings.ERRORS.get("USER NOT FOUND"))
+
+    user.status = new_status
     db.commit()
     return user

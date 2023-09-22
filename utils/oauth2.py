@@ -62,7 +62,9 @@ def verify_refresh_token(token: str):
     return TokenData(id=sub)
 
 # Get currently logged in User
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+def get_current_user(token: str = Depends(oauth2_scheme), 
+      db: Session = Depends(database.get_db)):
+    
     credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

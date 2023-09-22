@@ -4,7 +4,8 @@ from utils.permissions import is_admin
 
 from db.database import get_db
 from sqlalchemy.orm import Session
-from db.models.users import User, Stack
+from db.models.users import User
+from db.models.stacks import Stack
 
 
 

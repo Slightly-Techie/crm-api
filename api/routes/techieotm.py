@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from api.api_models.user import TechieOTMCreate, TechieOTMPaginated, TechieOTMResponse
 from db.database import get_db
 from utils.permissions import is_admin
-from db.models.users import TechieOTM, User
+from db.models.users import User
+from db.models.techie_of_the_month import TechieOTM
 
 
 techieotm_router = APIRouter(tags=["User"], prefix="/users/techieotm")
