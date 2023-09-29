@@ -1,15 +1,31 @@
 from typing import Tuple
-import yagmail
 from urllib.parse import urlencode
+import os
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+from starlette.responses import JSONResponse
+from dotenv import load_dotenv
 
-def send_reset_password_email(email: str, reset_token: str) -> Tuple[str, str]:
-    sender_email = "user@example.com" # Set up env variables for your mail, and app password
-    sender_password = "app_password" 
+load_dotenv()
 
+# Define your email configuration
+conf = ConnectionConfig(
+    MAIL_USERNAME=os.environ.get("USERNAME"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
+    MAIL_FROM=os.environ.get("MAIL_FROM"),
+    MAIL_PORT=os.environ.get("MAIL_PORT"),
+    MAIL_SERVER=os.environ.get("MAIL_SERVER"),
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
+)
+
+# Setup mail service with MailChimp SMTP & API Credentials
+
+async def send_email(email: str, reset_token: str) -> JSONResponse:
     reset_password_url = f"http://127.0.0.1:8080/reset-password?{urlencode({'token': reset_token})}"
 
     subject = "Reset Password"
-    text = f"Click on this link to reset your password: {reset_password_url}"
     html = f"""\
                 <html>
                     <body>
@@ -19,10 +35,17 @@ def send_reset_password_email(email: str, reset_token: str) -> Tuple[str, str]:
                 </html>
             """
 
-    yag = yagmail.SMTP(sender_email, sender_password)
-    
-    contents = [text, html]
-    
-    yag.send(to=email, subject=subject, contents=contents)
-    
-    return "Reset password email sent successfully", email
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email], 
+        body=html,
+        subtype=MessageType.html
+    )
+
+    # Create a FastMail instance and send the email
+    fm = FastMail(conf)
+    try:
+        await fm.send_message(message)
+        return JSONResponse(status_code=200, content={"message": "Email has been sent"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Failed to send email: {str(e)}"})

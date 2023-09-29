@@ -16,7 +16,7 @@ from utils.utils import verify_password
 from utils.oauth2 import get_access_token, get_refresh_token, verify_refresh_token, create_reset_token, verify_reset_token
 from utils.permissions import is_authenticated
 from core.config import settings
-from utils.mail_service import send_reset_password_email
+from utils.mail_service import send_email
 
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
@@ -96,7 +96,17 @@ def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
 
 
 @auth_router.post('/forgot-password')
-def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Send a reset password email to the user.
+
+    Args:
+        request (ForgotPasswordRequest): The request containing the user's email.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        JSONResponse: A response indicating the result of sending the reset password email.
+    """
     email = request.email
     user = db.query(User).filter(User.email == email).first()
     
@@ -104,11 +114,21 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     reset_token = create_reset_token(email)
-    send_reset_password_email(email, reset_token) 
-    return {"msg": "Reset token sent to email"}
+    result = await send_email(email, reset_token) 
+    return result
 
 @auth_router.post('/reset-password')
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
+    """
+    Reset the user's password with a valid reset token.
+
+    Args:
+        request (ResetPasswordRequest): The request containing the reset token and new password.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A message indicating the result of the password reset.
+    """
     try:
         email = verify_reset_token(request.token) 
         user = db.query(User).filter(User.email == email).first()

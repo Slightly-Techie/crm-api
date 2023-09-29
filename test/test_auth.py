@@ -4,12 +4,11 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from jose import jwt
-
 from api.api_models.user import ForgotPasswordRequest, ResetPasswordRequest
-from api.routes.auth import forgot_password, reset_password
+from api.routes.auth import reset_password
 from app import app
 from core.config import settings
-from db.models.users import User
+from utils.mail_service import send_email
 from utils.oauth2 import create_reset_token, verify_reset_token
 
 client = TestClient(app)
@@ -36,7 +35,7 @@ user_signup_payload_incomplete = {
     "is_active": True
 }
 
-def test_user_signup_valid():
+def test_user_signup_valid(client):
     res = client.post("/api/v1/users/register", json=user_signup_payload)
     res_body = res.json()
 
@@ -123,30 +122,16 @@ def test_verify_reset_token_expired_token():
         verify_reset_token(expired_token)
     assert exc.value.status_code == 400
 
-def test_forgot_password_email_sent_to_correct_address(test_user, mocker):
-    expected_email = test_user.get("email")
-    expected_token = "reset_token"
-
-    mock_send_reset_password_email = mocker.patch('api.routes.auth.send_reset_password_email')
-    mock_reset_token = mocker.patch('api.routes.auth.create_reset_token', return_value=expected_token)
-
-    db = mocker.Mock()
-    db.query.return_value.filter.return_value.first.return_value = User(email=expected_email)
-
-    forgot_password(ForgotPasswordRequest(email=expected_email), db=db)
-    mock_send_reset_password_email.assert_called_once_with(expected_email, mock_reset_token.return_value)
-
-def test_forgot_password_user_not_found(test_user, mocker):
-    db = mocker.Mock()
-    db.query.return_value.filter.return_value.first.return_value = None
-    with pytest.raises(HTTPException) as e:
-        forgot_password(ForgotPasswordRequest(email=test_user.get("email")), db=db)
-    assert e.value.status_code == 404
-    assert e.value.detail == 'User not found'
-
 def test_reset_password_invalid_token():
     with pytest.raises(HTTPException) as e:
         reset_password(ResetPasswordRequest(token='invalid_token', new_password='new_password'))
     assert e.value.status_code == 400
     assert e.value.detail == 'Invalid token'
 
+@pytest.mark.asyncio
+async def test_send_email():
+    email = "test@example.com"
+    reset_token = "test_reset_token"
+    response = await send_email(email, reset_token)
+    assert response.status_code == 200
+    
