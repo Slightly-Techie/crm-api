@@ -1,4 +1,3 @@
-from typing import Tuple
 from urllib.parse import urlencode
 import os
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
@@ -9,11 +8,11 @@ load_dotenv()
 
 # Define your email configuration
 conf = ConnectionConfig(
-    MAIL_USERNAME=os.environ.get("USERNAME"),
-    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
-    MAIL_FROM=os.environ.get("MAIL_FROM"),
-    MAIL_PORT=os.environ.get("MAIL_PORT"),
-    MAIL_SERVER=os.environ.get("MAIL_SERVER"),
+    MAIL_USERNAME=os.getenv("USERNAME", "AnyName"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", "md-XnF_xUedhL_K8aQFqgnneQ"),
+    MAIL_FROM=os.getenv("MAIL_FROM", "neilohene@gmail.com"),
+    MAIL_PORT=os.getenv("MAIL_PORT", 587),
+    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.mandrillapp.com"),
     MAIL_STARTTLS=True,
     MAIL_SSL_TLS=False,
     USE_CREDENTIALS=True,
