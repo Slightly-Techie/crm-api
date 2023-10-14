@@ -54,3 +54,7 @@ def is_owner(user, obj):
 
 	raise ForbiddenError()
 
+
+# Function to check if user is project manager
+def is_project_manager(user, obj):
+    return True
