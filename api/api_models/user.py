@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, Optional
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
-from .stacks import Stacks
+from api.api_models.stacks import Stacks
 
 
 class Role(BaseModel):

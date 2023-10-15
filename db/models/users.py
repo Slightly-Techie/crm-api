@@ -4,6 +4,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 from utils.enums import UserStatus
 from sqlalchemy import Enum as SQLAlchemyEnum
+from .stacks import Stack
+from .roles import Role
+
 
 
 class User(Base):
