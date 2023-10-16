@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from db.database import get_db
 from db.models.users import User
 from db.models.projects import Project
+from api.api_models.projects import UpdateProject
 from utils.permissions import is_admin, is_project_manager
 
 
@@ -32,7 +33,7 @@ def create(
     return new_project
 
 
-"""
+
 @project_router.put(
     "/{project_id}", status_code=status.HTTP_201_CREATED, response_model=ProjectResponse
 )
@@ -61,7 +62,7 @@ def update(
     db.refresh(project)
 
     return project
-"""
+
 
 @project_router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(
@@ -113,10 +114,19 @@ def add_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    project.users.append(user)
+    # Fetch user details and create a dictionary to append to the project's members list
+    user_details = {
+        "id": 1,
+        "name": "Genesis",
+        "email": "Genesis@gmail.com",
+        # Add other user details as needed
+    }
+
+    project.members.append(user_details)
     db.commit()
 
     return {"message": "User added to project"}
+
 
 
 @project_router.delete(

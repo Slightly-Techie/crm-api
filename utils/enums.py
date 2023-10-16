@@ -10,3 +10,14 @@ class UserStatus(str, Enum):
     REJECTED = "REJECTED"
     TO_BE_ONBOARDED = "TO BE ONBOARDED"
     CONTACTED = "CONTACTED"
+
+class ProjectType(str, Enum):
+    
+    COMMUNITY = "COMMUNITY"
+    PAID = "PAID"
+    
+class ProjectPriority(str, Enum):
+    
+    LOW_PRIORITY = "LOW PRIORITY"
+    MEDIUM_PRIORITY = "MEDIUM PRIORITY"
+    HIGH_PRIORITY = "HIGH PRIORITY"
