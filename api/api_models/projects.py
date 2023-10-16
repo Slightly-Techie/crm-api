@@ -1,4 +1,5 @@
 from datetime import date
+from typing import List
 from pydantic import BaseModel
 from utils.enums import ProjectPriority, ProjectType
 
@@ -9,6 +10,8 @@ class Project(BaseModel):
     project_priority: ProjectPriority
     project_tools: str
     manager_id: int
+    members: List[str]
+    
 
 class CreateProject(Project):
     pass
@@ -17,7 +20,7 @@ class CreateProject(Project):
 
 class ProjectResponse(Project):
     id: int
-    members: list[str] = []
+    members: List[str]
     created_at: date
 
     
@@ -27,7 +30,7 @@ class ProjectResponse(Project):
 
 class UpdateProject(Project):
     
-    members: list[int] = []
+    members: List[str]
 
     class Config:
         orm_mode = True
