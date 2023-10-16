@@ -20,5 +20,5 @@ class Project(Base):
     
     manager_id = Column(Integer, ForeignKey("users.id"))
     
-    members = Column(ARRAY(String), nullable=True)
+    members = relationship('User', back_populates='projects')
 

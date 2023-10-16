@@ -105,7 +105,7 @@ def add_user(
     db: Session = Depends(get_db),
 ):
     project_query = db.query(Project).filter(Project.id == project_id)
-    project: Project = project_query.first()
+    project = project_query.first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
@@ -116,10 +116,8 @@ def add_user(
 
     # Fetch user details and create a dictionary to append to the project's members list
     user_details = {
-        "id": 1,
-        "name": "Genesis",
-        "email": "Genesis@gmail.com",
-        # Add other user details as needed
+        "id": user.id,
+        "email": user.email
     }
 
     project.members.append(user_details)

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Dict
 from pydantic import BaseModel
 from utils.enums import ProjectPriority, ProjectType
 
@@ -10,7 +10,7 @@ class Project(BaseModel):
     project_priority: ProjectPriority
     project_tools: str
     manager_id: int
-    members: List[str]
+    members: List[Dict] = []
     
 
 class CreateProject(Project):
@@ -20,7 +20,7 @@ class CreateProject(Project):
 
 class ProjectResponse(Project):
     id: int
-    members: List[str]
+    members: list[Dict] = []
     created_at: date
 
     
@@ -30,7 +30,7 @@ class ProjectResponse(Project):
 
 class UpdateProject(Project):
     
-    members: List[str]
+    members: list[Dict] = []
 
     class Config:
         orm_mode = True

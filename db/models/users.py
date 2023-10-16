@@ -38,4 +38,5 @@ class User(Base):
     skills = relationship('Skill',secondary = "users_skills",  back_populates='users') 
     role = relationship("Role",  back_populates="users")
     tags = relationship('Tag', secondary='users_tags', back_populates='users')
-    stack = relationship("Stack", back_populates='users')
+    stack = relationship("Stack", back_populates='users')  
+    projects = relationship('Project', back_populates='members')
