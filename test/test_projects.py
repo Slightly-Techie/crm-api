@@ -1,0 +1,150 @@
+import pytest
+from fastapi import status
+
+
+project_url = "/api/v1/projects/"
+
+def test_create_project(session, client, user_cred, test_projects):
+    url = project_url
+
+    data = {
+        "name": "test_project",
+        "description": "test_description",
+        "project_type": "COMMUNITY",
+        "project_priority": "HIGH PRIORITY",
+        "project_tools": ["python", "fastapi"],
+        "manager_id": 1
+    }
+
+    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+    res_data = res.json()
+
+    assert res.status_code == status.HTTP_201_CREATED
+    assert res_data['name'] == data['name']
+
+def test_create_project_manager_not_found(session, client, user_cred, test_projects):
+    url = project_url
+
+    data = {
+        "name": "test_project",
+        "description": "test_description",
+        "project_type": "COMMUNITY",
+        "project_priority": "HIGH PRIORITY",
+        "project_tools": ["python", "fastapi"],
+        "manager_id": 100
+    }
+
+    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_create_project_not_authorized(client, test_projects):
+    url = project_url
+
+    data = {
+        "name": "test_project",
+        "description": "test_description",
+        "project_type": "COMMUNITY",
+        "project_priority": "HIGH PRIORITY",
+        "project_tools": ["python", "fastapi"],
+        "manager_id": 1
+    }
+    res = client.post(url, json=data)
+
+    assert res.status_code == 401
+
+def test_get_all_projects(session, client, test_projects):
+    url = project_url
+
+    res = client.get(url)
+    res_data = res.json()
+
+    assert res.status_code == status.HTTP_200_OK
+    assert len(res_data) == len(test_projects)
+
+def test_get_project(session, client, test_projects):
+    url = project_url + str(test_projects[0].id)
+
+    res = client.get(url)
+    res_data = res.json()
+
+    assert res.status_code == status.HTTP_200_OK
+    assert res_data['name'] == test_projects[0].name
+
+def test_get_project_not_found(session, client, test_projects):
+    url = project_url + str(100)
+
+    res = client.get(url)
+
+    assert res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_update_project(session, client, user_cred, test_projects):
+    url = project_url + str(test_projects[0].id)
+
+    data = {
+        "name": "test_project_updated",
+        "description": "test_description_updated",
+        "project_type": "COMMUNITY",
+        "project_priority": "MEDIUM PRIORITY",
+        "project_tools": ["python", "fastapi", "javascript", "react"],
+        "manager_id": 1
+    }
+
+    res = client.put(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+    res_data = res.json()
+
+    assert res.status_code == status.HTTP_201_CREATED
+    assert res_data['name'] == data['name']
+
+def test_update_project_does_not_exist(session, client, user_cred, test_projects):
+    url = project_url + str(100)
+
+    data = {
+        "name": "test_project_updated",
+        "description": "test_description_updated",
+        "project_type": "COMMUNITY",
+        "project_priority": "MEDIUM PRIORITY",
+        "project_tools": ["python", "fastapi", "javascript", "react"],
+        "manager_id": 1
+    }
+
+    res = client.put(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_update_project_not_authorized(client, test_projects):
+    url = project_url + str(test_projects[0].id)
+
+    data = {
+        "name": "test_project_updated",
+        "description": "test_description_updated",
+        "project_type": "COMMUNITY",
+        "project_priority": "MEDIUM PRIORITY",
+        "project_tools": ["python", "fastapi", "javascript", "react"],
+        "manager_id": 1
+    }
+
+    res = client.put(url, json=data)
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+def test_delete_project(session, client, user_cred, test_projects):
+    url = project_url + str(test_projects[0].id)
+
+    res = client.delete(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_204_NO_CONTENT
+
+def test_delete_project_does_not_exist(session, client, user_cred, test_projects):
+    url = project_url + str(100)
+
+    res = client.delete(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_delete_project_unauthorized(client, test_projects):
+    url = project_url + str(test_projects[0].id)
+
+    res = client.delete(url)
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED

@@ -8,7 +8,7 @@ class CreateProject(BaseModel):
     description: str = Field(...)
     project_type: ProjectType = Field(...)
     project_priority: ProjectPriority = Field(...)
-    project_tools: List[str] = Field(...)
+    project_tools: Optional[List[str]]
     manager_id: int = Field(...)
     
 
