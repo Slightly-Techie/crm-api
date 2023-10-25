@@ -148,3 +148,55 @@ def test_delete_project_unauthorized(client, test_projects):
     res = client.delete(url)
 
     assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+def test_add_user_project(client, test_projects, user_cred, test_user1):
+    url = project_url + str(test_projects[0].id) + "/add/" + str(test_user1["id"])
+    data = {
+        "team": "FRONTEND"
+    }
+    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_201_CREATED
+
+def test_add_user_project_unauthorized(client, test_projects, test_user, user_cred):
+    url = project_url + str(test_projects[2].id) + "/add/" + str(test_user["id"])
+    data = {
+        "team": "FRONTEND"
+    }
+    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_403_FORBIDDEN
+
+def test_add_user_does_not_exist(client, test_projects, user_cred, test_user1):
+    url = project_url + str(test_projects[0].id) + "/add/" + str(100)
+    data = {
+        "team": "DESIGNER"
+    }
+    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_add_user_already_exists(client, test_projects, user_cred, test_user1):
+    test_add_user_project(client, test_projects, user_cred, test_user1)
+    url = project_url + str(test_projects[0].id) + "/add/" + str(test_user1["id"])
+    data = {
+        "team": "MOBILE"
+    }
+    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+def test_remove_user_project(client, test_projects, user_cred, test_user1):
+    test_add_user_project(client, test_projects, user_cred, test_user1)
+    url = project_url + str(test_projects[0].id) + "/remove/" + str(test_user1["id"])
+
+    res = client.delete(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_204_NO_CONTENT
+
+def test_remove_user_project_unauthorized(client, test_projects, test_user, user_cred):
+    url = project_url + str(test_projects[2].id) + "/remove/" + str(test_user["id"])
+
+    res = client.delete(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+
+    assert res.status_code == status.HTTP_403_FORBIDDEN

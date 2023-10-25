@@ -85,6 +85,11 @@ def add_user_to_project(project_id: int, user_id: int, user_project_data: Projec
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Check if the user is already a member of the project
+    existing_member = db.query(UserProject).filter(UserProject.user_id == user_id, UserProject.project_id == project_id).first()
+    if existing_member:
+        raise HTTPException(status_code=400, detail="User is already a member of the project")
     
     # Create a UserProject entry with the specified role
     user_project = UserProject(user_id=user_id, project_id=project_id, team=user_project_data.team)
