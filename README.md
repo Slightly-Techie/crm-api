@@ -98,6 +98,8 @@ POSTGRES_PASSWORD= #e.g password123
 POSTGRES_SERVER= #e.g localhost
 POSTGRES_PORT= #e.g 5432
 POSTGRES_DB= #e.g st_crm_db
+SECRET= #notasecretkey
+BASE_URL= #http://127.0.0.1:8080/
 ```
 
 #### Step 6: Create a `test.env` file in the root directory and add the following environment variables

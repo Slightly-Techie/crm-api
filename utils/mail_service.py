@@ -3,6 +3,7 @@ import os
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from starlette.responses import JSONResponse
 from dotenv import load_dotenv
+from core.config import settings
 
 load_dotenv()
 
@@ -22,7 +23,7 @@ conf = ConnectionConfig(
 # Setup mail service with MailChimp SMTP & API Credentials
 
 async def send_email(email: str, reset_token: str) -> JSONResponse:
-    reset_password_url = f"http://127.0.0.1:8080/reset-password?{urlencode({'token': reset_token})}"
+    reset_password_url = f"{settings.BASE_URL}reset-password?{urlencode({'token': reset_token})}"
 
     subject = "Reset Password"
     html = f"""\
