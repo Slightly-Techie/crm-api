@@ -36,6 +36,7 @@ class Settings:
         "UNKNOWN ERROR": "Something went wrong",
         "USER ALREADY ACTIVE": "User is already active",
     }
+    BASE_URL: str = os.getenv("BASE_URL", "http://127.0.0.1:8080/")
 
 
 settings = Settings()
