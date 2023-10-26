@@ -4,6 +4,7 @@ from typing import Dict, Optional
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
+import re
 
 
 class Role(BaseModel):
@@ -55,6 +56,7 @@ class FeedCreate(FeedBase):
 
 
 class UserSignUp(BaseModel):
+    username: str = Field(..., min_length=4)
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
     last_name: str = Field(..., min_length=2)
@@ -75,6 +77,12 @@ class UserSignUp(BaseModel):
     class Config:
         orm_mode = True
         validate_assignment = True
+        
+    @validator("username")
+    def validate_username(cls, value):
+        # Use a regular expression to remove non-alphanumeric characters and spaces
+        cleaned_username = re.sub(r'[^a-zA-Z0-9]', '', value)
+        return cleaned_username.lower()
 
     @validator("role_id", pre=True, always=True)
     def set_role_id(cls, role_id):
@@ -91,6 +99,7 @@ class UserSignUp(BaseModel):
 
 class UserResponse(BaseModel):
     id: int = Field(...)
+    username: str = Field(...)
     email: Optional[EmailStr] = Field(...)
     first_name: Optional[str] = Field(...)
     last_name: Optional[str] = Field(...)
@@ -114,6 +123,7 @@ class UserResponse(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
+    username: Optional[str]
     email: Optional[EmailStr]
     first_name: Optional[str]
     last_name: Optional[str]

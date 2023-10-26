@@ -35,6 +35,7 @@ class Settings:
         "INVALID ID": "ID does not exist",
         "UNKNOWN ERROR": "Something went wrong",
         "USER ALREADY ACTIVE": "User is already active",
+        "USERNAME_EXISTS": "Username already exists"
     }
 
 

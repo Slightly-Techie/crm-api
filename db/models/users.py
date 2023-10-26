@@ -9,6 +9,7 @@ from sqlalchemy import Enum as SQLAlchemyEnum
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=True)
     email = Column(String, unique=True, nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
