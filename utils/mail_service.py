@@ -38,6 +38,6 @@ async def send_email(email: str, reset_token: str) -> JSONResponse:
 
     context = ssl.create_default_context()
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+    with smtplib.SMTP_SSL(settings.EMAIL_SERVER, settings.EMAIL_PORT, context=context) as smtp:
         smtp.login(email_sender, email_password)
         smtp.sendmail(email_sender, email_receiver, em.as_string())
