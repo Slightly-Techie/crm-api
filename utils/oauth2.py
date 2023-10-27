@@ -97,8 +97,10 @@ def verify_reset_token(token: str) -> str:
         if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             raise HTTPException(status_code=400, detail="Invalid token")
         expiration = payload.get("exp")
-        if expiration and datetime.utcnow() > expiration:
-          raise HTTPException(status_code=400, detail="Token has expired")
+        if expiration:
+            expiration_datetime = datetime.utcfromtimestamp(expiration)
+            if datetime.utcnow() > expiration_datetime:
+                raise HTTPException(status_code=400, detail="Token has expired")
         return email
     except JWTError:
         raise HTTPException(status_code=400, detail="Invalid token")

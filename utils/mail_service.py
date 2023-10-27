@@ -1,28 +1,22 @@
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from urllib.parse import urlencode
-import os
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from starlette.responses import JSONResponse
-from dotenv import load_dotenv
 from core.config import settings
 
-load_dotenv()
-
-# Define your email configuration
-conf = ConnectionConfig(
-    MAIL_USERNAME=os.getenv("USERNAME", "AnyName"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", "md-XnF_xUedhL_K8aQFqgnneQ"),
-    MAIL_FROM=os.getenv("MAIL_FROM", "neilohene@gmail.com"),
-    MAIL_PORT=os.getenv("MAIL_PORT", 587),
-    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.mandrillapp.com"),
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True
-)
-
-# Setup mail service with MailChimp SMTP & API Credentials
-
 async def send_email(email: str, reset_token: str) -> JSONResponse:
+    """
+    Click on manage google account
+    Go to Security
+    Enable Two-Step Verification(how to sign in with google)
+    Create an App Password
+    Generate an App Password
+    """
+    email_sender = 'your-email@gmail.com'
+    email_password = 'app password not gmail password'
+    email_receiver = f'{email}'
     reset_password_url = f"{settings.BASE_URL}reset-password?{urlencode({'token': reset_token})}"
 
     subject = "Reset Password"
@@ -35,17 +29,15 @@ async def send_email(email: str, reset_token: str) -> JSONResponse:
                 </html>
             """
 
-    message = MessageSchema(
-        subject=subject,
-        recipients=[email], 
-        body=html,
-        subtype=MessageType.html
-    )
+    em = MIMEMultipart()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = subject
+    html_part = MIMEText(html, 'html')
+    em.attach(html_part)
 
-    # Create a FastMail instance and send the email
-    fm = FastMail(conf)
-    try:
-        await fm.send_message(message)
-        return JSONResponse(status_code=200, content={"message": "Email has been sent"})
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"message": f"Failed to send email: {str(e)}"})
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
