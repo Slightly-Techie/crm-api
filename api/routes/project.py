@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
-from api.api_models.projects import CreateProject, MembersResponse, ProjectResponse, UpdateProject, ProjectMember
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from api.api_models.projects import CreateProject, MembersResponse, ProjectResponse, UpdateProject, ProjectMember, ProjectPaginatedResponse
 from sqlalchemy.orm import Session
 from db.database import get_db
 from db.models.users import User
+from sqlalchemy import desc
 from db.models.projects import Project
 from db.models.users_projects import UserProject
 from utils.permissions import is_admin, is_project_manager
@@ -67,12 +68,40 @@ def get(project_id: int, db: Session = Depends(get_db)):
 
     return project
 
+@project_router.get("/", status_code=status.HTTP_200_OK, response_model=ProjectPaginatedResponse)
+def get_all(limit: int = Query(default=3, ge=1, le=50), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
+    projects_query = db.query(Project).order_by(desc(Project.created_at))
+    total_projects = projects_query.count()
 
-@project_router.get("/", status_code=status.HTTP_200_OK, response_model=List[ProjectResponse])
-def get_all(db: Session = Depends(get_db)):
-    projects = db.query(Project).all()
+    pages = (total_projects - 1) // limit + 1
+    offset = limit * (page - 1)
+    projects = projects_query.limit(limit).offset(offset).all()
 
-    return projects
+    next_page = None
+    prev_page = None
+
+    if page < pages:
+        next_page = f"/api/v1/projects/?limit={limit}&page={page + 1}"
+    
+    if page > 1:
+        prev_page = f"/api/v1/projects/?limit={limit}&page={page - 1}"
+
+    links = {
+        "first": f"/api/v1/projects/?limit={limit}&page=1",
+        "last": f"/api/v1/projects/?limit={limit}&page={pages}",
+        "self": f"/api/v1/projects/?limit={limit}&page={page}",
+        "next": next_page,
+        "prev": prev_page,
+    }
+
+    return ProjectPaginatedResponse(
+        items=projects,
+        total=total_projects,
+        page=page,
+        size=limit,
+        pages=pages,
+        links=links
+    )
 
 @project_router.post("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
 def add_user_to_project(project_id: int, user_id: int, user_project_data: ProjectMember, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):
@@ -85,6 +114,11 @@ def add_user_to_project(project_id: int, user_id: int, user_project_data: Projec
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Check if the user is already a member of the project
+    existing_member = db.query(UserProject).filter(UserProject.user_id == user_id, UserProject.project_id == project_id).first()
+    if existing_member:
+        raise HTTPException(status_code=400, detail="User is already a member of the project")
     
     # Create a UserProject entry with the specified role
     user_project = UserProject(user_id=user_id, project_id=project_id, team=user_project_data.team)
@@ -117,7 +151,7 @@ def remove_user_from_project(project_id: int, user_id: int, db: Session = Depend
     
     return None
 
-@project_router.get("/{project_id}/members", response_model=List[MembersResponse])
+@project_router.get("/{project_id}/members", status_code=status.HTTP_200_OK, response_model=List[MembersResponse])
 def get_project_members(project_id: int, team: Optional[ProjectTeam] = None, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
