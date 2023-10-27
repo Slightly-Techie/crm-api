@@ -10,6 +10,7 @@ from db.models.roles import Role
 from db.models.feeds import Feed
 from db.models.announcements import Announcement
 from api.api_models.user import ForgotPasswordRequest
+from db.models.projects import Project
 from utils.utils import RoleChoices
 from api.routes.auth import forgot_password, reset_password
 from api.api_models import user
@@ -196,5 +197,19 @@ async def test_forgot_password_user_not_found(mock_create_reset_token, mock_send
     mock_create_reset_token.assert_not_called()
     mock_send_email.assert_not_called()
     
+@pytest.fixture
+def test_projects(test_user, test_user1, session):
+    db = session
+    project_data = [
+        {"name": "project1", "description": "description1", "project_type": "COMMUNITY", "project_priority": "LOW PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project2", "description": "description2", "project_type": "PAID", "project_priority": "MEDIUM PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project3", "description": "description3", "project_type": "COMMUNITY", "project_priority": "HIGH PRIORITY", "manager_id": test_user1["id"]},
+        {"name": "project4", "description": "description4", "project_type": "PAID", "project_priority": "LOW PRIORITY", "manager_id": test_user1["id"]},
+    ]
 
+    projects = [Project(**project) for project in project_data]
+    db.add_all(projects)
+    db.commit()
+    projects = db.query(Project).all()
 
+    return projects
