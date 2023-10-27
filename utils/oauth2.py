@@ -1,6 +1,6 @@
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
-
+import re
 from api.api_models.user import TokenData
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -80,3 +80,27 @@ def get_current_user(token: str = Depends(oauth2_scheme),
           raise HTTPException(status_code=302, headers={"Location": "/inactive"})
     return user
     
+def create_reset_token(email: str) -> str:
+    delta = timedelta(minutes=15)
+    now = datetime.utcnow()
+    payload = {
+        "sub": email,
+        "iat": now,
+        "exp": now + delta
+    }
+    return jwt.encode(payload, settings.SECRET, algorithm=settings.ALGORITHM)
+
+def verify_reset_token(token: str) -> str:
+    try:
+        payload = jwt.decode(token, settings.SECRET, algorithms=settings.ALGORITHM)
+        email = payload.get("sub")
+        if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            raise HTTPException(status_code=400, detail="Invalid token")
+        expiration = payload.get("exp")
+        if expiration:
+            expiration_datetime = datetime.utcfromtimestamp(expiration)
+            if datetime.utcnow() > expiration_datetime:
+                raise HTTPException(status_code=400, detail="Token has expired")
+        return email
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid token")

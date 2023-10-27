@@ -36,6 +36,9 @@ class Settings:
         "UNKNOWN ERROR": "Something went wrong",
         "USER ALREADY ACTIVE": "User is already active",
     }
+    BASE_URL: str = os.getenv("BASE_URL", "http://127.0.0.1:8080/")
+    EMAIL_SERVER: str = os.getenv("EMAIL_SERVER", "smtp.gmail.com")
+    EMAIL_PORT: int = os.getenv("EMAIL_PORT", 465)
 
 
 settings = Settings()
