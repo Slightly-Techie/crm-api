@@ -3,6 +3,8 @@ import boto3
 from botocore.exceptions import ClientError
 from core.config import settings
 from fastapi import UploadFile
+from datetime import datetime
+import re
 
 
 bucket_name = settings.AWS_BUCKET_NAME
@@ -48,13 +50,18 @@ def create_bucket():
             logging.error(e)
             return False
         
-def upload_file_to_s3(file: UploadFile) -> str:
+def upload_file_to_s3(file: UploadFile, username) -> str:
     s3 = boto3.client('s3', region_name=region,
                       aws_access_key_id=access_key,
                       aws_secret_access_key=secret_key)
     try:
-        s3.upload_fileobj(file.file, bucket_name, file.filename)
-        return f"https://{bucket_name}.s3.amazonaws.com/{file.filename}"
-    except NoCredentialsError:
-        print('Credentials not available')
-        return None
+        name = re.sub(r'\s', '', str(file.filename))
+        date = datetime.now().strftime("%Y%m%d-%H-%M-%S")
+        file_name = f"{username}/{date}/{name}"
+        url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
+
+        s3.upload_fileobj(file.file, bucket_name, file_name)
+        return url
+    except ClientError as e:
+        logging.error(e)
+        return False

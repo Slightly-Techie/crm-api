@@ -117,20 +117,19 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     db.commit()
     return user
 
-@profile_route.put("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_201_CREATED)
+@profile_route.put("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_avi(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
     
-    url = upload_file_to_s3(file)
+    url = upload_file_to_s3(file, current_user.username)
 
     if not url:
         raise HTTPException(status_code=500, detail="Failed to upload profile picture")
     
-    current_user.profile_picture_url = url
+    current_user.profile_pic_url = url
     db.commit()
     db.refresh(current_user)
 
     return current_user
-
 
