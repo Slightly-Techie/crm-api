@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from fastapi import HTTPException
 from db.database import Base, get_db
 from core.config import settings
 from app import app
@@ -8,7 +9,10 @@ from fastapi.testclient import TestClient
 from db.models.roles import Role
 from db.models.feeds import Feed
 from db.models.announcements import Announcement
+from api.api_models.user import ForgotPasswordRequest
+from db.models.projects import Project
 from utils.utils import RoleChoices
+from api.routes.auth import forgot_password, reset_password
 from api.api_models import user
 
 TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB_TEST}"
@@ -174,3 +178,41 @@ def test_announcements(test_user, test_user1, session):
 
     return announcements
 
+
+@pytest.fixture
+def mock_create_reset_token(mocker):
+    return mocker.patch('api.routes.auth.create_reset_token', return_value="test_reset_token")
+
+@pytest.fixture
+def mock_send_email(mocker):
+    return mocker.patch('utils.mail_service.send_email', return_value={"message": "Email has been sent"})
+
+@pytest.mark.asyncio
+async def test_forgot_password_user_not_found(mock_create_reset_token, mock_send_email, session):
+    email = "nonexistent@example.com"
+    db = session
+    with pytest.raises(HTTPException) as e:
+        await forgot_password(ForgotPasswordRequest(email=email), db=db)
+
+    assert e.value.status_code == 404
+    assert e.value.detail == 'User not found'
+
+    mock_create_reset_token.assert_not_called()
+    mock_send_email.assert_not_called()
+    
+@pytest.fixture
+def test_projects(test_user, test_user1, session):
+    db = session
+    project_data = [
+        {"name": "project1", "description": "description1", "project_type": "COMMUNITY", "project_priority": "LOW PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project2", "description": "description2", "project_type": "PAID", "project_priority": "MEDIUM PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project3", "description": "description3", "project_type": "COMMUNITY", "project_priority": "HIGH PRIORITY", "manager_id": test_user1["id"]},
+        {"name": "project4", "description": "description4", "project_type": "PAID", "project_priority": "LOW PRIORITY", "manager_id": test_user1["id"]},
+    ]
+
+    projects = [Project(**project) for project in project_data]
+    db.add_all(projects)
+    db.commit()
+    projects = db.query(Project).all()
+
+    return projects
