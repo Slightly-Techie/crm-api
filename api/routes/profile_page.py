@@ -117,7 +117,7 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     db.commit()
     return user
 
-@profile_route.get("/username")
+@profile_route.post("/username")
 def populate_username():
     
     db = SessionLocal()
