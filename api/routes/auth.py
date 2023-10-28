@@ -26,11 +26,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
+    user_name = db.query(User).filter(User.username == user.username).first()
+    if user_name:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.ERRORS.get("USERNAME_EXISTS"))
+        
+    
     user_data = db.query(User).filter(User.email == user.email).first()
     if user_data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=settings.ERRORS.get("USER_EXISTS"))
     hash_passwd = get_password_hash(user.password)
+    
     if user.password != user.password_confirmation:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
 

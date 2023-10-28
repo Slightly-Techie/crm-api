@@ -14,6 +14,7 @@ from utils.oauth2 import create_reset_token, verify_reset_token
 client = TestClient(app)
 
 user_signup_payload = {
+    "username": "slightlytechie1",
     "first_name": "Slightly",
     "last_name": "Techie",
     "email": "test@slightlytechie.com",
@@ -26,6 +27,7 @@ user_signup_payload = {
 }
 
 user_signup_payload_incomplete = {
+    "username": "slightlytechie1",
     "first_name": "Slightly",
     "last_name": "Techie",
     "email": "test@slightlytechie.com",

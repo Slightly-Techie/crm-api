@@ -7,7 +7,7 @@ from core.config import settings
 
 def test_sign_up(client):
     res=client.post(
-      "/api/v1/users/register/" , json={"first_name": "Slightly", "last_name": "Techie", "email": "slightlytechie@gmail.com", "password": "food", "password_confirmation": "food", "years_of_experience": 5, "bio": "I am almost a techie", "phone_number": "233567895423", "is_active": True}
+      "/api/v1/users/register/" , json={"username": "slightlytechie1","first_name": "Slightly", "last_name": "Techie", "email": "slightlytechie@gmail.com", "password": "food", "password_confirmation": "food", "years_of_experience": 5, "bio": "I am almost a techie", "phone_number": "233567895423", "is_active": True}
     )
     new_user = user.UserResponse(**res.json())
 

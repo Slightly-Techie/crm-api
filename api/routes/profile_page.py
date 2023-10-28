@@ -1,9 +1,10 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse
 from core.config import settings
-from db.database import get_db
+from db.database import SessionLocal, get_db
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
@@ -115,3 +116,27 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     user.status = new_status
     db.commit()
     return user
+
+@profile_route.post("/username")
+def populate_username():
+    
+    db = SessionLocal()
+
+    users = db.query(User).all()
+
+    for user in users:
+        username = f"{user.first_name}{user.last_name}{user.id}".replace(" ", "")
+        username = re.sub(r'[^a-zA-Z0-9]', '', username).lower()
+        user.username = username
+
+    db.commit()
+    db.close()
+
+    return {"message": "Usernames populated successfully!"}
+
+@profile_route.get("/check_username/{username}")
+def check_username_availability(username: str, db: Session = Depends(get_db)):
+    user_name = db.query(User).filter(User.username == username).first()
+    if user_name:
+        return {"available": False}
+    return {"available": True}
