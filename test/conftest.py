@@ -63,6 +63,7 @@ def create_roles(session):
 @pytest.fixture
 def test_user(client):
     user = {
+        "username": "slightlytechie1",
         "first_name": "Slightly",
         "last_name": "Techie",
         "email": "slightlytechie@gmail.com",
@@ -86,6 +87,7 @@ def test_user(client):
 @pytest.fixture
 def inactive_user(client):
     user = {
+        "username": "jondoe3",
         "first_name": "Jon",
         "last_name": "Doe",
         "email": "jondoe@gmail.com",
@@ -108,6 +110,7 @@ def inactive_user(client):
 @pytest.fixture
 def test_user1(client):
     user = {
+        "username": "janedoe3",
         "first_name": "Jane",
         "last_name": "Doe",
         "email": "janedoe@gmail.com",
