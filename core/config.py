@@ -35,11 +35,14 @@ class Settings:
         "INVALID ID": "ID does not exist",
         "UNKNOWN ERROR": "Something went wrong",
         "USER ALREADY ACTIVE": "User is already active",
-        "USERNAME_EXISTS": "Username already exists"
     }
     BASE_URL: str = os.getenv("BASE_URL", "http://127.0.0.1:8080/")
     EMAIL_SERVER: str = os.getenv("EMAIL_SERVER", "smtp.gmail.com")
     EMAIL_PORT: int = os.getenv("EMAIL_PORT", 465)
+    AWS_BUCKET_NAME: str = os.getenv("AWS_BUCKET_NAME")
+    AWS_REGOIN: str = os.getenv("AWS_REGION")
+    AWS_ACCESS_KEY: str = os.getenv("AWS_ACCESS_KEY")
+    AWS_SECRET_KEY: str = os.getenv("AWS_SECRET_KEY")
 
 
 settings = Settings()

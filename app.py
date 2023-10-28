@@ -8,6 +8,7 @@ from api.routes.announcements import announcement_route
 from db.database import engine
 from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
+from utils.s3 import create_bucket
 from db.database import create_roles
 from api.routes.tags import tag_route
 from api.routes.stacks  import stack_router
@@ -35,6 +36,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+def startup_event():
+    create_bucket()
 
 @app.get('/')
 def index():

@@ -1,14 +1,14 @@
-import re
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse
 from core.config import settings
-from db.database import SessionLocal, get_db
+from db.database import get_db
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
+from utils.s3 import upload_file_to_s3
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -117,26 +117,20 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     db.commit()
     return user
 
-@profile_route.post("/username")
-def populate_username():
+@profile_route.put("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_201_CREATED)
+def update_avi(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
     
-    db = SessionLocal()
+    url = upload_file_to_s3(file)
 
-    users = db.query(User).all()
-
-    for user in users:
-        username = f"{user.first_name}{user.last_name}{user.id}".replace(" ", "")
-        username = re.sub(r'[^a-zA-Z0-9]', '', username).lower()
-        user.username = username
-
+    if not url:
+        raise HTTPException(status_code=500, detail="Failed to upload profile picture")
+    
+    current_user.profile_picture_url = url
     db.commit()
-    db.close()
+    db.refresh(current_user)
 
-    return {"message": "Usernames populated successfully!"}
+    return current_user
 
-@profile_route.get("/check_username/{username}")
-def check_username_availability(username: str, db: Session = Depends(get_db)):
-    user_name = db.query(User).filter(User.username == username).first()
-    if user_name:
-        return {"available": False}
-    return {"available": True}
+
