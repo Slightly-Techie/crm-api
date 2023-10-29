@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from starlette.responses import JSONResponse
 from core.config import settings
 
-async def send_email(email: str, reset_token: str) -> JSONResponse:
+async def send_email(email: str, reset_token: str, url: str) -> JSONResponse:
     """
     Click on manage google account
     Go to Security
@@ -14,10 +14,10 @@ async def send_email(email: str, reset_token: str) -> JSONResponse:
     Create an App Password
     Generate an App Password
     """
-    email_sender = 'your-email@gmail.com'
-    email_password = 'app password not gmail password'
+    email_sender = settings.EMAIL_SENDER
+    email_password = settings.EMAIL_PASSWORD
     email_receiver = f'{email}'
-    reset_password_url = f"{settings.BASE_URL}reset-password?{urlencode({'token': reset_token})}"
+    reset_password_url = f"{url}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
 
     subject = "Reset Password"
     html = f"""\

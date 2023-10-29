@@ -37,8 +37,8 @@ app.add_middleware(
 )
 
 @app.on_event("startup")
-def startup_event():
-    create_bucket()
+async def startup_event():
+    await create_bucket()
 
 @app.get('/')
 def index():

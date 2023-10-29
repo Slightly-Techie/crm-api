@@ -43,6 +43,9 @@ class Settings:
     AWS_REGOIN: str = os.getenv("AWS_REGION")
     AWS_ACCESS_KEY: str = os.getenv("AWS_ACCESS_KEY")
     AWS_SECRET_KEY: str = os.getenv("AWS_SECRET_KEY")
+    EMAIL_SENDER: str = os.getenv("EMAIL_SENDER")
+    EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD")
+    URL_PATH: str = os.getenv("URL_PATH")
 
 
 settings = Settings()

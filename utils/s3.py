@@ -13,7 +13,7 @@ region = settings.AWS_REGOIN
 access_key = settings.AWS_ACCESS_KEY
 secret_key = settings.AWS_SECRET_KEY
 
-def create_bucket():
+async def create_bucket():
     s3 = boto3.client('s3', region_name=region,
                       aws_access_key_id=access_key,
                       aws_secret_access_key=secret_key)
@@ -53,7 +53,7 @@ def create_bucket():
         return True
     return True
         
-def upload_file_to_s3(file: UploadFile, username) -> str:
+async def upload_file_to_s3(file: UploadFile, username) -> str:
     s3 = boto3.client('s3', region_name=region,
                       aws_access_key_id=access_key,
                       aws_secret_access_key=secret_key)
