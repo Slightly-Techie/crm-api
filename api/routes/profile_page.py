@@ -9,6 +9,7 @@ from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
 from utils.s3 import upload_file_to_s3
+from utils.utils import is_image_file
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -119,7 +120,7 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
 
 @profile_route.put("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_avi(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)):
-    if not file.content_type.startswith("image/"):
+    if not is_image_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
     
     url = upload_file_to_s3(file, current_user.username)
