@@ -38,6 +38,7 @@ fastapi-mail = "1.2.2"
 google-api-python-client = "^2.105.0"
 google-auth-httplib2 = "^0.1.1"
 google-auth-oauthlib = "^1.1.0"
+moto = "^4.2.7"
 
 
 [tool.poetry.group.dev.dependencies]

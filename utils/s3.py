@@ -5,6 +5,7 @@ from core.config import settings
 from fastapi import UploadFile
 from datetime import datetime
 import re
+import json
 
 
 bucket_name = settings.AWS_BUCKET_NAME
@@ -49,6 +50,8 @@ def create_bucket():
         except ClientError as e:
             logging.error(e)
             return False
+        return True
+    return True
         
 def upload_file_to_s3(file: UploadFile, username) -> str:
     s3 = boto3.client('s3', region_name=region,
@@ -65,3 +68,4 @@ def upload_file_to_s3(file: UploadFile, username) -> str:
     except ClientError as e:
         logging.error(e)
         return False
+    return True
