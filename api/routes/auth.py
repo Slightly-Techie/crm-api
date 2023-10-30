@@ -122,7 +122,7 @@ async def forgot_password(request: ForgotPasswordRequest, requested: Request, db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     reset_token = create_reset_token(email)
-    result = await send_email(email, reset_token, base_url) 
+    result = await send_email(email, reset_token, base_url, user.username) 
     return result
 
 @auth_router.post('/reset-password')
