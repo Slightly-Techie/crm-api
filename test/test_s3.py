@@ -13,8 +13,8 @@ def s3():
 
 bucket_name = settings.AWS_BUCKET_NAME
 
-def test_create_bucket(s3):
-    result = create_bucket()
+async def test_create_bucket(s3):
+    result = await create_bucket()
 
     assert result is True
 
@@ -28,11 +28,11 @@ def test_create_bucket(s3):
     assert 'AllowPublicRead' in bucket_policy['Policy']
     assert 's3:GetObject' in bucket_policy['Policy']
 
-def test_upload_file_to_s3(s3):
+async def test_upload_file_to_s3(s3):
     s3.create_bucket(Bucket=bucket_name)    
     sample_image_content = b'Simulated image content'
     sample_image = UploadFile(filename="sample.jpg")
-    result = upload_file_to_s3(sample_image, 'your-username')
+    result = await upload_file_to_s3(sample_image, 'your-username')
 
     assert result is not None
     
