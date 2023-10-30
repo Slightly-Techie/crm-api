@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 
 from sqlalchemy.orm import Session
 
@@ -103,7 +103,7 @@ def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
 
 
 @auth_router.post('/forgot-password')
-async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+async def forgot_password(request: ForgotPasswordRequest, requested: Request, db: Session = Depends(get_db)):
     """
     Send a reset password email to the user.
 
@@ -114,6 +114,7 @@ async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(
     Returns:
         JSONResponse: A response indicating the result of sending the reset password email.
     """
+    base_url = str(requested.base_url)
     email = request.email
     user = db.query(User).filter(User.email == email).first()
     
@@ -121,7 +122,7 @@ async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     reset_token = create_reset_token(email)
-    result = await send_email(email, reset_token) 
+    result = await send_email(email, reset_token, base_url, user.username) 
     return result
 
 @auth_router.post('/reset-password')
