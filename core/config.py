@@ -40,7 +40,7 @@ class Settings:
     EMAIL_SERVER: str = os.getenv("EMAIL_SERVER", "smtp.gmail.com")
     EMAIL_PORT: int = os.getenv("EMAIL_PORT", 465)
     AWS_BUCKET_NAME: str = os.getenv("AWS_BUCKET_NAME", "aws_bucket_name")
-    AWS_REGOIN: str = os.getenv("AWS_REGION", "region")
+    AWS_REGOIN: str = os.getenv("AWS_REGION", "us-east-1")
     AWS_ACCESS_KEY: str = os.getenv("AWS_ACCESS_KEY", "aws_access_key")
     AWS_SECRET_KEY: str = os.getenv("AWS_SECRET_KEY", "aws_secret_key")
     EMAIL_SENDER: str = os.getenv("EMAIL_SENDER", "slightly.techie@gmail.com")
