@@ -13,12 +13,14 @@ from db.database import create_roles
 from api.routes.tags import tag_route
 from api.routes.stacks  import stack_router
 from api.routes.project import project_router
+from fastapi_pagination import add_pagination
 
 
 Base.metadata.create_all(bind=engine)
 create_roles()
 
 app = FastAPI()
+add_pagination(app)
 
 origins = [
     "http://localhost",
