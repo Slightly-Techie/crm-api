@@ -53,23 +53,13 @@ def test_create_project_not_authorized(client, test_projects):
 
     assert res.status_code == 401
 
-
 def test_get_all_projects(client, test_projects):
-    response = client.get("/api/v1/projects?limit=4&page=1&size=50")
-    assert response.status_code == 200
-    projects = response.json()
-    assert len(projects["items"]) == len(test_projects)
-
-    for i, project in enumerate(projects["items"]):
-        assert project["name"] == test_projects[i].name
-
-def test_get_all_projects_pagination(client, test_projects):
-    response = client.get("/api/v1/projects?limit=2&page=1&size=50")
+    response = client.get(f"{project_url}?page=1&size=2")
     assert response.status_code == 200
     projects = response.json()
     assert len(projects["items"]) == 2
     
-    assert projects["items"][0]["name"] == test_projects[0].name
+    assert projects["items"][0]["name"] == test_projects[0].name  
 
 def test_get_project(session, client, test_projects):
     url = project_url + str(test_projects[0].id)

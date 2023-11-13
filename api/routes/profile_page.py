@@ -3,7 +3,7 @@ from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
-from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse, SearchUser
+from api.api_models.user import ProfileUpdate, ProfileResponse, SearchUser
 from core.config import settings
 from db.database import get_db
 from db.models.users import User
