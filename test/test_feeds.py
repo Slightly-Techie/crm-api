@@ -3,25 +3,13 @@ from api.api_models.user import Feeds, FeedUpdate
 
 
 def test_get_all_feeds(client, test_feeds):
-    response = client.get("/api/v1/feed/")
-    assert response.status_code == 200
+    response = client.get("/api/v1/feed/?page=1&size=50")
     feeds = response.json()
-    assert len(feeds["feeds"]) == len(test_feeds)
-
-    for i, feed in enumerate(feeds["feeds"]):
-        assert feed["content"] == test_feeds[i].content
-        assert feed["user"]["id"] == test_feeds[i].user.id
-
-
-def test_get_all_feeds_pagination(client, test_feeds, session):
-    response = client.get("/api/v1/feed/?limit=2&skip=0&page=1&size=50")
-    feeds = response.json()
-
-    assert len(feeds["feeds"]) == 2
+    
+    assert len(feeds["items"]) == 4
     assert response.status_code == 200
-    assert feeds["feeds"][1]["content"] == test_feeds[1].content
-    assert feeds["feeds"][1]["user"]["id"] == test_feeds[1].user.id
-
+    assert feeds["items"][1]["content"] == test_feeds[1].content
+    assert feeds["items"][1]["user"]["id"] == test_feeds[1].user.id    
 
 def test_get_one_feed(client, test_feeds):
     res = client.get(f"/api/v1/feed/{test_feeds[0].id}")

@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, APIRouter, status
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, select
+from sqlalchemy import select
 from db.database import get_db
 from db.models.announcements import Announcement
 from fastapi_pagination.links import Page

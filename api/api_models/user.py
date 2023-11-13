@@ -178,13 +178,6 @@ class Feeds(FeedBase):
     class Config:
         orm_mode = True
 
-class PaginatedResponse(BaseModel):
-    feeds: list[Feeds]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
 
 class FeedUpdate(BaseModel):
     content: Optional[str]
