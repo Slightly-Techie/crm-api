@@ -2,6 +2,12 @@ from api.api_models import user
 from fastapi_pagination import add_pagination
 
 
+def test_get_all_users(client, test_users):
+    res = client.get("/api/v1/users/?page=1&size=3")
+
+    assert res.status_code == 200
+    assert len(res.json()["items"]) == 3
+
 def test_get_user_by_id(client, test_user):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
@@ -10,7 +16,6 @@ def test_get_user_by_id(client, test_user):
 
     assert profile_res.status_code == 200
     assert profile_res.json()["email"] == test_user["email"]
-
 
 def test_update_profile(client, test_user):
     res = client.post(
@@ -40,7 +45,6 @@ def test_update_profile(client, test_user):
     assert get_res.json()[
         "github_profile"] == "https://github.com/Slightly-Techie/"
 
-
 def test_get_current_user(client, test_user):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
@@ -50,7 +54,6 @@ def test_get_current_user(client, test_user):
 
     assert profile_res.status_code == 200
     assert profile_res.json()["email"] == test_user["email"]
-
 
 def test_current_active_user(client, test_user):
     login_res = client.post(
@@ -63,8 +66,6 @@ def test_current_active_user(client, test_user):
     assert profile_res.json()["email"] == test_user["email"]
     assert profile_res.json()["is_active"] == test_user["is_active"]
 
-
-# Test update profile status
 def test_update_profile_status(client, test_user, inactive_user):
     # Given a test_user who is an admin and an inactive_user
     login_data = {"username": test_user["email"],
@@ -82,7 +83,6 @@ def test_update_profile_status(client, test_user, inactive_user):
     assert activate_res.status_code == 200
     assert activate_res.json()["is_active"] is True
 
-
 def test_activate_already_active_user(client, test_user):
     # Given a test_user who is an admin and an active_user
     login_res = client.post(
@@ -97,7 +97,6 @@ def test_activate_already_active_user(client, test_user):
     # Then the active_user's profile status should not change
     assert profile_res.status_code == 400
     assert profile_res.json()["detail"] == "User is already active"
-
 
 def test_activate_invalid_user_profile(client, test_user):
     # Given a test_user who is an admin and an invalid user ID

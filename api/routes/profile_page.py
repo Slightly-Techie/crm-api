@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
 from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import desc
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse, SearchUser
 from core.config import settings
@@ -46,37 +46,9 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
         raise HTTPException(
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
-
-@profile_route.get("/", response_model=PaginatedUsers)
-def get_all_profile(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    total_users = db.query(User).count()
-    pages = (total_users - 1) // limit + 1
-    offset = (page - 1) * limit
-    users = db.query(User).order_by(desc(User.created_at)).offset(offset).limit(limit).all()
-
-    links = {
-        "first": f"/api/v1/users/?limit={limit}&page=1",
-        "last": f"/api/v1/users/?limit={limit}&page={pages}",
-        "self": f"/api/v1/users/?limit={limit}&page={page}",
-        "next": None,
-        "prev": None,
-    }
-
-    if page < pages:
-        links["next"] = f"/api/v1/users/?limit={limit}&page={page + 1}"
-
-    if page > 1:
-        links["prev"] = f"/api/v1/users/?limit={limit}&page={page - 1}"
-
-    return PaginatedUsers(
-        users=users,
-        total=total_users,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links,
-    )
-
+@profile_route.get("/", response_model=Page[ProfileResponse])
+def get_all_profile(db: Session = Depends(get_db)):
+    return paginate(db, select(User).order_by(desc(User.created_at)))
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_profile_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
