@@ -37,9 +37,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# @app.on_event("startup")
-# async def startup_event():
-#     await create_bucket()
+@app.on_event("startup")
+async def startup_event():
+    await create_bucket()
 
 @app.get('/')
 def index():
