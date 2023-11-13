@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
 from fastapi_pagination.links import Page
-from fastapi_pagination import paginate
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse, SearchUser
@@ -138,8 +138,10 @@ async def update_avi(current_user: User = Depends(get_current_user), db: Session
 
 @profile_route.get("/search", response_model=Page[SearchUser], status_code=status.HTTP_200_OK)
 def search(p: str, db: Session = Depends(get_db)):
-    users = db.query(User).filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%")).all()
-    if not users:
+    users_query = db.query(User).filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+    if not users_query.all():
         raise HTTPException(status_code=404, detail="No users found")
         
-    return paginate(users)
+    users = paginate(users_query)
+    
+    return users

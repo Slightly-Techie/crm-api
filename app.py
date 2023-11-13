@@ -20,7 +20,6 @@ Base.metadata.create_all(bind=engine)
 create_roles()
 
 app = FastAPI()
-add_pagination(app)
 
 origins = [
     "http://localhost",
@@ -60,6 +59,9 @@ app.include_router(techieotm_router, prefix="/api/v1")
 app.include_router(stack_router, prefix='/api/v1')
 app.include_router(announcement_route,prefix="/api/v1")
 app.include_router(project_router,prefix="/api/v1")
+
+add_pagination(app)
+
 
 
 

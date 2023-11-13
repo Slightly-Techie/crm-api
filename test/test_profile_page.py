@@ -1,4 +1,5 @@
 from api.api_models import user
+from fastapi_pagination import add_pagination
 
 
 def test_get_user_by_id(client, test_user):
@@ -129,3 +130,17 @@ def test_get_user_info(client, test_user):
     assert "last_name" in response.json()["data"]
     assert "phone_number" in response.json()["data"]
 
+def test_search_users(client, test_users):
+    response = client.get("/api/v1/users/search?p=doe&page=1&size=2")
+
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 2
+
+    response = client.get("/api/v1/users/search?p=doe&page=1&size=1")
+    assert len(response.json()["items"]) == 1
+
+def test_search_user_not_found(client, test_users):
+    response = client.get("/api/v1/users/search?p=notfound&page=1&size=2")
+
+    assert response.status_code == 404
+    

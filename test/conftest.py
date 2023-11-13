@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination.links import Page
 from db.database import Base, get_db
 from core.config import settings
 from app import app
@@ -8,8 +10,9 @@ import pytest
 from fastapi.testclient import TestClient
 from db.models.roles import Role
 from db.models.feeds import Feed
+from db.models.users import User
 from db.models.announcements import Announcement
-from api.api_models.user import ForgotPasswordRequest
+from api.api_models.user import ForgotPasswordRequest, UserSignUp, SearchUser
 from db.models.projects import Project
 from utils.utils import RoleChoices
 from api.routes.auth import forgot_password, reset_password
@@ -134,6 +137,60 @@ def test_user1(client):
     new_user["password"] = user.get("password")
     return new_user
 
+@pytest.fixture
+def test_users(client, session):
+    db = session
+    users = [
+        {
+            "username": "slightlytechie1",
+            "first_name": "Slightly",
+            "last_name": "Techie",
+            "email": "slightlytechie@gmail.com",
+            "password": "food",
+            "role_id": 1,
+            "years_of_experience": 5,
+            "bio": "I am almost a techie",
+            "phone_number": "233567895423",
+            "profile_pic_url": "string",
+            "is_active": True
+        },
+        {
+            "username": "jondoe3",
+            "first_name": "Jon",
+            "last_name": "Doe",
+            "email": "jondoe@gmail.com",
+            "password": "jondoe",
+            "years_of_experience": 1,
+            "bio": "bio not needed",
+            "phone_number": "233557932846",
+            "profile_pic_url": "string",
+            "is_active": False
+        },
+        {
+            "username": "janedoe3",
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "email": "janedoe@gmail.com",
+            "password": "janedoe",
+            "role_id": 2,
+            "years_of_experience": 1,
+            "bio": "bio not needed",
+            "phone_number": "233557932846",
+            "profile_pic_url": "string",
+            "is_active": True
+        }
+    ]
+
+    db_users = []
+    for user_data in users:
+        user = User(**user_data)
+        db_users.append(user)
+
+    db.add_all(db_users)
+    db.commit()
+    users = db.query(User)
+
+    return users
 
 @pytest.fixture
 def test_feeds(test_user, test_user1, session):
