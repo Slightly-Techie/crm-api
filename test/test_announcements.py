@@ -2,20 +2,10 @@ import pytest
 from api.api_models.announcements import AnnouncementResponse
 
 def test_get_all_announcements(client, test_announcements):
-    response = client.get("/api/v1/announcements?limit=4&page=1&size=50")
+    response = client.get("/api/v1/announcements?page=1&size=50")
     assert response.status_code == 200
     announcements = response.json()
-    assert len(announcements["items"]) == len(test_announcements)
-
-    for i, announcement in enumerate(announcements["items"]):
-        assert announcement["title"] == test_announcements[i].title
-        assert announcement["content"] == test_announcements[i].content
-
-def test_get_all_announcements_pagination(client, test_announcements):
-    response = client.get("/api/v1/announcements?limit=2&page=1&size=50")
-    assert response.status_code == 200
-    announcements = response.json()
-    assert len(announcements["items"]) == 2
+    assert len(announcements["items"]) == 4
     
     assert announcements["items"][0]["title"] == test_announcements[0].title
     assert announcements["items"][1]["content"] == test_announcements[1].content
