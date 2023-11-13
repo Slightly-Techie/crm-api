@@ -1,8 +1,10 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import desc, extract
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import desc, extract, select
+from fastapi_pagination.links import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
-from api.api_models.user import TechieOTMCreate, TechieOTMPaginated, TechieOTMResponse
+from api.api_models.user import TechieOTMCreate, TechieOTMResponse
 from db.database import get_db
 from utils.permissions import is_admin
 from db.models.users import User
@@ -60,34 +62,6 @@ def get_latest_techie_of_the_month(db: Session = Depends(get_db)):
 
     return techieotm_response
 
-
-@techieotm_router.get("/", response_model=TechieOTMPaginated)
-def get_all_techies_of_the_months(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    total_techies = db.query(TechieOTM).count()
-    pages = (total_techies - 1) // limit + 1
-    offset = (page - 1) * limit
-    techiesotm = db.query(TechieOTM).order_by(desc(TechieOTM.created_at)).offset(offset).limit(limit).all()
-
-    links = {
-        "first": f"/api/v1/users/techieotm/?limit={limit}&page=1",
-        "last": f"/api/v1/users/techieotm/?limit={limit}&page={pages}",
-        "self": f"/api/v1/users/techieotm/?limit={limit}&page={page}",
-        "next": None,
-        "prev": None,
-    }
-
-    if page < pages:
-        links["next"] = f"/api/v1/users/techieotm/?limit={limit}&page={page + 1}"
-
-    if page > 1:
-        links["prev"] = f"/api/v1/users/techieotm/?limit={limit}&page={page - 1}"
-
-    return TechieOTMPaginated(
-        techies=techiesotm,
-        total=total_techies,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links,
-    )
-
+@techieotm_router.get("/", response_model=Page[TechieOTMResponse])
+def get_all_techies_of_the_months(db: Session = Depends(get_db)):
+    return paginate(db, select(TechieOTM).order_by(desc(TechieOTM.created_at)))

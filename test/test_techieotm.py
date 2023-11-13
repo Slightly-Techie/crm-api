@@ -94,16 +94,16 @@ def test_get_all_techies_of_the_months(client, test_user, session):
     db.add_all(techieotms)
     db.commit()
 
-    response = client.get("/api/v1/users/techieotm/?limit=2&page=1")
+    response = client.get("/api/v1/users/techieotm/?page=1&size=2")
     assert response.status_code == status.HTTP_200_OK
 
     techieotm_response = response.json()
-    assert len(techieotm_response["techies"]) == 1
+    assert len(techieotm_response["items"]) == 1
     assert techieotm_response["total"] == 1
     assert techieotm_response["page"] == 1
     assert techieotm_response["size"] == 2
     assert len(techieotm_response["links"]) == 5
 
-    first_techieotm = techieotm_response["techies"][0]
+    first_techieotm = techieotm_response["items"][0]
     assert first_techieotm["points"] == 200
  

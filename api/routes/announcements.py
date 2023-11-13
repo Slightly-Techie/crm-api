@@ -20,7 +20,7 @@ def create_announcement(announcement: AnnouncementCreate, current_user = Depends
     db.refresh(new_announcement)
     return new_announcement
 
-@announcement_route.get("", status_code=status.HTTP_200_OK, response_model=Page[AnnouncementResponse])
+@announcement_route.get("/", status_code=status.HTTP_200_OK, response_model=Page[AnnouncementResponse])
 def get_announcements(db: Session = Depends(get_db)):
     return paginate(db, select(Announcement).order_by(Announcement.created_at))
 

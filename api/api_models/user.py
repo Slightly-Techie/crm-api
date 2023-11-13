@@ -151,15 +151,6 @@ class ProfileResponse(ProfileUpdate):
     status: str = Field(...)
 
 
-class PaginatedUsers(BaseModel):
-    users: list[ProfileResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
-
-
 class FeedOwner(BaseModel):
     id: int
     first_name: str
@@ -199,15 +190,6 @@ class TechieOTMResponse(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class TechieOTMPaginated(BaseModel):
-    techies: list[TechieOTMResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
 
 
 class UserLogin(BaseModel):
