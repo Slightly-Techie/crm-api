@@ -1,6 +1,7 @@
+from fastapi import File, Form, UploadFile
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
@@ -46,9 +47,8 @@ class UserTags(TagBase):
 
 
 class FeedBase(BaseModel):
-    content: str
-    feed_pic_url: Optional[str] = Field(None)
-    
+    content: str = Form(...) 
+    feed_pic_url: Union[UploadFile, str] = None
 
 
 class FeedCreate(FeedBase):
@@ -155,6 +155,7 @@ class FeedOwner(BaseModel):
     id: int
     first_name: str
     last_name: str
+    username: str
     profile_pic_url: Optional[str]
 
     class Config:
@@ -164,6 +165,7 @@ class FeedOwner(BaseModel):
 class Feeds(FeedBase):
     id: int
     created_at: datetime
+    feed_pic_url: Optional[str]
     user: FeedOwner
 
     class Config:
