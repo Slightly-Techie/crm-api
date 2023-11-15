@@ -25,25 +25,16 @@ def test_get_one_feed_does_not_exist(client, test_feeds):
     assert res.status_code == 404
 
 
-@pytest.mark.parametrize(
-    "content, feed_pic_url",
-    [
-        ("content1", "pic1"),
-        ("content2", "pic2"),
-        ("content3", None),
-    ],
-)
-def test_create_feed(client, test_user, test_feeds, content, feed_pic_url):
-    payload = {"content": content, "feed_pic_url": feed_pic_url,}
+def test_create_feed(client, test_user, test_feeds):
+    payload = {"content": "content"}
     login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]
-    res = client.post("/api/v1/feed/", json=payload, headers={'Authorization': f'Bearer {token}'})
+    res = client.post("/api/v1/feed/", data=payload, headers={'Authorization': f'Bearer {token}'})
 
     feed = Feeds(**res.json())
 
     assert res.status_code == 201
-    assert feed.content == content
-    assert feed.feed_pic_url == feed_pic_url
+    assert feed.content == "content"
     assert feed.user.id == test_user["id"]
 
 
