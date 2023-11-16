@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
 from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -45,10 +46,6 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
     except:
         raise HTTPException(
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
-
-@profile_route.get("/", response_model=Page[ProfileResponse])
-def get_all_profile(db: Session = Depends(get_db)):
-    return paginate(db, select(User).order_by(desc(User.created_at)))
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_profile_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
@@ -108,12 +105,19 @@ async def update_avi(current_user: User = Depends(get_current_user), db: Session
 
     return current_user
 
-@profile_route.get("/search", response_model=Page[SearchUser], status_code=status.HTTP_200_OK)
-def search(p: str, db: Session = Depends(get_db)):
-    users_query = db.query(User).filter(User.is_active == True, (User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%")))
-    if not users_query.all():
-        raise HTTPException(status_code=404, detail="No users found")
-        
+@profile_route.get("/", response_model=Page[ProfileResponse])
+def get_all_profile(active: Optional[bool] = None, p: Optional[str] = None, db: Session = Depends(get_db)):
+    if active is not None:
+        users_query = db.query(User).filter(User.is_active == active)
+    else:
+        users_query = db.query(User)
+
+    if p:
+        users_query = users_query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+        if not users_query.all():
+            raise HTTPException(status_code=404, detail="No users found")
+
+    users_query = users_query.order_by(desc(User.created_at))
     users = paginate(users_query)
-    
+
     return users
