@@ -78,5 +78,3 @@ async def delete_stack(stack_id:int, user: User = Depends(is_admin), db: Session
 	db.commit()
 
 	return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-

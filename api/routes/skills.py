@@ -1,53 +1,59 @@
 from fastapi import Depends, HTTPException, APIRouter, status
+from fastapi.params import Body
 from sqlalchemy.orm import Session, joinedload
+from typing import List
+from sqlalchemy import desc, select
+from fastapi_pagination.links import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 
-from api.api_models.skills import  SkillCreate
-
-from db.database import get_db
+from db.database import SessionLocal, get_db
 from utils.oauth2 import get_current_user
 
 from db.models.users import User
 from db.models.skills import Skill
-from db.models.user_skills import UserSkill
+from db.models.users_skills import UserSkill
 from api.api_models.user import Skills
+from utils.tools import tools as skills_data
 
 
-skill_route = APIRouter(tags=["User"],prefix="/users")
+skill_route = APIRouter(tags=["Skills"],prefix="/skills")
 
-@skill_route.get('/skills')
+@skill_route.get('/', response_model=List[Skills], status_code=status.HTTP_200_OK)
 def get_skills( user=Depends(get_current_user), db:Session = Depends(get_db)):
     db_query =  db.query(User).filter(User.id == user.id).\
         options(joinedload(User.skills)).first()   
-    return {"skills": db_query.skills}
+    return db_query.skills
 
 
-@skill_route.post('/skills', response_model=Skills, status_code=status.HTTP_201_CREATED)
-def create_skill(skill: SkillCreate, db: Session = Depends(get_db), 
-                 current_user: User = Depends(get_current_user)):
+@skill_route.post('/', response_model=List[Skills], status_code=status.HTTP_201_CREATED)
+def add_skills(skill_ids: list[int] = Body(...), db: Session = Depends(get_db), 
+                  current_user: User = Depends(get_current_user)):
     if not current_user:
         raise HTTPException(status_code=401, detail='Unauthorized')
 
-    db_skill = db.query(Skill).filter(Skill.name == skill.name).first()
-    if db_skill:
-        if db_skill in current_user.skills:
-            raise HTTPException(status_code=400, detail='Skill already exists for user')
-        else:
-            current_user.skills.append(db_skill)
-            db.commit()
-            return db_skill
-    else:
-        db_skill = Skill(name=skill.name)
-        db.add(db_skill)
-        db.commit()
-        db.refresh(db_skill)
+    db_skills = db.query(Skill).filter(Skill.id.in_(skill_ids)).all()
+    if not db_skills:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='No skills found with the given ids')
+    
+    # Check if the user already has the skills
+    user_skills = db.query(UserSkill).filter(UserSkill.skill_id.in_(skill_ids), UserSkill.user_id == current_user.id).all()
 
-        current_user.skills.append(db_skill)
-        db.commit()
+    existing_skill_ids = [user_skill.skill_id for user_skill in user_skills]
 
-        return db_skill
+    if existing_skill_ids:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f'User already has skills with IDs: {existing_skill_ids}')
+    
+    user_skills = [UserSkill(user_id=current_user.id, skill_id=skill.id) for skill in db_skills]
+    db.add_all(user_skills)
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user.skills
 
 
-@skill_route.delete("/skills/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
+@skill_route.delete("/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_skill_by_id(skill_id: int, user=Depends(get_current_user), 
         db:Session = Depends(get_db)):
     
@@ -61,3 +67,24 @@ def delete_skill_by_id(skill_id: int, user=Depends(get_current_user),
     db_skill.delete(synchronize_session=False)
     db.commit()
 
+
+
+@skill_route.get("/all", status_code=status.HTTP_200_OK, response_model=Page[Skills])
+def get_all(db: Session = Depends(get_db)):
+    return paginate(db, select(Skill).order_by(desc(Skill.created_at)))
+
+
+@skill_route.post("/data")
+def populate_skills():
+    db = SessionLocal()
+    try:
+        for skill_name in skills_data:
+            skill = Skill(name=skill_name)
+            db.add(skill)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Skill insertion error")
+    finally:
+        db.close()
+    return {"message": "Skills table populated successfully!"}

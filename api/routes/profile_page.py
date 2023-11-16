@@ -2,17 +2,19 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
 from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import desc, select
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from api.api_models.user import ProfileUpdate, ProfileResponse, SearchUser
 from core.config import settings
 from db.database import get_db
+from db.models.skills import Skill
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
 from utils.s3 import upload_file_to_s3
 from utils.utils import is_image_file
+from db.models import users_skills
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -46,6 +48,40 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
     except:
         raise HTTPException(
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
+
+
+@profile_route.get("/", response_model=Page[ProfileResponse])
+def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"), 
+                    stack: str = Query(None, title="Stack", description="The stack to filter users"),
+                    active: Optional[bool] = None, p: Optional[str] = None,
+                    db: Session = Depends(get_db)):
+
+    query = db.query(User)
+    
+    if skill:
+        users_query = query.join(users_skills.UserSkill).join(Skill).filter(Skill.name == skill.capitalize())
+        return paginate(users_query.order_by(desc(User.created_at)))
+    
+    if stack:
+        users_query = query.filter(User.stack.has(name=stack.capitalize()))
+        return paginate(users_query.order_by(desc(User.created_at)))
+    
+    if active is not None:
+        users_query = db.query(User).filter(User.is_active == active)
+    else:
+        users_query = db.query(User)
+
+    if p:
+        users_query = users_query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+        if not users_query.all():
+            raise HTTPException(status_code=404, detail="No users found")
+
+    users_query = users_query.order_by(desc(User.created_at))
+    users = paginate(users_query)
+
+    return users
+
+    #return paginate(db, select(User).order_by(desc(User.created_at)))
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_profile_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
@@ -104,20 +140,3 @@ async def update_avi(current_user: User = Depends(get_current_user), db: Session
     db.refresh(current_user)
 
     return current_user
-
-@profile_route.get("/", response_model=Page[ProfileResponse])
-def get_all_profile(active: Optional[bool] = None, p: Optional[str] = None, db: Session = Depends(get_db)):
-    if active is not None:
-        users_query = db.query(User).filter(User.is_active == active)
-    else:
-        users_query = db.query(User)
-
-    if p:
-        users_query = users_query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
-        if not users_query.all():
-            raise HTTPException(status_code=404, detail="No users found")
-
-    users_query = users_query.order_by(desc(User.created_at))
-    users = paginate(users_query)
-
-    return users

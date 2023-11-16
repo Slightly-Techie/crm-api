@@ -62,9 +62,6 @@ app.include_router(project_router,prefix="/api/v1")
 
 add_pagination(app)
 
-
-
-
 # pip cache purge
 # pip config set global.no-cache-dir false
 
