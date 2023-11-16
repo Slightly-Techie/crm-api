@@ -3,7 +3,7 @@ from .models.roles import Role
 from .models.skills import Skill
 from .models.tags import Tag
 from .models.users import User
-from .models.user_skills import UserSkill
+from .models.users_skills import UserSkill
 from .models.users_tags import UserTag
 from .models.announcements import Announcement
 from .models.feeds import Feed
