@@ -1,5 +1,6 @@
 from db.database import Base
 from sqlalchemy import Column, String, Integer, TIMESTAMP, text
+from sqlalchemy.orm import relationship
 
 
 
@@ -11,3 +12,5 @@ class Skill(Base):
                         nullable=False, server_default=text('now()'))
     updated_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
+    
+    users = relationship('User', secondary = "users_skills", back_populates='skills')
