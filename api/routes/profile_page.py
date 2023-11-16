@@ -1,15 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
-from sqlalchemy import desc
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
-from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse
+from fastapi_pagination.links import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
+
+from api.api_models.user import ProfileUpdate, ProfileResponse
 from core.config import settings
 from db.database import get_db
+from db.models.skills import Skill
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
 from utils.s3 import upload_file_to_s3
 from utils.utils import is_image_file
+from db.models import users_skills
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -45,36 +50,22 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
 
-@profile_route.get("/", response_model=PaginatedUsers)
-def get_all_profile(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    total_users = db.query(User).count()
-    pages = (total_users - 1) // limit + 1
-    offset = (page - 1) * limit
-    users = db.query(User).order_by(desc(User.created_at)).offset(offset).limit(limit).all()
+@profile_route.get("/", response_model=Page[ProfileResponse])
+def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"), 
+                    stack: str = Query(None, title="Stack", description="The stack to filter users"),
+                    db: Session = Depends(get_db)):
 
-    links = {
-        "first": f"/api/v1/users/?limit={limit}&page=1",
-        "last": f"/api/v1/users/?limit={limit}&page={pages}",
-        "self": f"/api/v1/users/?limit={limit}&page={page}",
-        "next": None,
-        "prev": None,
-    }
+    query = db.query(User)
+    
+    if skill:
+        query = query.join(users_skills.UserSkill).join(Skill).filter(Skill.name == skill.capitalize())
+        return paginate(query.order_by(desc(User.created_at)))
+    
+    if stack:
+        query = query.filter(User.stack.has(name=stack.capitalize()))
+        return paginate(query.order_by(desc(User.created_at)))
 
-    if page < pages:
-        links["next"] = f"/api/v1/users/?limit={limit}&page={page + 1}"
-
-    if page > 1:
-        links["prev"] = f"/api/v1/users/?limit={limit}&page={page - 1}"
-
-    return PaginatedUsers(
-        users=users,
-        total=total_users,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links,
-    )
-
+    return paginate(db, select(User).order_by(desc(User.created_at)))
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_profile_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
