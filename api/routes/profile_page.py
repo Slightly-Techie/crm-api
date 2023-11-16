@@ -110,7 +110,7 @@ async def update_avi(current_user: User = Depends(get_current_user), db: Session
 
 @profile_route.get("/search", response_model=Page[SearchUser], status_code=status.HTTP_200_OK)
 def search(p: str, db: Session = Depends(get_db)):
-    users_query = db.query(User).filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+    users_query = db.query(User).filter(User.is_active == True, (User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%")))
     if not users_query.all():
         raise HTTPException(status_code=404, detail="No users found")
         

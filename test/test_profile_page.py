@@ -133,10 +133,10 @@ def test_search_users(client, test_users):
     response = client.get("/api/v1/users/search?p=doe&page=1&size=2")
 
     assert response.status_code == 200
-    assert len(response.json()["items"]) == 2
-
-    response = client.get("/api/v1/users/search?p=doe&page=1&size=1")
     assert len(response.json()["items"]) == 1
+
+    response = client.get("/api/v1/users/search?p=jondoe3&page=1&size=1")
+    assert response.status_code == 404
 
 def test_search_user_not_found(client, test_users):
     response = client.get("/api/v1/users/search?p=notfound&page=1&size=2")
