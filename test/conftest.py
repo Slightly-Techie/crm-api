@@ -13,6 +13,8 @@ from db.models.feeds import Feed
 from db.models.users import User
 from db.models.announcements import Announcement
 from api.api_models.user import ForgotPasswordRequest, UserSignUp, SearchUser
+from utils.tools import tools as skills_data
+from db.models.skills import Skill
 from db.models.projects import Project
 from utils.utils import RoleChoices
 from api.routes.auth import forgot_password, reset_password
@@ -273,3 +275,13 @@ def test_projects(test_user, test_user1, session):
     projects = db.query(Project).all()
 
     return projects
+
+@pytest.fixture
+def populate_skills(session):
+    db = session
+    skills = [Skill(name=skill) for skill in skills_data]
+    db.add_all(skills)
+    db.commit()
+    skills = db.query(Skill).all()
+    
+    return skills

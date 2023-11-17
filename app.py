@@ -16,7 +16,7 @@ from api.routes.project import project_router
 from fastapi_pagination import add_pagination
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 create_roles()
 
 app = FastAPI()
