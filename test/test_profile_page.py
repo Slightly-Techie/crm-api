@@ -1,5 +1,4 @@
 from api.api_models import user
-from fastapi_pagination import add_pagination
 
 
 def test_get_all_users(client, test_users):
@@ -129,20 +128,25 @@ def test_get_user_info(client, test_user):
     assert "last_name" in response.json()["data"]
     assert "phone_number" in response.json()["data"]
 
-def test_get_all_profile(client, test_users):
+def test_get_all_profile(client, test_user, test_users, test_stacks, populate_skills):
+    login_res = client.post(
+        "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    stack_res = client.put("/api/v1/users/profile", json={"stack_id": 1}, headers={"Authorization": f"Bearer {token}"})
+    skill_res = client.post("/api/v1/skills/", json=[68,69], headers={'Authorization': f'Bearer {token}'})
+
+    assert skill_res.status_code == 201
+    assert stack_res.status_code == 200
+    
     response = client.get("/api/v1/users/")
     assert response.status_code == 200
-    assert len(response.json()["items"]) == 3
+    assert len(response.json()["items"]) == 4
 
-    response = client.get("/api/v1/users/?active=true")
-    assert response.status_code == 200
-    assert len(response.json()["items"]) == 2
-
-    response = client.get("/api/v1/users/?active=false")
+    response = client.get("/api/v1/users/?skill=python&stack=Backend&active=true")
     assert response.status_code == 200
     assert len(response.json()["items"]) == 1
 
-    response = client.get("/api/v1/users/?p=jondoe&page=1&size=1")
+    response = client.get("/api/v1/users/?skill=python&active=true")
     assert response.status_code == 200
     assert len(response.json()["items"]) == 1
 

@@ -10,6 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from db.models.roles import Role
 from db.models.feeds import Feed
+from db.models.stacks import Stack
 from db.models.users import User
 from db.models.announcements import Announcement
 from api.api_models.user import ForgotPasswordRequest, UserSignUp, SearchUser
@@ -144,10 +145,10 @@ def test_users(client, session):
     db = session
     users = [
         {
-            "username": "slightlytechie1",
+            "username": "slightlytechie",
             "first_name": "Slightly",
             "last_name": "Techie",
-            "email": "slightlytechie@gmail.com",
+            "email": "slighttechie@gmail.com",
             "password": "food",
             "role_id": 1,
             "years_of_experience": 5,
@@ -285,3 +286,17 @@ def populate_skills(session):
     skills = db.query(Skill).all()
     
     return skills
+
+@pytest.fixture
+def test_stacks(session):
+    db = session
+    stacks = [
+        Stack(name='Backend'),
+        Stack(name='Frontend'),
+        Stack(name='DevOps'),
+    ]
+    db.add_all(stacks)
+    db.commit()
+    stacks = db.query(Stack).all()
+
+    return stacks

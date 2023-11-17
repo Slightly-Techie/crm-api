@@ -57,27 +57,22 @@ def get_all_profile(skill: str = Query(None, title="Skill", description="The ski
                     db: Session = Depends(get_db)):
 
     query = db.query(User)
-    
+
     if skill:
-        users_query = query.join(users_skills.UserSkill).join(Skill).filter(Skill.name == skill.capitalize())
-        return paginate(users_query.order_by(desc(User.created_at)))
-    
+        query = query.join(users_skills.UserSkill).join(Skill).filter(Skill.name == skill.capitalize())
+
     if stack:
-        users_query = query.filter(User.stack.has(name=stack.capitalize()))
-        return paginate(users_query.order_by(desc(User.created_at)))
-    
+        query = query.filter(User.stack.has(name=stack.capitalize()))
+
     if active is not None:
-        users_query = db.query(User).filter(User.is_active == active)
-    else:
-        users_query = db.query(User)
+        query = query.filter(User.is_active == active)
 
     if p:
-        users_query = users_query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
-        if not users_query.all():
+        query = query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+        if not query.all():
             raise HTTPException(status_code=404, detail="No users found")
 
-    users_query = users_query.order_by(desc(User.created_at))
-    users = paginate(users_query)
+    users = paginate(query.order_by(desc(User.created_at)))
 
     return users
 
