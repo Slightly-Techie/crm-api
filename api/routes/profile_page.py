@@ -50,7 +50,7 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
 
-@profile_route.get("/", response_model=Page[ProfileResponse])
+@profile_route.get("/", response_model=Page[SearchUser])
 def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"), 
                     stack: str = Query(None, title="Stack", description="The stack to filter users"),
                     active: Optional[bool] = None, p: Optional[str] = None,
@@ -120,12 +120,12 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     db.commit()
     return user
 
-@profile_route.put("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
+@profile_route.patch("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 async def update_avi(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)):
     if not is_image_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
     
-    url = await upload_file_to_s3(file, current_user.username)
+    url = await upload_file_to_s3(file, current_user.username, "profile")
 
     if not url:
         raise HTTPException(status_code=500, detail="Failed to upload profile picture")

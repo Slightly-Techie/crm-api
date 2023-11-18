@@ -53,14 +53,14 @@ async def create_bucket():
         return True
     return True
         
-async def upload_file_to_s3(file: UploadFile, username) -> str:
+async def upload_file_to_s3(file: UploadFile, username, type: str) -> str:
     s3 = boto3.client('s3', region_name=region,
                       aws_access_key_id=access_key,
                       aws_secret_access_key=secret_key)
     try:
         name = re.sub(r'\s', '', str(file.filename))
         date = datetime.now().strftime("%Y%m%d-%H-%M-%S")
-        file_name = f"{username}/{date}/{name}"
+        file_name = f"{username}/{type}/{date}/{name}"
         url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
 
         s3.upload_fileobj(file.file, bucket_name, file_name)

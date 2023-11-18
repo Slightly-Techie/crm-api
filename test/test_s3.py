@@ -32,7 +32,7 @@ async def test_upload_file_to_s3(s3):
     s3.create_bucket(Bucket=bucket_name)    
     sample_image_content = b'Simulated image content'
     sample_image = UploadFile(filename="sample.jpg")
-    result = await upload_file_to_s3(sample_image, 'your-username')
+    result = await upload_file_to_s3(sample_image, 'your-username', "type")
 
     assert result is not None
     

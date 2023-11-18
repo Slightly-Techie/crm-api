@@ -22,7 +22,7 @@ async def create_feed(content: str = Form(...), feed_pic_url: UploadFile = File(
         if not is_image_file(feed_pic_url.filename):
             raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
         
-        image_url = await upload_file_to_s3(feed_pic_url, current_user.username)
+        image_url = await upload_file_to_s3(feed_pic_url, current_user.username, "feed")
     else:
         image_url = None
 
