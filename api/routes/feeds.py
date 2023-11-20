@@ -1,18 +1,32 @@
-from fastapi import Depends, HTTPException, APIRouter, status, Query
+from fastapi import Depends, Form, HTTPException, APIRouter, status, Form, File, UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from db.database import get_db
 from utils.oauth2 import get_current_user
+from fastapi_pagination.links import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from db.models.feeds import Feed
-from api.api_models.user import FeedCreate, FeedUpdate, Feeds, PaginatedResponse
+from api.api_models.user import FeedUpdate, Feeds
 from sqlalchemy import desc
+
+from utils.s3 import upload_file_to_s3
+from utils.utils import is_image_file
 
 
 feed_route = APIRouter(tags=["Feed"], prefix="/feed")
 
 
 @feed_route.post("/", status_code=status.HTTP_201_CREATED, response_model=Feeds)
-def create_feed(feed: FeedCreate, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    new_feed = Feed(user_id=current_user.id, **feed.dict())
+async def create_feed(content: str = Form(...), feed_pic_url: UploadFile = File(None), current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    if feed_pic_url:
+        if not is_image_file(feed_pic_url.filename):
+            raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
+        
+        image_url = await upload_file_to_s3(feed_pic_url, current_user.username, "feed")
+    else:
+        image_url = None
+
+    new_feed = Feed(user_id=current_user.id, content=content, feed_pic_url=image_url)
 
     db.add(new_feed)
     db.commit()
@@ -68,33 +82,6 @@ def get_feed_by_id(feed_id: int, db: Session = Depends(get_db)):
     return feed
 
 
-@feed_route.get("/", response_model=PaginatedResponse)
-def get_all_feeds(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    total_feeds = db.query(Feed).count()
-    pages = (total_feeds - 1) // limit + 1
-    offset = (page - 1) * limit
-    feeds = db.query(Feed).order_by(desc(Feed.created_at)).offset(offset).limit(limit).all()
-
-    # Determine pagination links
-    links = {
-        "first": f"/api/v1/feed/?limit={limit}&page=1",
-        "last": f"/api/v1/feed/?limit={limit}&page={pages}",
-        "self": f"/api/v1/feed/?limit={limit}&page={page}",
-        "next": None,
-        "prev": None,
-    }
-
-    if page < pages:
-        links["next"] = f"/api/v1/feed/?limit={limit}&page={page + 1}"
-
-    if page > 1:
-        links["prev"] = f"/api/v1/feed/?limit={limit}&page={page - 1}"
-
-    return PaginatedResponse(
-        feeds=feeds,
-        total=total_feeds,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links,
-    )
+@feed_route.get("/", response_model=Page[Feeds])
+def get_all_feeds(db: Session = Depends(get_db)):
+    return paginate(db, select(Feed).order_by(desc(Feed.created_at)))

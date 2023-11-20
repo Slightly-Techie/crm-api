@@ -1,6 +1,12 @@
 from api.api_models import user
 
 
+def test_get_all_users(client, test_users):
+    res = client.get("/api/v1/users/?page=1&size=3")
+
+    assert res.status_code == 200
+    assert len(res.json()["items"]) == 3
+
 def test_get_user_by_id(client, test_user):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
@@ -9,7 +15,6 @@ def test_get_user_by_id(client, test_user):
 
     assert profile_res.status_code == 200
     assert profile_res.json()["email"] == test_user["email"]
-
 
 def test_update_profile(client, test_user):
     res = client.post(
@@ -39,7 +44,6 @@ def test_update_profile(client, test_user):
     assert get_res.json()[
         "github_profile"] == "https://github.com/Slightly-Techie/"
 
-
 def test_get_current_user(client, test_user):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
@@ -49,7 +53,6 @@ def test_get_current_user(client, test_user):
 
     assert profile_res.status_code == 200
     assert profile_res.json()["email"] == test_user["email"]
-
 
 def test_current_active_user(client, test_user):
     login_res = client.post(
@@ -62,8 +65,6 @@ def test_current_active_user(client, test_user):
     assert profile_res.json()["email"] == test_user["email"]
     assert profile_res.json()["is_active"] == test_user["is_active"]
 
-
-# Test update profile status
 def test_update_profile_status(client, test_user, inactive_user):
     # Given a test_user who is an admin and an inactive_user
     login_data = {"username": test_user["email"],
@@ -81,7 +82,6 @@ def test_update_profile_status(client, test_user, inactive_user):
     assert activate_res.status_code == 200
     assert activate_res.json()["is_active"] is True
 
-
 def test_activate_already_active_user(client, test_user):
     # Given a test_user who is an admin and an active_user
     login_res = client.post(
@@ -96,7 +96,6 @@ def test_activate_already_active_user(client, test_user):
     # Then the active_user's profile status should not change
     assert profile_res.status_code == 400
     assert profile_res.json()["detail"] == "User is already active"
-
 
 def test_activate_invalid_user_profile(client, test_user):
     # Given a test_user who is an admin and an invalid user ID
@@ -129,3 +128,30 @@ def test_get_user_info(client, test_user):
     assert "last_name" in response.json()["data"]
     assert "phone_number" in response.json()["data"]
 
+def test_get_all_profile(client, test_user, test_users, test_stacks, populate_skills):
+    login_res = client.post(
+        "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    stack_res = client.put("/api/v1/users/profile", json={"stack_id": 1}, headers={"Authorization": f"Bearer {token}"})
+    skill_res = client.post("/api/v1/skills/", json=[68,69], headers={'Authorization': f'Bearer {token}'})
+
+    assert skill_res.status_code == 201
+    assert stack_res.status_code == 200
+    
+    response = client.get("/api/v1/users/")
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 4
+
+    response = client.get("/api/v1/users/?skill=python&stack=Backend&active=true")
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 1
+
+    response = client.get("/api/v1/users/?skill=python&active=true")
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 1
+
+def test_search_user_not_found(client, test_users):
+    response = client.get("/api/v1/users/search?p=notfound&page=1&size=2")
+
+    assert response.status_code == 404
+    

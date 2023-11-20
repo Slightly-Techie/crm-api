@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from api.api_models.projects import CreateProject, MembersResponse, ProjectResponse, UpdateProject, ProjectMember, ProjectPaginatedResponse
+from fastapi_pagination.links import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc, select
+from fastapi import APIRouter, Depends, HTTPException, status
+from api.api_models.projects import CreateProject, MembersResponse, ProjectResponse, UpdateProject, ProjectMember
 from sqlalchemy.orm import Session
 from db.database import get_db
 from db.models.users import User
-from sqlalchemy import desc
 from db.models.projects import Project
 from db.models.users_projects import UserProject
 from utils.permissions import is_admin, is_project_manager
@@ -68,40 +70,9 @@ def get(project_id: int, db: Session = Depends(get_db)):
 
     return project
 
-@project_router.get("/", status_code=status.HTTP_200_OK, response_model=ProjectPaginatedResponse)
-def get_all(limit: int = Query(default=3, ge=1, le=50), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    projects_query = db.query(Project).order_by(desc(Project.created_at))
-    total_projects = projects_query.count()
-
-    pages = (total_projects - 1) // limit + 1
-    offset = limit * (page - 1)
-    projects = projects_query.limit(limit).offset(offset).all()
-
-    next_page = None
-    prev_page = None
-
-    if page < pages:
-        next_page = f"/api/v1/projects/?limit={limit}&page={page + 1}"
-    
-    if page > 1:
-        prev_page = f"/api/v1/projects/?limit={limit}&page={page - 1}"
-
-    links = {
-        "first": f"/api/v1/projects/?limit={limit}&page=1",
-        "last": f"/api/v1/projects/?limit={limit}&page={pages}",
-        "self": f"/api/v1/projects/?limit={limit}&page={page}",
-        "next": next_page,
-        "prev": prev_page,
-    }
-
-    return ProjectPaginatedResponse(
-        items=projects,
-        total=total_projects,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links
-    )
+@project_router.get("/", status_code=status.HTTP_200_OK, response_model=Page[ProjectResponse])
+def get_all(db: Session = Depends(get_db)):
+    return paginate(db, select(Project).order_by(desc(Project.created_at)))
 
 @project_router.post("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
 def add_user_to_project(project_id: int, user_id: int, user_project_data: ProjectMember, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)):

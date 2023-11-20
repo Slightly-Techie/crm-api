@@ -3,25 +3,13 @@ from api.api_models.user import Feeds, FeedUpdate
 
 
 def test_get_all_feeds(client, test_feeds):
-    response = client.get("/api/v1/feed/")
-    assert response.status_code == 200
+    response = client.get("/api/v1/feed/?page=1&size=50")
     feeds = response.json()
-    assert len(feeds["feeds"]) == len(test_feeds)
-
-    for i, feed in enumerate(feeds["feeds"]):
-        assert feed["content"] == test_feeds[i].content
-        assert feed["user"]["id"] == test_feeds[i].user.id
-
-
-def test_get_all_feeds_pagination(client, test_feeds, session):
-    response = client.get("/api/v1/feed/?limit=2&skip=0&page=1&size=50")
-    feeds = response.json()
-
-    assert len(feeds["feeds"]) == 2
+    
+    assert len(feeds["items"]) == 4
     assert response.status_code == 200
-    assert feeds["feeds"][1]["content"] == test_feeds[1].content
-    assert feeds["feeds"][1]["user"]["id"] == test_feeds[1].user.id
-
+    assert feeds["items"][1]["content"] == test_feeds[1].content
+    assert feeds["items"][1]["user"]["id"] == test_feeds[1].user.id    
 
 def test_get_one_feed(client, test_feeds):
     res = client.get(f"/api/v1/feed/{test_feeds[0].id}")
@@ -37,25 +25,16 @@ def test_get_one_feed_does_not_exist(client, test_feeds):
     assert res.status_code == 404
 
 
-@pytest.mark.parametrize(
-    "content, feed_pic_url",
-    [
-        ("content1", "pic1"),
-        ("content2", "pic2"),
-        ("content3", None),
-    ],
-)
-def test_create_feed(client, test_user, test_feeds, content, feed_pic_url):
-    payload = {"content": content, "feed_pic_url": feed_pic_url,}
+def test_create_feed(client, test_user, test_feeds):
+    payload = {"content": "content"}
     login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]
-    res = client.post("/api/v1/feed/", json=payload, headers={'Authorization': f'Bearer {token}'})
+    res = client.post("/api/v1/feed/", data=payload, headers={'Authorization': f'Bearer {token}'})
 
     feed = Feeds(**res.json())
 
     assert res.status_code == 201
-    assert feed.content == content
-    assert feed.feed_pic_url == feed_pic_url
+    assert feed.content == "content"
     assert feed.user.id == test_user["id"]
 
 

@@ -21,15 +21,6 @@ class ProjectResponse(CreateProject):
         orm_mode = True
 
 
-class ProjectPaginatedResponse(BaseModel):
-    items: list[ProjectResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
-
-
 class UpdateProject(BaseModel):
     name: Optional[str]
     description: Optional[str]

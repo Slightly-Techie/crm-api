@@ -13,9 +13,10 @@ from db.database import create_roles
 from api.routes.tags import tag_route
 from api.routes.stacks  import stack_router
 from api.routes.project import project_router
+from fastapi_pagination import add_pagination
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 create_roles()
 
 app = FastAPI()
@@ -59,7 +60,7 @@ app.include_router(stack_router, prefix='/api/v1')
 app.include_router(announcement_route,prefix="/api/v1")
 app.include_router(project_router,prefix="/api/v1")
 
-
+add_pagination(app)
 
 # pip cache purge
 # pip config set global.no-cache-dir false

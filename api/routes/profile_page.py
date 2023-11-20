@@ -1,15 +1,20 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
+from fastapi_pagination.links import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from api.api_models.user import PaginatedUsers, ProfileUpdate, ProfileResponse
+from api.api_models.user import ProfileUpdate, ProfileResponse, SearchUser
 from core.config import settings
 from db.database import get_db
+from db.models.skills import Skill
 from db.models.users import User
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
 from utils.s3 import upload_file_to_s3
 from utils.utils import is_image_file
+from db.models import users_skills
 
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
@@ -45,36 +50,33 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
 
-@profile_route.get("/", response_model=PaginatedUsers)
-def get_all_profile(limit: int = Query(default=50, ge=1, le=100), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    total_users = db.query(User).count()
-    pages = (total_users - 1) // limit + 1
-    offset = (page - 1) * limit
-    users = db.query(User).order_by(desc(User.created_at)).offset(offset).limit(limit).all()
+@profile_route.get("/", response_model=Page[SearchUser])
+def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"), 
+                    stack: str = Query(None, title="Stack", description="The stack to filter users"),
+                    active: Optional[bool] = None, p: Optional[str] = None,
+                    db: Session = Depends(get_db)):
 
-    links = {
-        "first": f"/api/v1/users/?limit={limit}&page=1",
-        "last": f"/api/v1/users/?limit={limit}&page={pages}",
-        "self": f"/api/v1/users/?limit={limit}&page={page}",
-        "next": None,
-        "prev": None,
-    }
+    query = db.query(User)
 
-    if page < pages:
-        links["next"] = f"/api/v1/users/?limit={limit}&page={page + 1}"
+    if skill:
+        query = query.join(users_skills.UserSkill).join(Skill).filter(Skill.name == skill.capitalize())
 
-    if page > 1:
-        links["prev"] = f"/api/v1/users/?limit={limit}&page={page - 1}"
+    if stack:
+        query = query.filter(User.stack.has(name=stack.capitalize()))
 
-    return PaginatedUsers(
-        users=users,
-        total=total_users,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links,
-    )
+    if active is not None:
+        query = query.filter(User.is_active == active)
 
+    if p:
+        query = query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+        if not query.all():
+            raise HTTPException(status_code=404, detail="No users found")
+
+    users = paginate(query.order_by(desc(User.created_at)))
+
+    return users
+
+    #return paginate(db, select(User).order_by(desc(User.created_at)))
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_profile_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
@@ -118,12 +120,12 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     db.commit()
     return user
 
-@profile_route.put("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
+@profile_route.patch("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 async def update_avi(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)):
     if not is_image_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
     
-    url = await upload_file_to_s3(file, current_user.username)
+    url = await upload_file_to_s3(file, current_user.username, "profile")
 
     if not url:
         raise HTTPException(status_code=500, detail="Failed to upload profile picture")

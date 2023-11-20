@@ -1,6 +1,7 @@
+from fastapi import File, Form, UploadFile
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
@@ -46,9 +47,8 @@ class UserTags(TagBase):
 
 
 class FeedBase(BaseModel):
-    content: str
-    feed_pic_url: Optional[str] = Field(None)
-    
+    content: str = Form(...) 
+    feed_pic_url: Union[UploadFile, str] = None
 
 
 class FeedCreate(FeedBase):
@@ -151,19 +151,11 @@ class ProfileResponse(ProfileUpdate):
     status: str = Field(...)
 
 
-class PaginatedUsers(BaseModel):
-    users: list[ProfileResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
-
-
 class FeedOwner(BaseModel):
     id: int
     first_name: str
     last_name: str
+    username: str
     profile_pic_url: Optional[str]
 
     class Config:
@@ -173,18 +165,12 @@ class FeedOwner(BaseModel):
 class Feeds(FeedBase):
     id: int
     created_at: datetime
+    feed_pic_url: Optional[str]
     user: FeedOwner
 
     class Config:
         orm_mode = True
 
-class PaginatedResponse(BaseModel):
-    feeds: list[Feeds]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
 
 class FeedUpdate(BaseModel):
     content: Optional[str]
@@ -208,18 +194,18 @@ class TechieOTMResponse(BaseModel):
         orm_mode = True
 
 
-class TechieOTMPaginated(BaseModel):
-    techies: list[TechieOTMResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
-
-
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)
+
+
+class SearchUser(BaseModel):
+    id: int
+    username: str
+    profile_pic_url: str
+
+    class Config:
+        orm_mode = True
 
 
 class Token(BaseModel):

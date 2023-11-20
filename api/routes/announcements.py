@@ -1,9 +1,11 @@
-from fastapi import Depends, HTTPException, APIRouter, status, Query
+from fastapi import Depends, HTTPException, APIRouter, status
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import select
 from db.database import get_db
 from db.models.announcements import Announcement
-from api.api_models.announcements import AnnouncementCreate, AnnouncementResponse, PaginatedResponse, AnnouncementUpdate
+from fastapi_pagination.links import Page
+from api.api_models.announcements import AnnouncementCreate, AnnouncementResponse, AnnouncementUpdate
+from fastapi_pagination.ext.sqlalchemy import paginate
 from utils.permissions import is_admin
 
 
@@ -18,40 +20,9 @@ def create_announcement(announcement: AnnouncementCreate, current_user = Depends
     db.refresh(new_announcement)
     return new_announcement
 
-@announcement_route.get("/", status_code=status.HTTP_200_OK, response_model=PaginatedResponse)
-def get_announcements(limit: int = Query(default=3, ge=1, le=50), page: int = Query(default=1, ge=1), db: Session = Depends(get_db)):
-    announcements_query = db.query(Announcement).order_by(desc(Announcement.created_at))
-    total_announcements = announcements_query.count()
-
-    pages = (total_announcements - 1) // limit + 1
-    offset = limit * (page - 1)
-    announcements = announcements_query.limit(limit).offset(offset).all()
-
-    next_page = None
-    prev_page = None
-
-    if page < pages:
-        next_page = f"/api/v1/announcements/?limit={limit}&page={page + 1}"
-    
-    if page > 1:
-        prev_page = f"/api/v1/announcements/?limit={limit}&page={page - 1}"
-
-    links = {
-        "first": f"/api/v1/announcements/?limit={limit}&page=1",
-        "last": f"/api/v1/announcements/?limit={limit}&page={pages}",
-        "self": f"/api/v1/announcements/?limit={limit}&page={page}",
-        "next": next_page,
-        "prev": prev_page,
-    }
-
-    return PaginatedResponse(
-        items=announcements,
-        total=total_announcements,
-        page=page,
-        size=limit,
-        pages=pages,
-        links=links
-    )
+@announcement_route.get("/", status_code=status.HTTP_200_OK, response_model=Page[AnnouncementResponse])
+def get_announcements(db: Session = Depends(get_db)):
+    return paginate(db, select(Announcement).order_by(Announcement.created_at))
 
 @announcement_route.get("/{announcement_id}", status_code=status.HTTP_200_OK, response_model=AnnouncementResponse)
 def get_announcement_by_id(announcement_id: int, db: Session = Depends(get_db)):

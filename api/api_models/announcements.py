@@ -23,11 +23,3 @@ class AnnouncementUpdate(BaseModel):
 
     class Config:
         orm_mode = True
-
-class PaginatedResponse(BaseModel):
-    items: list[AnnouncementResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-    links: Optional[Dict[str, Optional[str]]]
