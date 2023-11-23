@@ -12,7 +12,7 @@ def read_html_file(file_path):
         return file.read()
 
 
-async def send_email(email: str, reset_token: str, url: str, username: str) -> JSONResponse:
+async def send_email(email: str, reset_token: str, username: str) -> JSONResponse:
     """
     Click on manage google account
     Go to Security
@@ -23,7 +23,7 @@ async def send_email(email: str, reset_token: str, url: str, username: str) -> J
     email_sender = settings.EMAIL_SENDER
     email_password = settings.EMAIL_PASSWORD
     email_receiver = f'{email}'
-    reset_password_url = f"{url}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
+    reset_password_url = f"{settings.BASE_URL}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
 
     subject = "Reset Password"
     html = read_html_file('utils/password-reset.html')
