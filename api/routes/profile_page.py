@@ -4,7 +4,7 @@ from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from api.api_models.user import ProfileUpdate, ProfileResponse, SearchUser
+from api.api_models.user import ProfileUpdate, ProfileResponse
 from core.config import settings
 from db.database import get_db
 from db.models.skills import Skill
@@ -50,7 +50,7 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
 
-@profile_route.get("/", response_model=Page[SearchUser])
+@profile_route.get("/", response_model=Page[ProfileResponse])
 def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"), 
                     stack: str = Query(None, title="Stack", description="The stack to filter users"),
                     active: Optional[bool] = None, p: Optional[str] = None,
