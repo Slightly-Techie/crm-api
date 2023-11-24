@@ -13,7 +13,7 @@ from db.models.feeds import Feed
 from db.models.stacks import Stack
 from db.models.users import User
 from db.models.announcements import Announcement
-from api.api_models.user import ForgotPasswordRequest, UserSignUp, SearchUser
+from api.api_models.user import ForgotPasswordRequest, UserSignUp
 from utils.tools import tools as skills_data
 from db.models.skills import Skill
 from db.models.projects import Project

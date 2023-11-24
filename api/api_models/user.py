@@ -199,15 +199,6 @@ class UserLogin(BaseModel):
     password: str = Field(...)
 
 
-class SearchUser(BaseModel):
-    id: int
-    username: str
-    profile_pic_url: str
-
-    class Config:
-        orm_mode = True
-
-
 class Token(BaseModel):
     token: str = Field(...)
     token_type: str = Field(...)
