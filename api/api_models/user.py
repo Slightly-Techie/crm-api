@@ -147,6 +147,7 @@ class ProfileResponse(ProfileUpdate):
     tags: list[Tags]
     stack: Optional[Stacks] = Field(None)
     created_at: datetime = Field(...)
+    role: Optional[Role] = Field(None)
     is_active: bool = Field(...)
     status: str = Field(...)
 
