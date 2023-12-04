@@ -33,7 +33,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_origin_regex="https:\/\/.*\.uffizzi\.com",
-    allow_methods=["GET", "POST", "PUT", "DELETE", "UPDATE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
