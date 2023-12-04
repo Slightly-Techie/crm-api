@@ -21,16 +21,16 @@ create_roles()
 
 app = FastAPI()
 
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "https://crm-web.fly.dev",
-    "https://app.slightlytechie.com"
-]
+# origins = [
+#     "http://localhost",
+#     "http://localhost:3000",
+#     "https://crm-web.fly.dev",
+#     "https://app.slightlytechie.com"
+# ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_origin_regex="https:\/\/.*\.uffizzi\.com",
     allow_methods=["GET", "POST", "PUT", "DELETE", "UPDATE", "OPTIONS"],
