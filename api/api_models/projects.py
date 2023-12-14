@@ -1,7 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import Optional, List
 from utils.enums import ProjectType, ProjectPriority, ProjectTeam
+from ..api_models.stacks import Stacks
 
 class CreateProject(BaseModel):
     name: str = Field(...)
@@ -38,5 +39,8 @@ class MembersResponse(BaseModel):
     id: int
     first_name: str = Field(...)
     last_name: str = Field(...)
+    username: str = Field(...)
     email: str = Field(...)
+    profile_pic_url: str = Field(...)
+    stack: Stacks = Field(None) 
     
