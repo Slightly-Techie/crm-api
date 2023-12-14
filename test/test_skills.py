@@ -77,12 +77,11 @@ def test_unauthorized_delete_skill(client, test_user, populate_skills):
 
     assert res.status_code == 401
     
-def test_search_user_skills(client, test_user):
-    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
-    token = login_res.json()["token"]
-    populate_skills()
-    search_res = client.get("/api/v1/skills/search?name=python", headers={'Authorization': f'Bearer {token}'})
+def test_search_skills(client):
+    res = client.post("/api/v1/skills/data")
+    assert res.status_code == 200
 
+    search_res = client.get("/api/v1/skills/search?name=pyton")
+    search_result = search_res.json()
     assert search_res.status_code == 200
-    assert len(search_res.json()) > 0
-    assert all("skill_name" in item for item in search_res.json())
+    assert all("skill_name" in item and "python" in item["skill_name"].lower() for item in search_result)

@@ -90,17 +90,12 @@ def populate_skills():
         db.close()
     return {"message": "Skills table populated successfully!"}
 
-
-@skill_route.get("/search", response_model=List[Skills], status_code=status.HTTP_200_OK)
-def search_user_skills(
-    name: str = Query(..., min_length=3, max_length=50),
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
+@skill_route.get("/search", response_model=List[dict], status_code=status.HTTP_200_OK)
+def search_skills(name: str = Query(..., min_length=1, max_length=50), db: Session = Depends(get_db)):
     try:
-        user_skills = db.query(Skill).join(UserSkill).filter(UserSkill.user_id == user.id).all()        
-        results = process.extract(name, [skill.name for skill in user_skills], scorer=fuzz.ratio)
-        threshold = 80
+        skills = db.query(Skill).all()
+        results = process.extract(name.lower(), [skill.name.lower() for skill in skills], scorer=fuzz.partial_ratio)
+        threshold = 78
         filtered_results = [result[0] for result in results if result[1] >= threshold]
         final_results = [{"skill_name": result} for result in filtered_results]
         return final_results
