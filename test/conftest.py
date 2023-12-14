@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 from db.models.roles import Role
 from db.models.feeds import Feed
 from db.models.stacks import Stack
-from db.models.skills import Skill
+from db.models.users import User
 from db.models.announcements import Announcement
 from api.api_models.user import ForgotPasswordRequest, UserSignUp
 from utils.tools import tools as skills_data
