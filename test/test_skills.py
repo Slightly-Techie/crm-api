@@ -1,3 +1,5 @@
+from api.routes.skills import populate_skills
+
 def test_populate_skills(client):
     res = client.post("/api/v1/skills/data")
     assert res.status_code == 200
@@ -75,3 +77,12 @@ def test_unauthorized_delete_skill(client, test_user, populate_skills):
 
     assert res.status_code == 401
     
+def test_search_user_skills(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    populate_skills()
+    search_res = client.get("/api/v1/skills/search?name=python", headers={'Authorization': f'Bearer {token}'})
+
+    assert search_res.status_code == 200
+    assert len(search_res.json()) > 0
+    assert all("skill_name" in item for item in search_res.json())
