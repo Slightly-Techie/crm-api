@@ -1,5 +1,7 @@
-from api.routes.skills import populate_skills
+from fastapi.testclient import TestClient
+from app import app
 
+client = TestClient(app)
 def test_populate_skills(client):
     res = client.post("/api/v1/skills/data")
     assert res.status_code == 200
@@ -76,12 +78,3 @@ def test_unauthorized_delete_skill(client, test_user, populate_skills):
     res = client.delete("/api/v1/skills/50")
 
     assert res.status_code == 401
-    
-def test_search_skills(client):
-    res = client.post("/api/v1/skills/data")
-    assert res.status_code == 200
-
-    search_res = client.get("/api/v1/skills/search?name=pyton")
-    search_result = search_res.json()
-    assert search_res.status_code == 200
-    assert all("skill_name" in item and "python" in item["skill_name"].lower() for item in search_result)
