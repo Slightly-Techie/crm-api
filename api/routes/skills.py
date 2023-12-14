@@ -1,5 +1,6 @@
-from fastapi import Depends, HTTPException, APIRouter, status
+from fastapi import Depends, HTTPException, APIRouter, status, Query
 from fastapi.params import Body
+from rapidfuzz import fuzz, process
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from sqlalchemy import desc, select
@@ -88,3 +89,16 @@ def populate_skills():
     finally:
         db.close()
     return {"message": "Skills table populated successfully!"}
+
+@skill_route.get("/search", response_model=List[dict], status_code=status.HTTP_200_OK)
+def search_skills(name: str = Query(..., min_length=1, max_length=50), db: Session = Depends(get_db)):
+    try:
+        skills = db.query(Skill).all()
+        results = process.extract(name.lower(), [skill.name.lower() for skill in skills], scorer=fuzz.partial_ratio)
+        threshold = 78
+        filtered_results = [result[0] for result in results if result[1] >= threshold]
+        final_results = [{"skill_name": result} for result in filtered_results]
+        return final_results
+    except Exception as e:
+        error_message = f"An error occurred: {str(e)}"
+        raise HTTPException(status_code=500, detail=error_message)

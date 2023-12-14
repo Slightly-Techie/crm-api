@@ -22,11 +22,6 @@ jobs:
             POSTGRES_USER: postgres
             POSTGRES_DB: github_actions_db
             POSTGRES_HOST: localhost
-            MAIL_SERVER: smtp.mandrillapp.com
-            MAIL_PORT: 587
-            USERNAME: AnyName
-            MAIL_FROM: neilohene@gmail.com
-            MAIL_PASSWORD: md-XnF_xUedhL_K8aQFqgnneQ
 
           options: >-
              --health-cmd pg_isready 

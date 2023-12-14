@@ -1,3 +1,7 @@
+from fastapi.testclient import TestClient
+from app import app
+
+client = TestClient(app)
 def test_populate_skills(client):
     res = client.post("/api/v1/skills/data")
     assert res.status_code == 200
@@ -74,4 +78,3 @@ def test_unauthorized_delete_skill(client, test_user, populate_skills):
     res = client.delete("/api/v1/skills/50")
 
     assert res.status_code == 401
-    
