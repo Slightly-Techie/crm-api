@@ -97,7 +97,7 @@ def search_skills(name: str = Query(..., min_length=1, max_length=50), db: Sessi
         results = process.extract(name.lower(), [skill.name.lower() for skill in skills], scorer=fuzz.partial_ratio)
         threshold = 78
         filtered_results = [result[0] for result in results if result[1] >= threshold]
-        final_results = [{"skill_name": result} for result in filtered_results]
+        final_results = [{"skill_id": skill.id, "skill_name": skill_name} for skill, skill_name in zip(skills, filtered_results)]
         return final_results
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
