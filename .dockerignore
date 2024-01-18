@@ -1,0 +1,5 @@
+.env
+.venv/
+.git/
+venv/
+*.pyc
