@@ -23,7 +23,7 @@ services:
 
   app:
     build: .
-    command: /bin/sh -c "alembic upgrade head && alembic revision --autogenerate && uvicorn app:app --host 0.0.0.0 --port 8080 --reload"
+    command: /bin/sh -c "alembic upgrade head && uvicorn app:app --host 0.0.0.0 --port 8080 --reload"
     volumes:
       - .:/app
     ports:
@@ -37,6 +37,16 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_SERVER=${POSTGRES_SERVER}
+      - BASE_URL=${BASE_URL}
+      - EMAIL_SENDER=${EMAIL_SENDER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_SERVER=${EMAIL_SERVER}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION}
+      - URL_PATH=${URL_PATH}
 
 volumes:
   db_data:
