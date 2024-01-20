@@ -45,19 +45,19 @@ jobs:
             pip install --no-cache-dir -r requirements.txt
             pip install flake8 flake8-bugbear flake8-black
 
-      - name: Flake8 Lint
-        run: |
-          flake8 --ignore F401 --exclude __init__.py,__pycache__ --max-line-length 100 . || true
-        id: flake8
+        - name: Flake8 Lint
+          run: |
+            flake8 --ignore F401 --exclude __init__.py,__pycache__ --max-line-length 100 . || true
+          id: flake8
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: flake8-lint-results
-          path: |
-            ./
-            *.py
-        if: always()
+        - name: Upload artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: flake8-lint-results
+            path: |
+              ./
+              *.py
+          if: always()
 
         - name: Run migration
           run: alembic upgrade head
