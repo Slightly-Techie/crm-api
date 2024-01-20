@@ -5,62 +5,59 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-
-
 jobs:
   build:
-      name: Build and Test
-      runs-on: ubuntu-latest
+    name: Build and Test
+    runs-on: ubuntu-latest
 
-      services:
-        postgres:
-          image: postgres
-          ports:
-            - 5432:5432
-          env:
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_USER: postgres
-            POSTGRES_DB: github_actions_db
-            POSTGRES_HOST: localhost
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: github_actions_db
+          POSTGRES_HOST: localhost
+        options: >-
+          --health-cmd pg_isready 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
 
-          options: >-
-             --health-cmd pg_isready 
-             --health-interval 10s 
-             --health-timeout 5s 
-             --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
 
-      steps:
-        - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-        - name: Set up Python 3.10
-          uses: actions/setup-python@v4
-          with:
-            python-version: "3.10"
+      - name: Install dependencies
+        id: dependency
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir psycopg2-binary
+          pip install --no-cache-dir -r requirements.txt
+          pip install flake8 flake8-bugbear flake8-black
 
-        - name: Install dependencies
-          id: dependency
-          run: |
-            python -m pip install --upgrade pip
-            pip install --no-cache-dir psycopg2-binary
-            pip install --no-cache-dir -r requirements.txt
-            pip install flake8 flake8-bugbear flake8-black
+      - name: Flake8 Lint
+        run: |
+          flake8 --ignore F401 --exclude __init__.py,__pycache__ --max-line-length 100 . || true
+        id: flake8
 
-        - name: Flake8 Lint
-          run: |
-            flake8 --ignore F401 --exclude __init__.py,__pycache__ --max-line-length 100 . || true
-          id: flake8
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: flake8-lint-results
+          path: |
+            ./
+            *.py
+        if: always()
 
-        - name: Upload artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: flake8-lint-results
-            path: |
-              ./
-              *.py
-          if: always()
-
-        - name: Run migration
-          run: alembic upgrade head
+      - name: Run migration
+        run: alembic upgrade head
       
-        - name: Test with pytest
-          run: pytest
+      - name: Test with pytest
+        run: pytest
