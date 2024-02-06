@@ -94,10 +94,17 @@ def populate_skills():
 def search_skills(name: str = Query(..., min_length=1, max_length=50), db: Session = Depends(get_db)):
     try:
         skills = db.query(Skill).all()
-        results = process.extract(name.lower(), [skill.name.lower() for skill in skills], scorer=fuzz.partial_ratio)
+        results = process.extractOne(name.lower(), [skill.name.lower() for skill in skills], scorer=fuzz.partial_ratio)
         threshold = 78
-        final_results = [{"skill_id": skill.id, "skill_name": result[0]} for skill, result in zip(skills, results) if result[1] >= threshold]
-        return final_results
+
+        matching_skills = [
+            {"skill_id": skill.id, "skill_name": skill.name}
+            for skill in skills
+            if fuzz.partial_ratio(name.lower(), skill.name.lower()) >= threshold
+        ]
+
+        return matching_skills
+
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         raise HTTPException(status_code=500, detail=error_message)
