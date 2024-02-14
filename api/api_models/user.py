@@ -218,3 +218,8 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str = Field(...)
     new_password: str = Field(...)
+
+class TaskSubmission(BaseModel):
+    github_link: str
+    live_demo_url: Optional[str] = Field(default=None)
+    additional_info: Optional[str] = Field(default=None)
