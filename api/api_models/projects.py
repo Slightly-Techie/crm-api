@@ -4,6 +4,7 @@ from typing import Optional, List
 from utils.enums import ProjectType, ProjectPriority, ProjectTeam
 from ..api_models.stacks import Stacks
 
+
 class CreateProject(BaseModel):
     name: str = Field(...)
     description: str = Field(...)
@@ -11,7 +12,7 @@ class CreateProject(BaseModel):
     project_priority: ProjectPriority = Field(...)
     project_tools: Optional[List[str]]
     manager_id: int = Field(...)
-    
+
 
 class ProjectResponse(CreateProject):
     id: int
@@ -42,5 +43,4 @@ class MembersResponse(BaseModel):
     username: str = Field(...)
     email: str = Field(...)
     profile_pic_url: str = Field(...)
-    stack: Stacks = Field(None) 
-    
+    stack: Stacks = Field(None)

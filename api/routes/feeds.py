@@ -1,4 +1,6 @@
-from fastapi import Depends, Form, HTTPException, APIRouter, status, Form, File, UploadFile
+from fastapi import (
+    Depends, Form, HTTPException, APIRouter, status, File, UploadFile
+)
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from db.database import get_db
@@ -17,11 +19,14 @@ feed_route = APIRouter(tags=["Feed"], prefix="/feed")
 
 
 @feed_route.post("/", status_code=status.HTTP_201_CREATED, response_model=Feeds)
-async def create_feed(content: str = Form(...), feed_pic_url: UploadFile = File(None), current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_feed(
+    content: str = Form(...), feed_pic_url: UploadFile = File(None),
+    current_user=Depends(get_current_user), db: Session = Depends(get_db)
+):
     if feed_pic_url:
         if not is_image_file(feed_pic_url.filename):
             raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
-        
+
         image_url = await upload_file_to_s3(feed_pic_url, current_user.username, "feed")
     else:
         image_url = None
@@ -35,10 +40,13 @@ async def create_feed(content: str = Form(...), feed_pic_url: UploadFile = File(
 
 
 @feed_route.put("/{feed_id}", status_code=status.HTTP_201_CREATED, response_model=Feeds)
-def update_feed_by_id(feed_id: int, updated_feed: FeedUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def update_feed_by_id(
+    feed_id: int, updated_feed: FeedUpdate, db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
-    if feed == None:
+    if feed is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"feed with id: {feed_id} was not found"
         )
@@ -55,7 +63,9 @@ def update_feed_by_id(feed_id: int, updated_feed: FeedUpdate, db: Session = Depe
 
 
 @feed_route.delete("/{feed_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_feed_by_id(feed_id: int, db: Session = Depends(get_db), current_user= Depends(get_current_user)):
+def delete_feed_by_id(
+    feed_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)
+):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
     if feed is None:
@@ -78,7 +88,7 @@ def get_feed_by_id(feed_id: int, db: Session = Depends(get_db)):
     feed = feed_query.first()
     if not feed:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"feed with id: {feed_id} was not found")
-    
+
     return feed
 
 
