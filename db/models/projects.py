@@ -16,7 +16,7 @@ class Project(Base):
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
-    
+
     manager_id = Column(Integer, ForeignKey("users.id"))
     manager = relationship("User", back_populates="managed_projects")
     members = relationship("User", secondary="users_projects", back_populates="projects")
