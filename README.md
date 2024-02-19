@@ -75,19 +75,27 @@ curl -sSL https://install.python-poetry.org | python3 -
 #### step 3: Create a virtual environment
 
 ```bash
-poetry shell
+virtualenv crmenv
+```
+OR by using the virtualenvwrapper
+```bash
+  mkvirtualenv crmenv
+```
+Activate the virtual environment with 
+```bash
+  source crmenv/bin/activate
 ```
 
 #### Step 4: Install dependencies
 
 ```
-poetry install
+pip install -r requirements.txt
 ```
 
 > Note to add a package to the project, run
 
 ```bash
-poetry add <package-name>
+pip install <package-name>
 ```
 
 #### Step 5: Create a `.env` file in the project's root directory and add the following environment variables, replacing the placeholders with your specific values:
@@ -100,6 +108,15 @@ POSTGRES_PORT= #e.g 5432
 POSTGRES_DB= #e.g st_crm_db
 SECRET= #notasecretkey
 BASE_URL= #http://127.0.0.1:8080/
+EMAIL_SENDER=someawesomeemail@gmail.com
+EMAIL_PASSWORD=xxxxxxxxxxx
+EMAIL_SERVER=smtp.gmail.com
+EMAIL_PORT=587
+AWS_ACCESS_KEY=xxxxxxxxxxxxx
+AWS_SECRET_KEY=xxxxxxxxxxx
+AWS_BUCKET_NAME=stncrmutilities
+AWS_REGION=eu-west-1
+URL_PATH=/users/reset-password/new-password
 ```
 
 #### Step 6: Create a `test.env` file in the root directory and add the following environment variables
@@ -148,6 +165,23 @@ pytest
 ```
 
 > Make sure your `test.env` file is correctly configured with test-specific environment variables.
+
+## Running the project in Docker-Compose
+* Clone the project and from the main, create your feature branch if you are about to make changes. Else stay on the main branch
+* From the `.env.sample` create a `.env` file with the correct credentials
+* Ensure you have docker and docker compose installed on your local system
+* To build the docker image use
+```bash
+  docker-compose -f docker-compose.dev.yml build
+```
+* To start the services
+```bash
+  doker-compose -f docker-compose.dev.yml up
+```
+* A combination of build and start command is 
+```bash
+  docker-compose -f docker-compose.dev.yml up --build
+```
 
 ## ⚙️ Project Structure <a name = "structure"></a>
 ```s
