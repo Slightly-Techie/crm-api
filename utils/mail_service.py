@@ -12,7 +12,8 @@ def read_html_file(file_path):
         return file.read()
 
 
-async def send_email(email: str, reset_token: str, username: str) -> JSONResponse:
+async def send_email(
+        email: str, reset_token: str, username: str) -> JSONResponse:
     """
     Click on manage google account
     Go to Security
@@ -28,7 +29,7 @@ async def send_email(email: str, reset_token: str, username: str) -> JSONRespons
     subject = "Reset Password"
     html = read_html_file('utils/password-reset.html')
     html = html.format(username, reset_password_url)
-    
+
     em = MIMEMultipart()
     em['From'] = email_sender
     em['To'] = email_receiver
