@@ -13,6 +13,7 @@ region = settings.AWS_REGOIN
 access_key = settings.AWS_ACCESS_KEY
 secret_key = settings.AWS_SECRET_KEY
 
+
 async def create_bucket():
     s3 = boto3.client('s3', region_name=region,
                       aws_access_key_id=access_key,
@@ -22,10 +23,11 @@ async def create_bucket():
     buckets = [bucket['Name'] for bucket in response['Buckets']]
     if bucket_name not in buckets:
         try:
-            s3_client = boto3.client('s3', region_name=region,
-                      aws_access_key_id=access_key,
-                      aws_secret_access_key=secret_key)
-            location = {'LocationConstraint': region}
+            s3_client = boto3.client(
+                's3', region_name=region,
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key)
+            # location = {'LocationConstraint': region}
             s3_client.create_bucket(Bucket=bucket_name)
             bucket_policy = {
                 "Version": "2008-10-17",
@@ -43,16 +45,14 @@ async def create_bucket():
             }
             bucket_policy = json.dumps(bucket_policy)
 
-            s3 = boto3.client('s3', region_name=region,
-                      aws_access_key_id=access_key,
-                      aws_secret_access_key=secret_key)
-            s3.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
+            s3_client.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
         except ClientError as e:
             logging.error(e)
             return False
         return True
     return True
-        
+
+
 async def upload_file_to_s3(file: UploadFile, username, type: str) -> str:
     s3 = boto3.client('s3', region_name=region,
                       aws_access_key_id=access_key,
@@ -68,4 +68,3 @@ async def upload_file_to_s3(file: UploadFile, username, type: str) -> str:
     except ClientError as e:
         logging.error(e)
         return False
-    return True
