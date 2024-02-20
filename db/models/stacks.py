@@ -15,3 +15,4 @@ class Stack(Base):
         server_default=func.now(), server_onupdate=func.now())
 
     users = relationship('User', back_populates='stack')
+    technical_task = relationship("TechnicalTask", back_populates="stack")

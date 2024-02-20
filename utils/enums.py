@@ -33,3 +33,9 @@ class ProjectTeam(str, Enum):
     DESIGNER = "DESIGNER"
     MOBILE = "MOBILE"
     FULL_STACK = "FULL STACK"
+
+
+class ExperienceLevel(str, Enum):
+    JUNIOR = "JUNIOR"
+    MID_LEVEL = "MID LEVEL"
+    SENIOR = "SENIOR"

@@ -39,3 +39,4 @@ class User(Base):
     stack = relationship("Stack", back_populates='users')
     projects = relationship("Project", secondary="users_projects", back_populates="members")
     managed_projects = relationship("Project", back_populates="manager")
+    technical_task_submission = relationship("TechnicalTaskSubmission", back_populates="user")
