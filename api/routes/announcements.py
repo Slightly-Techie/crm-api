@@ -6,7 +6,7 @@ from db.models.announcements import Announcement
 from fastapi_pagination.links import Page
 from api.api_models.announcements import AnnouncementCreate, AnnouncementResponse, AnnouncementUpdate
 from fastapi_pagination.ext.sqlalchemy import paginate
-from utils.permissions import is_admin
+from utils.permissions import is_admin, user_accepted
 
 
 announcement_route = APIRouter(tags=["Announcements"], prefix="/announcements")
@@ -25,12 +25,12 @@ def create_announcement(
 
 
 @announcement_route.get("/", status_code=status.HTTP_200_OK, response_model=Page[AnnouncementResponse])
-def get_announcements(db: Session = Depends(get_db)):
+def get_announcements(db: Session = Depends(get_db), user_status=Depends(user_accepted)):
     return paginate(db, select(Announcement).order_by(Announcement.created_at))
 
 
 @announcement_route.get("/{announcement_id}", status_code=status.HTTP_200_OK, response_model=AnnouncementResponse)
-def get_announcement_by_id(announcement_id: int, db: Session = Depends(get_db)):
+def get_announcement_by_id(announcement_id: int, db: Session = Depends(get_db), user_status=Depends(user_accepted)):
     announcement_query = db.query(Announcement).filter(Announcement.id == announcement_id)
     announcement = announcement_query.first()
     if not announcement:

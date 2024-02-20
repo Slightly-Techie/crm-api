@@ -1,11 +1,12 @@
 from db.database import get_db
 from db.models.projects import Project
 from .oauth2 import get_current_user
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from api.api_models.user import UserResponse
 from utils.utils import RoleChoices
 from core.exceptions import ForbiddenError
 from sqlalchemy.orm import Session
+from utils.enums import UserStatus
 
 
 def is_authenticated(user: UserResponse = Depends(get_current_user)):
@@ -71,3 +72,13 @@ def is_owner(user, obj):
         return True
 
     raise ForbiddenError()
+
+
+def user_accepted(user: UserResponse = Depends(get_current_user)):
+    """Only accepted users can access feeds page"""
+    if user.status != UserStatus.ACCEPTED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this resource"
+        )
+    return user
