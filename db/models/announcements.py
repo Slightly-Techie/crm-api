@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 
 
-
 class Announcement(Base):
     __tablename__ = 'announcements'
     id = Column(Integer, primary_key=True, nullable=False)

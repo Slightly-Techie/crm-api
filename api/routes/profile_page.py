@@ -31,7 +31,9 @@ async def get_profile(user_id: int, db: Session = Depends(get_db)):
 
 
 @profile_route.put("/profile", response_model=ProfileResponse)
-async def update_profile(userDetails: ProfileUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def update_profile(
+    userDetails: ProfileUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     user_exists = db.query(User).filter(User.id == current_user.id)
     try:
         if user_exists.first():
@@ -45,13 +47,13 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
         else:
             raise HTTPException(
                 status_code=404, detail=settings.ERRORS.get("INVALID ID"))
-    except:
+    except Exception:
         raise HTTPException(
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))
 
 
 @profile_route.get("/", response_model=Page[ProfileResponse])
-def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"), 
+def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"),
                     stack: str = Query(None, title="Stack", description="The stack to filter users"),
                     active: Optional[bool] = None, p: Optional[str] = None,
                     db: Session = Depends(get_db)):
@@ -68,7 +70,8 @@ def get_all_profile(skill: str = Query(None, title="Skill", description="The ski
         query = query.filter(User.is_active == active)
 
     if p:
-        query = query.filter(User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
+        query = query.filter(
+            User.username.ilike(f"%{p}%") | User.first_name.ilike(f"%{p}%") | User.last_name.ilike(f"%{p}%"))
         if not query.all():
             raise HTTPException(status_code=404, detail="No users found")
 
@@ -76,7 +79,8 @@ def get_all_profile(skill: str = Query(None, title="Skill", description="The ski
 
     return users
 
-    #return paginate(db, select(User).order_by(desc(User.created_at)))
+    # return paginate(db, select(User).order_by(desc(User.created_at)))
+
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 def update_profile_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
@@ -90,7 +94,6 @@ def update_profile_status(user_id: int, db: Session = Depends(get_db), current_u
     user.is_active = True
     db.commit()
     return user
-
 
 
 @profile_route.get("/user_info", response_model=dict)
@@ -110,7 +113,9 @@ def get_user_info(email: str, db: Session = Depends(get_db)):
 
 
 @profile_route.put("/profile/{user_id}/status", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
-def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depends(get_db), current_user: User = Depends(is_admin)):
+def update_user_status(
+    user_id: int, new_status: UserStatus, db: Session = Depends(get_db), current_user: User = Depends(is_admin)
+):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -120,16 +125,19 @@ def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depen
     db.commit()
     return user
 
+
 @profile_route.patch("/profile/avatar", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
-async def update_avi(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)):
+async def update_avi(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db), file: UploadFile = File(...)
+):
     if not is_image_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload an image.")
-    
+
     url = await upload_file_to_s3(file, current_user.username, "profile")
 
     if not url:
         raise HTTPException(status_code=500, detail="Failed to upload profile picture")
-    
+
     current_user.profile_pic_url = url
     db.commit()
     db.refresh(current_user)

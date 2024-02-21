@@ -11,6 +11,7 @@ def test_get_all_feeds(client, test_feeds):
     assert feeds["items"][1]["content"] == test_feeds[1].content
     assert feeds["items"][1]["user"]["id"] == test_feeds[1].user.id    
 
+
 def test_get_one_feed(client, test_feeds):
     res = client.get(f"/api/v1/feed/{test_feeds[0].id}")
     feed = Feeds(**res.json())
@@ -48,8 +49,11 @@ def test_unauthorized_user_delete_feed(client, test_feeds, test_user):
 
     assert res.status_code == 401
 
+
 def test_user_delete_feed(client, test_feeds, test_user):
-    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    login_res = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]
     res = client.delete(f"/api/v1/feed/{test_feeds[0].id}", headers={'Authorization': f'Bearer {token}'})
 

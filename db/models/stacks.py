@@ -11,7 +11,8 @@ class Stack(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, 
-            server_default=func.now(), server_onupdate=func.now())
+        TIMESTAMP(timezone=True), nullable=False,
+        server_default=func.now(), server_onupdate=func.now())
 
     users = relationship('User', back_populates='stack')
+    technical_task = relationship("TechnicalTask", back_populates="stack")

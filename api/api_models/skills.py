@@ -14,6 +14,3 @@ class SkillBase(BaseModel):
 
 class SkillCreate(SkillBase):
     name: str
-    
-
-

@@ -1,7 +1,7 @@
-from fastapi import File, Form, UploadFile
+from fastapi import Form, UploadFile
 from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
@@ -47,7 +47,7 @@ class UserTags(TagBase):
 
 
 class FeedBase(BaseModel):
-    content: str = Form(...) 
+    content: str = Form(...)
     feed_pic_url: Union[UploadFile, str] = None
 
 
@@ -77,7 +77,7 @@ class UserSignUp(BaseModel):
     class Config:
         orm_mode = True
         validate_assignment = True
-        
+
     @validator("username")
     def validate_username(cls, value):
         # Use a regular expression to remove non-alphanumeric characters and spaces
@@ -206,14 +206,18 @@ class Token(BaseModel):
     is_active: bool = Field(...)
     refresh_token: str = Field(...)
 
+
 class TokenData(BaseModel):
     id: Optional[str] = Field(default=None)
+
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(...)
 
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr = Field(...)
+
 
 class ResetPasswordRequest(BaseModel):
     token: str = Field(...)
