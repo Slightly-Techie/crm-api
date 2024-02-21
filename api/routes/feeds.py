@@ -13,7 +13,7 @@ from sqlalchemy import desc
 
 from utils.s3 import upload_file_to_s3
 from utils.utils import is_image_file
-from utils.permissions import user_accepted
+# from utils.permissions import user_accepted
 
 
 feed_route = APIRouter(tags=["Feed"], prefix="/feed")
@@ -22,8 +22,7 @@ feed_route = APIRouter(tags=["Feed"], prefix="/feed")
 @feed_route.post("/", status_code=status.HTTP_201_CREATED, response_model=Feeds)
 async def create_feed(
     content: str = Form(...), feed_pic_url: UploadFile = File(None),
-    current_user=Depends(get_current_user), db: Session = Depends(get_db),
-    user_status=Depends(user_accepted)
+    current_user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
     if feed_pic_url:
         if not is_image_file(feed_pic_url.filename):
@@ -44,7 +43,7 @@ async def create_feed(
 @feed_route.put("/{feed_id}", status_code=status.HTTP_201_CREATED, response_model=Feeds)
 def update_feed_by_id(
     feed_id: int, updated_feed: FeedUpdate, db: Session = Depends(get_db),
-    current_user=Depends(get_current_user), user_status=Depends(user_accepted)
+    current_user=Depends(get_current_user)
 ):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
@@ -66,8 +65,7 @@ def update_feed_by_id(
 
 @feed_route.delete("/{feed_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_feed_by_id(
-    feed_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user),
-    user_status=Depends(user_accepted)
+    feed_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)
 ):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
@@ -86,7 +84,7 @@ def delete_feed_by_id(
 
 
 @feed_route.get("/{feed_id}", status_code=status.HTTP_200_OK, response_model=Feeds)
-def get_feed_by_id(feed_id: int, db: Session = Depends(get_db),  user_status=Depends(user_accepted)):
+def get_feed_by_id(feed_id: int, db: Session = Depends(get_db)):
     feed_query = db.query(Feed).filter(Feed.id == feed_id)
     feed = feed_query.first()
     if not feed:
@@ -96,5 +94,5 @@ def get_feed_by_id(feed_id: int, db: Session = Depends(get_db),  user_status=Dep
 
 
 @feed_route.get("/", response_model=Page[Feeds])
-def get_all_feeds(db: Session = Depends(get_db), user_status=Depends(user_accepted)):
+def get_all_feeds(db: Session = Depends(get_db)):
     return paginate(db, select(Feed).order_by(desc(Feed.created_at)))
