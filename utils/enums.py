@@ -4,8 +4,6 @@ from enum import Enum
 class UserStatus(str, Enum):
     TO_CONTACT = "TO CONTACT"
     IN_REVIEW = "IN REVIEW"
-    TASK_SENT = "TASK SENT"
-    TASK_SUBMITTED = "TASK SUBMITTED"
     INTERVIEWED = "INTERVIEWED"
     ACCEPTED = "ACCEPTED"
     NO_SHOW = "NO SHOW"

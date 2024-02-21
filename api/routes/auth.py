@@ -23,6 +23,7 @@ from utils.permissions import is_authenticated
 from core.config import settings
 from utils.mail_service import send_email, send_applicant_task
 from utils.utils import get_key_by_value
+from utils.enums import UserStatus
 
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
@@ -59,6 +60,10 @@ async def signup(user: UserSignUp, db: Session = Depends(get_db)):
             await send_applicant_task(
                 new_user.email, new_user.first_name, task.content
                 )
+            db.query(User).filter(User.id == new_user.id).update(
+                {"status": UserStatus.CONTACTED}
+                )
+            db.commit()
     except Exception:
         pass
 

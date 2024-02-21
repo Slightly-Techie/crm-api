@@ -50,7 +50,7 @@ async def send_applicant_task(
     email_sender = settings.EMAIL_SENDER
     email_password = settings.EMAIL_PASSWORD
     email_receiver = f'{email}'
-    subject = "Reset Password"
+    subject = "Invitation to Technical Challenge"
     html = task.format(first_name)
 
     em = MIMEMultipart()
