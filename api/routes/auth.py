@@ -12,6 +12,7 @@ from db.repository.users import create_new_user
 from api.api_models.user import (
     ProfileResponse, RefreshTokenRequest, UserSignUp, Token, ForgotPasswordRequest, ResetPasswordRequest
 )
+from db.models.technical_task import TechnicalTask
 from api.api_models.user import UserResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from utils.utils import verify_password
@@ -20,7 +21,8 @@ from utils.oauth2 import (
 )
 from utils.permissions import is_authenticated
 from core.config import settings
-from utils.mail_service import send_email
+from utils.mail_service import send_email, send_applicant_task
+from utils.utils import get_key_by_value
 
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
@@ -29,7 +31,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
-def signup(user: UserSignUp, db: Session = Depends(get_db)):
+async def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
     user_name = db.query(User).filter(User.username == user.username).first()
     if user_name:
@@ -48,6 +50,17 @@ def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
     user.password = hash_passwd
     new_user = create_new_user(user, db)
+    try:
+        task = db.query(TechnicalTask).filter(
+            TechnicalTask.stack_id == new_user.stack_id,
+            TechnicalTask.experience_level == get_key_by_value(new_user.years_of_experience)
+        ).first()
+        if task:
+            await send_applicant_task(
+                new_user.email, new_user.first_name, task.content
+                )
+    except Exception:
+        pass
 
     return new_user
 
