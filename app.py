@@ -13,6 +13,7 @@ from db.database import create_roles
 from api.routes.tags import tag_route
 from api.routes.stacks import stack_router
 from api.routes.project import project_router
+from api.routes.technical_task import tech_task_router, sub_tech_task_router
 from fastapi_pagination import add_pagination
 
 
@@ -62,6 +63,8 @@ app.include_router(techieotm_router, prefix="/api/v1")
 app.include_router(stack_router, prefix='/api/v1')
 app.include_router(announcement_route, prefix="/api/v1")
 app.include_router(project_router, prefix="/api/v1")
+app.include_router(tech_task_router, prefix="/api/v1")
+app.include_router(sub_tech_task_router, prefix="/api/v1")
 
 add_pagination(app)
 

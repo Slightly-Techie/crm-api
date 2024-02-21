@@ -23,3 +23,15 @@ class RoleChoices():
     ADMIN = 'admin'
     USER = 'user'
     GUEST = 'guest'
+
+
+def get_key_by_value(value):
+    experience_level_map = {
+        "JUNIOR": [0, 1, 2],
+        "MID_LEVEL": [3, 4],
+        "SENIOR": [5, 6, 7, 8, 9, 10, 11, 12]
+    }
+    for key, values in experience_level_map.items():
+        if value in values:
+            return key
+    return None
