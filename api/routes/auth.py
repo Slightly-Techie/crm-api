@@ -21,6 +21,7 @@ from utils.oauth2 import (
 )
 from utils.permissions import is_authenticated
 from core.config import settings
+from utils.mail_service import  send_password_reset_email
 from utils.mail_service import send_email, send_applicant_task
 from utils.utils import get_key_by_value
 from utils.enums import UserStatus
@@ -29,7 +30,6 @@ from utils.enums import UserStatus
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def signup(user: UserSignUp, db: Session = Depends(get_db)):
@@ -146,7 +146,7 @@ async def forgot_password(request: ForgotPasswordRequest, requested: Request, db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     reset_token = create_reset_token(email)
-    result = await send_email(email, reset_token, user.username)
+    result = await send_password_reset_email(email, reset_token, user.username)
     return result
 
 

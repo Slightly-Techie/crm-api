@@ -1,9 +1,25 @@
+from unittest.mock import patch
+
 from api.api_models import user
 
 
+@patch('api.routes.profile_page.send_email')
+def test_update_user_status(mock_send_email, client, test_user, test_user1):
+
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    user_id = test_user1["id"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    res = client.put(
+        f"/api/v1/users/profile/{user_id}/status?new_status=ACCEPTED", headers=headers)
+
+    assert res.status_code == 200
+    mock_send_email.assert_called_once()
+    assert mock_send_email.call_args[0][0] == "Welcome to Slightly Techie!"
+
 def test_get_all_users(client, test_users):
     res = client.get("/api/v1/users/?page=1&size=3")
-
     assert res.status_code == 200
     assert len(res.json()["items"]) == 3
 

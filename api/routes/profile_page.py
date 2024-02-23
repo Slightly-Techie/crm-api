@@ -9,6 +9,7 @@ from core.config import settings
 from db.database import get_db
 from db.models.skills import Skill
 from db.models.users import User
+from utils.mail_service import send_email, read_html_file
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
@@ -16,9 +17,7 @@ from utils.s3 import upload_file_to_s3
 from utils.utils import is_image_file
 from db.models import users_skills
 
-
 profile_route = APIRouter(tags=["User"], prefix="/users")
-
 
 @profile_route.get("/profile/{user_id}", response_model=ProfileResponse)
 async def get_profile(user_id: int, db: Session = Depends(get_db)):
@@ -57,7 +56,6 @@ def get_all_profile(skill: str = Query(None, title="Skill", description="The ski
                     stack: str = Query(None, title="Stack", description="The stack to filter users"),
                     active: Optional[bool] = None, p: Optional[str] = None,
                     db: Session = Depends(get_db)):
-
     query = db.query(User)
 
     if skill:
@@ -113,9 +111,8 @@ def get_user_info(email: str, db: Session = Depends(get_db)):
 
 
 @profile_route.put("/profile/{user_id}/status", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
-def update_user_status(
-    user_id: int, new_status: UserStatus, db: Session = Depends(get_db), current_user: User = Depends(is_admin)
-):
+async def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depends(get_db),
+                       current_user: User = Depends(is_admin)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -123,6 +120,12 @@ def update_user_status(
 
     user.status = new_status
     db.commit()
+    if new_status == UserStatus.ACCEPTED:
+        html_content = read_html_file('utils/email_templates/acceptance.html').format(user.username)
+        await send_email("Welcome to Slightly Techie!", user.email, html_content)
+    elif new_status == UserStatus.REJECTED:
+        html_content = read_html_file('utils/email_templates/rejection.html').format(user.username)
+        await send_email("Slightly Techie Application Update", user.email, html_content)
     return user
 
 
