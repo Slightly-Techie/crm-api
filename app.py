@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from api.routes.auth import auth_router
+from api.routes.email_templates import email_templates_route
 from api.routes.skills import skill_route
 from api.routes.profile_page import profile_route
 from api.routes.feeds import feed_route
@@ -16,7 +17,6 @@ from api.routes.stacks import stack_router
 from api.routes.project import project_router
 from api.routes.technical_task import tech_task_router, sub_tech_task_router
 from fastapi_pagination import add_pagination
-
 
 # Base.metadata.create_all(bind=engine)
 create_roles()
@@ -52,20 +52,24 @@ def index():
 
 @app.get('/inactive')
 def redirect():
-    return {"msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
+    return {
+        "msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
 
 
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(profile_route, prefix="/api/v1")
-app.include_router(skill_route, prefix="/api/v1")
-app.include_router(tag_route, prefix="/api/v1")
-app.include_router(feed_route, prefix="/api/v1")
-app.include_router(techieotm_router, prefix="/api/v1")
-app.include_router(stack_router, prefix='/api/v1')
-app.include_router(announcement_route, prefix="/api/v1")
-app.include_router(project_router, prefix="/api/v1")
-app.include_router(tech_task_router, prefix="/api/v1")
-app.include_router(sub_tech_task_router, prefix="/api/v1")
+v1_prefix = "/api/v1"
+
+app.include_router(auth_router, prefix=v1_prefix)
+app.include_router(profile_route, prefix=v1_prefix)
+app.include_router(skill_route, prefix=v1_prefix)
+app.include_router(tag_route, prefix=v1_prefix)
+app.include_router(feed_route, prefix=v1_prefix)
+app.include_router(techieotm_router, prefix=v1_prefix)
+app.include_router(stack_router, prefix=v1_prefix)
+app.include_router(announcement_route, prefix=v1_prefix)
+app.include_router(project_router, prefix=v1_prefix)
+app.include_router(tech_task_router, prefix=v1_prefix)
+app.include_router(sub_tech_task_router, prefix=v1_prefix)
+app.include_router(email_templates_route, prefix=v1_prefix)
 
 add_pagination(app)
 
