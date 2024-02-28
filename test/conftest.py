@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException
-from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi_pagination.links import Page
+# from fastapi_pagination.ext.sqlalchemy import paginate
+# from fastapi_pagination.links import Page
 from db.database import Base, get_db
 from core.config import settings
 from app import app
@@ -13,12 +13,18 @@ from db.models.feeds import Feed
 from db.models.stacks import Stack
 from db.models.users import User
 from db.models.announcements import Announcement
-from api.api_models.user import ForgotPasswordRequest, UserSignUp
+from api.api_models.user import (
+    ForgotPasswordRequest,
+    # UserSignUp
+)
 from utils.tools import tools as skills_data
 from db.models.skills import Skill
 from db.models.projects import Project
 from utils.utils import RoleChoices
-from api.routes.auth import forgot_password, reset_password
+from api.routes.auth import (
+    forgot_password,
+    # reset_password
+)
 from api.api_models import user
 
 TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB_TEST}"
@@ -30,7 +36,7 @@ TestingSessionLocal = sessionmaker(
 
 
 @pytest.fixture()
-def session(): 
+def session():
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
@@ -140,6 +146,7 @@ def test_user1(client):
     new_user["password"] = user.get("password")
     return new_user
 
+
 @pytest.fixture
 def test_users(client, session):
     db = session
@@ -195,6 +202,7 @@ def test_users(client, session):
 
     return users
 
+
 @pytest.fixture
 def test_feeds(test_user, test_user1, session):
     db = session
@@ -212,15 +220,18 @@ def test_feeds(test_user, test_user1, session):
 
     return feeds
 
+
 @pytest.fixture
 def user_cred(client, test_user):
-    res=client.post(
-      "/api/v1/users/login" , data={"username": test_user.get("email"), "password": test_user.get("password")}
+    res = client.post(
+      "/api/v1/users/login",
+      data={"username": test_user.get("email"), "password": test_user.get("password")}
     )
     user_credentials = user.Token(**res.json())
 
     return user_credentials
-    
+
+
 @pytest.fixture
 def test_announcements(test_user, test_user1, session):
     db = session
@@ -228,7 +239,8 @@ def test_announcements(test_user, test_user1, session):
         {"title": "title1", "content": "content1", "user_id": test_user["id"]},
         {"title": "title2", "content": "content2", "user_id": test_user["id"]},
         {"title": "title3", "content": "content3", "user_id": test_user1["id"]},
-        {"title": "title4", "content": "content4", "image_url": "image1" ,"user_id": test_user1["id"]},
+        {"title": "title4",
+         "content": "content4", "image_url": "image1", "user_id": test_user1["id"]},
     ]
 
     announcements = [Announcement(**announcement) for announcement in announcement_data]
@@ -243,9 +255,11 @@ def test_announcements(test_user, test_user1, session):
 def mock_create_reset_token(mocker):
     return mocker.patch('api.routes.auth.create_reset_token', return_value="test_reset_token")
 
+
 @pytest.fixture
 def mock_send_email(mocker):
     return mocker.patch('utils.mail_service.send_email', return_value={"message": "Email has been sent"})
+
 
 @pytest.mark.asyncio
 async def test_forgot_password_user_not_found(mock_create_reset_token, mock_send_email, session):
@@ -259,15 +273,20 @@ async def test_forgot_password_user_not_found(mock_create_reset_token, mock_send
 
     mock_create_reset_token.assert_not_called()
     mock_send_email.assert_not_called()
-    
+
+
 @pytest.fixture
 def test_projects(test_user, test_user1, session):
     db = session
     project_data = [
-        {"name": "project1", "description": "description1", "project_type": "COMMUNITY", "project_priority": "LOW PRIORITY", "manager_id": test_user["id"]},
-        {"name": "project2", "description": "description2", "project_type": "PAID", "project_priority": "MEDIUM PRIORITY", "manager_id": test_user["id"]},
-        {"name": "project3", "description": "description3", "project_type": "COMMUNITY", "project_priority": "HIGH PRIORITY", "manager_id": test_user1["id"]},
-        {"name": "project4", "description": "description4", "project_type": "PAID", "project_priority": "LOW PRIORITY", "manager_id": test_user1["id"]},
+        {"name": "project1", "description": "description1",
+         "project_type": "COMMUNITY", "project_priority": "LOW PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project2", "description": "description2",
+         "project_type": "PAID", "project_priority": "MEDIUM PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project3", "description": "description3",
+         "project_type": "COMMUNITY", "project_priority": "HIGH PRIORITY", "manager_id": test_user1["id"]},
+        {"name": "project4", "description": "description4",
+         "project_type": "PAID", "project_priority": "LOW PRIORITY", "manager_id": test_user1["id"]},
     ]
 
     projects = [Project(**project) for project in project_data]
@@ -277,6 +296,7 @@ def test_projects(test_user, test_user1, session):
 
     return projects
 
+
 @pytest.fixture
 def populate_skills(session):
     db = session
@@ -284,8 +304,9 @@ def populate_skills(session):
     db.add_all(skills)
     db.commit()
     skills = db.query(Skill).all()
-    
+
     return skills
+
 
 @pytest.fixture
 def test_stacks(session):
