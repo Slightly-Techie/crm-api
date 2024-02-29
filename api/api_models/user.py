@@ -123,18 +123,18 @@ class UserResponse(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    username: Optional[str]
-    email: Optional[EmailStr]
-    first_name: Optional[str]
-    last_name: Optional[str]
-    years_of_experience: Optional[int]
-    bio: Optional[str]
-    phone_number: Optional[str]
-    github_profile: Optional[str]
-    twitter_profile: Optional[str]
-    linkedin_profile: Optional[str]
-    portfolio_url: Optional[str]
-    profile_pic_url: Optional[str]
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    years_of_experience: Optional[int] = None
+    bio: Optional[str] = None
+    phone_number: Optional[str] = None
+    github_profile: Optional[str] = None
+    twitter_profile: Optional[str] = None
+    linkedin_profile: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    profile_pic_url: Optional[str] = None
     stack_id: Optional[int] = Field(None)
 
     class Config:

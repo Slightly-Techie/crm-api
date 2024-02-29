@@ -155,11 +155,12 @@ def get_project_members(project_id: int, team: Optional[ProjectTeam] = None, db:
 
     members = db.query(User).filter(User.id.in_(user_ids)).all()
 
-    user_responses = [
-        MembersResponse(
-            id=user.id, first_name=user.first_name, last_name=user.last_name,
-            email=user.email, username=user.username, profile_pic_url=user.profile_pic_url, stack=user.stack)
-        for user in members
-    ]
+    # user_responses = [
+    #     MembersResponse(
+    #         id=user.id, first_name=user.first_name, last_name=user.last_name,
+    #         email=user.email, username=user.username, profile_pic_url=user.profile_pic_url, stack=user.stack)
+    #     for user in members
+    # ]
+    # print(user_responses)
 
-    return user_responses
+    return members
