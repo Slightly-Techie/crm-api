@@ -13,7 +13,7 @@ class Role(BaseModel):
     name: str = Field(...)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Skills(BaseModel):
@@ -21,7 +21,7 @@ class Skills(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserSkills(BaseModel):
@@ -29,8 +29,8 @@ class UserSkills(BaseModel):
     skills: list[Skills]
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
 
 
 class Tags(TagBase):
@@ -42,8 +42,8 @@ class UserTags(TagBase):
     tags: list[Tags]
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
 
 
 class FeedBase(BaseModel):
@@ -75,7 +75,7 @@ class UserSignUp(BaseModel):
     is_active: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         validate_assignment = True
 
     @validator("username")
@@ -119,7 +119,7 @@ class UserResponse(BaseModel):
     stack: Optional[Stacks] = Field(None)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProfileUpdate(BaseModel):
@@ -138,7 +138,7 @@ class ProfileUpdate(BaseModel):
     stack_id: Optional[int] = Field(None)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProfileResponse(ProfileUpdate):
@@ -160,7 +160,7 @@ class FeedOwner(BaseModel):
     profile_pic_url: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Feeds(FeedBase):
@@ -170,7 +170,7 @@ class Feeds(FeedBase):
     user: FeedOwner
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class FeedUpdate(BaseModel):
@@ -182,7 +182,7 @@ class TechieOTMCreate(BaseModel):
     points: int = Field(...)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TechieOTMResponse(BaseModel):
@@ -192,7 +192,7 @@ class TechieOTMResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserLogin(BaseModel):

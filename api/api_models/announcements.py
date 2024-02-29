@@ -18,7 +18,7 @@ class AnnouncementResponse(AnnouncementBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AnnouncementUpdate(BaseModel):
@@ -26,4 +26,4 @@ class AnnouncementUpdate(BaseModel):
     content: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

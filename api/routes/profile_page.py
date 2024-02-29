@@ -19,6 +19,7 @@ from db.models import users_skills
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
 
+
 @profile_route.get("/profile/{user_id}", response_model=ProfileResponse)
 async def get_profile(user_id: int, db: Session = Depends(get_db)):
     user_details = db.query(User).filter(User.id == user_id).first()

@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException
+# from fastapi_pagination import Page
 # from fastapi_pagination.ext.sqlalchemy import paginate
-# from fastapi_pagination.links import Page
 from db.database import Base, get_db
 from core.config import settings
 from app import app

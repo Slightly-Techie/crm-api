@@ -19,7 +19,7 @@ class TechnicalTaskResponse(TechnicalTaskBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TechnicalTaskSubmissionBase(BaseModel):
@@ -35,4 +35,4 @@ class TechnicalTaskSubmissionResponse(TechnicalTaskSubmissionBase):
     task_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

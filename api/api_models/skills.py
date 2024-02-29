@@ -5,7 +5,7 @@ class SkillBase(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
     @validator('name')
     def convert_to_lower_case(cls, v):
