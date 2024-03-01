@@ -4,8 +4,8 @@ from sqlalchemy import select
 from db.database import get_db
 from db.models.announcements import Announcement
 from fastapi_pagination.links import Page
-from api.api_models.announcements import AnnouncementCreate, AnnouncementResponse, AnnouncementUpdate
 from fastapi_pagination.ext.sqlalchemy import paginate
+from api.api_models.announcements import AnnouncementCreate, AnnouncementResponse, AnnouncementUpdate
 from utils.permissions import is_admin
 
 

@@ -13,7 +13,7 @@ class Role(BaseModel):
     name: str = Field(...)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Skills(BaseModel):
@@ -21,7 +21,7 @@ class Skills(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserSkills(BaseModel):
@@ -29,8 +29,8 @@ class UserSkills(BaseModel):
     skills: list[Skills]
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
 
 
 class Tags(TagBase):
@@ -42,8 +42,8 @@ class UserTags(TagBase):
     tags: list[Tags]
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
 
 
 class FeedBase(BaseModel):
@@ -75,7 +75,7 @@ class UserSignUp(BaseModel):
     is_active: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         validate_assignment = True
 
     @validator("username")
@@ -119,26 +119,26 @@ class UserResponse(BaseModel):
     stack: Optional[Stacks] = Field(None)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProfileUpdate(BaseModel):
-    username: Optional[str]
-    email: Optional[EmailStr]
-    first_name: Optional[str]
-    last_name: Optional[str]
-    years_of_experience: Optional[int]
-    bio: Optional[str]
-    phone_number: Optional[str]
-    github_profile: Optional[str]
-    twitter_profile: Optional[str]
-    linkedin_profile: Optional[str]
-    portfolio_url: Optional[str]
-    profile_pic_url: Optional[str]
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    years_of_experience: Optional[int] = None
+    bio: Optional[str] = None
+    phone_number: Optional[str] = None
+    github_profile: Optional[str] = None
+    twitter_profile: Optional[str] = None
+    linkedin_profile: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    profile_pic_url: Optional[str] = None
     stack_id: Optional[int] = Field(None)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProfileResponse(ProfileUpdate):
@@ -160,7 +160,7 @@ class FeedOwner(BaseModel):
     profile_pic_url: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Feeds(FeedBase):
@@ -170,7 +170,7 @@ class Feeds(FeedBase):
     user: FeedOwner
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class FeedUpdate(BaseModel):
@@ -182,7 +182,7 @@ class TechieOTMCreate(BaseModel):
     points: int = Field(...)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TechieOTMResponse(BaseModel):
@@ -192,7 +192,7 @@ class TechieOTMResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserLogin(BaseModel):

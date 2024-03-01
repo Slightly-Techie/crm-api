@@ -31,11 +31,14 @@ async def test_create_bucket(s3):
 async def test_upload_file_to_s3(s3):
     s3.create_bucket(Bucket=bucket_name)    
     sample_image_content = b'Simulated image content'
-    sample_image = UploadFile(filename="sample.jpg")
+    with open("sample.pdf", "wb") as sample_file:
+        sample_file.write(sample_image_content)
+    my_file = open("sample.pdf", "rb")
+    sample_image = UploadFile(file=my_file, filename="sample.png")
     result = await upload_file_to_s3(sample_image, 'your-username', "type")
 
     assert result is not None
-    
+
     response = s3.list_objects(Bucket=bucket_name)
     assert 'your-username' in response['Contents'][0]['Key']
 

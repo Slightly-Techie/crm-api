@@ -182,7 +182,10 @@ pytest
 ```bash
   docker-compose -f docker-compose.dev.yml up --build
 ```
-
+* To run tests 
+```bash
+  docker-compose -f docker-compose.dev.yml run --rm app sh -c "python -m pytest test"
+```
 ## ⚙️ Project Structure <a name = "structure"></a>
 ```s
 │   app.py

@@ -20,7 +20,7 @@ class ProjectResponse(CreateProject):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UpdateProject(BaseModel):
@@ -42,5 +42,5 @@ class MembersResponse(BaseModel):
     last_name: str = Field(...)
     username: str = Field(...)
     email: str = Field(...)
-    profile_pic_url: str = Field(...)
-    stack: Stacks = Field(None)
+    profile_pic_url: Optional[str] = None
+    stack: Optional[Stacks] = Field(None)

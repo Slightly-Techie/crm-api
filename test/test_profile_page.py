@@ -32,6 +32,7 @@ def test_get_user_by_id(client, test_user):
     assert profile_res.status_code == 200
     assert profile_res.json()["email"] == test_user["email"]
 
+
 def test_update_profile(client, test_user):
     res = client.post(
         "/api/v1/users/login",

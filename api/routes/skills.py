@@ -6,7 +6,6 @@ from typing import List
 from sqlalchemy import desc, select
 from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-
 from db.database import SessionLocal, get_db
 from utils.oauth2 import get_current_user
 
