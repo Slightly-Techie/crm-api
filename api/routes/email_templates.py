@@ -11,7 +11,7 @@ email_templates_route = APIRouter(tags=["Email Templates"], prefix="/email-templ
 
 @email_templates_route.post("/", response_model=EmailTemplateResponse, status_code=status.HTTP_201_CREATED)
 def create_email_template(template: EmailTemplateCreate, db: Session = Depends(get_db), current_user=Depends(is_admin)):
-    db_template = EmailTemplate(template_name=template.template_name, html_content=template.html_content)
+    db_template = EmailTemplate(template_name=template.template_name,subject=template.subject, html_content=template.html_content)
     db.add(db_template)
     db.commit()
     db.refresh(db_template)

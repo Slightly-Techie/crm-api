@@ -52,8 +52,7 @@ def index():
 
 @app.get('/inactive')
 def redirect():
-    return {
-        "msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
+    return {"msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
 
 
 v1_prefix = "/api/v1"

@@ -17,6 +17,7 @@ from api.api_models.user import (
     ForgotPasswordRequest,
     # UserSignUp
 )
+from utils.enums import EmailTemplateName
 from utils.tools import tools as skills_data
 from db.models.skills import Skill
 from db.models.projects import Project
@@ -33,7 +34,6 @@ engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
 
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine)
-
 
 @pytest.fixture()
 def session():
@@ -204,8 +204,14 @@ def test_users(client, session):
 @pytest.fixture
 def test_email_templates(test_user, test_user1, session):
     db = session
-    template_Data =[{"template_name":"Acceptance","html_content":"<p>Hello World 1</p>"},
-                    {"template_name":"Rejection","html_content":"<p>Hello World 2</p>"}]
+    template_Data =[ {
+                    "template_name":EmailTemplateName.ACCEPTED,
+                     "subject":"Welcome to Slightly Techie!",
+                     "html_content": "<p>Hello World {} 1</p>"},
+
+                    {"template_name":EmailTemplateName.REJECTED,
+                     "subject":"Update on Application",
+                     "html_content": "<p>Hello World {} 2</p>"}]
     templates=[EmailTemplate(**template)for template in template_Data]
     db.add_all(templates)
     db.commit()
@@ -304,7 +310,6 @@ def test_projects(test_user, test_user1, session):
     projects = db.query(Project).all()
 
     return projects
-
 
 @pytest.fixture
 def populate_skills(session):
