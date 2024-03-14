@@ -4,7 +4,13 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from urllib.parse import urlencode
 from starlette.responses import JSONResponse
+
+from api.api_models.email_template import EmailTemplateName
 from core.config import settings
+from db.models.email_template import EmailTemplate
+from sqlalchemy.orm import Session
+from fastapi import Depends
+from db.database import get_db
 
 
 def read_html_file(file_path):
@@ -35,13 +41,13 @@ async def send_email(subject: str, recipient_email: str, html_content: str) -> J
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": f"An error occurred: {e}"})
 
-async def send_password_reset_email(email: str, reset_token: str, username: str):
+async def send_password_reset_email(email: str, reset_token: str, username: str,db: Session = Depends(get_db)):
     subject = "Reset Password"
     reset_password_url = f"{settings.BASE_URL}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
 
-    html_content = read_html_file('utils/email_templates/password-reset.html').format(username, reset_password_url)
-    return await send_email(subject, email, html_content)
-
+    email_template = db.query(EmailTemplate).filter(EmailTemplate.template_name == EmailTemplateName.password_reset).first()
+    html_content = email_template.html_content.format(username, reset_password_url)
+    await send_email(email_template.subject, email, html_content)
 
 async def send_applicant_task(
         email: str, first_name: str, task: str):
