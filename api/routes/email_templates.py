@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination.links import Page
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from api.api_models.email_template import EmailTemplateCreate, EmailTemplateResponse
@@ -24,6 +27,10 @@ def read_email_template(template_id: int, db: Session = Depends(get_db)):
     if db_template is None:
         raise HTTPException(status_code=404, detail="Email template not found")
     return db_template
+
+@email_templates_route.get("/", response_model=Page[EmailTemplateResponse])
+def read_all_email_templates(db: Session = Depends(get_db)):
+    return paginate(db, select(EmailTemplate).order_by(EmailTemplate.template_name))
 
 
 @email_templates_route.put("/{template_id}", response_model=EmailTemplateResponse)
