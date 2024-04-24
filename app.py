@@ -42,8 +42,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    pass
-    # await create_bucket()
+    await create_bucket()
 
 
 @app.get('/')
