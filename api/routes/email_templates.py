@@ -20,7 +20,6 @@ def create_email_template(template: EmailTemplateCreate, db: Session = Depends(g
     db.refresh(db_template)
     return db_template
 
-
 @email_templates_route.get("/{template_id}", response_model=EmailTemplateResponse)
 def read_email_template(template_id: int, db: Session = Depends(get_db)):
     db_template = db.query(EmailTemplate).filter(EmailTemplate.id == template_id).first()

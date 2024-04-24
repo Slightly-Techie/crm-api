@@ -46,7 +46,15 @@ async def send_password_reset_email(email: str, reset_token: str, username: str,
     reset_password_url = f"{settings.BASE_URL}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
 
     email_template = db.query(EmailTemplate).filter(EmailTemplate.template_name == EmailTemplateName.password_reset).first()
-    html_content = email_template.html_content.format(username, reset_password_url)
+    
+    if email_template:
+        html_content = email_template.html_content.format(username, reset_password_url)
+    else:
+        try:
+            html_content = read_html_file('utils/email_templates/password-reset.html').format(username, reset_password_url)
+        except FileNotFoundError:
+            html_content = f"Hello {username}, please reset your password by clicking this link: {reset_password_url}"
+    
     await send_email(email_template.subject, email, html_content)
 
 async def send_applicant_task(
