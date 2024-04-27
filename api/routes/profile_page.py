@@ -4,9 +4,12 @@ from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
+
+from api.api_models.email_template import EmailTemplateName
 from api.api_models.user import ProfileUpdate, ProfileResponse
 from core.config import settings
 from db.database import get_db
+from db.models.email_template import EmailTemplate
 from db.models.skills import Skill
 from db.models.users import User
 from utils.mail_service import send_email, read_html_file
@@ -121,12 +124,12 @@ async def update_user_status(user_id: int, new_status: UserStatus, db: Session =
 
     user.status = new_status
     db.commit()
-    if new_status == UserStatus.ACCEPTED:
-        html_content = read_html_file('utils/email_templates/acceptance.html').format(user.username)
-        await send_email("Welcome to Slightly Techie!", user.email, html_content)
-    elif new_status == UserStatus.REJECTED:
-        html_content = read_html_file('utils/email_templates/rejection.html').format(user.username)
-        await send_email("Slightly Techie Application Update", user.email, html_content)
+
+    if new_status == UserStatus.ACCEPTED or new_status == UserStatus.REJECTED:
+        email_template = db.query(EmailTemplate).filter(EmailTemplate.template_name == new_status.value).first()
+        if email_template:
+            html_content = email_template.html_content.format(user.username)
+            await send_email(email_template.subject, user.email, html_content)
     return user
 
 

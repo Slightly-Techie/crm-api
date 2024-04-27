@@ -1,13 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException
-# from fastapi_pagination import Page
-# from fastapi_pagination.ext.sqlalchemy import paginate
 from db.database import Base, get_db
 from core.config import settings
 from app import app
 import pytest
 from fastapi.testclient import TestClient
+
+from db.models.email_template import EmailTemplate
 from db.models.roles import Role
 from db.models.feeds import Feed
 from db.models.stacks import Stack
@@ -17,6 +17,7 @@ from api.api_models.user import (
     ForgotPasswordRequest,
     # UserSignUp
 )
+from utils.enums import EmailTemplateName
 from utils.tools import tools as skills_data
 from db.models.skills import Skill
 from db.models.projects import Project
@@ -33,7 +34,6 @@ engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
 
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine)
-
 
 @pytest.fixture()
 def session():
@@ -60,7 +60,6 @@ def client(session):
 
 @pytest.fixture(autouse=True)
 def create_roles(session):
-
     db = session
 
     create_roles = [
@@ -202,6 +201,23 @@ def test_users(client, session):
 
     return users
 
+@pytest.fixture
+def test_email_templates(test_user, test_user1, session):
+    db = session
+    template_Data =[ {
+                    "template_name":EmailTemplateName.ACCEPTED,
+                     "subject":"Welcome to Slightly Techie!",
+                     "html_content": "<p>Hello World {} 1</p>"},
+
+                    {"template_name":EmailTemplateName.REJECTED,
+                     "subject":"Update on Application",
+                     "html_content": "<p>Hello World {} 2</p>"}]
+    templates=[EmailTemplate(**template)for template in template_Data]
+    db.add_all(templates)
+    db.commit()
+    email_templates = db.query(EmailTemplate).all()
+
+    return email_templates
 
 @pytest.fixture
 def test_feeds(test_user, test_user1, session):
@@ -239,8 +255,7 @@ def test_announcements(test_user, test_user1, session):
         {"title": "title1", "content": "content1", "user_id": test_user["id"]},
         {"title": "title2", "content": "content2", "user_id": test_user["id"]},
         {"title": "title3", "content": "content3", "user_id": test_user1["id"]},
-        {"title": "title4",
-         "content": "content4", "image_url": "image1", "user_id": test_user1["id"]},
+        {"title": "title4", "content": "content4", "image_url": "image1", "user_id": test_user1["id"]},
     ]
 
     announcements = [Announcement(**announcement) for announcement in announcement_data]
@@ -279,14 +294,14 @@ async def test_forgot_password_user_not_found(mock_create_reset_token, mock_send
 def test_projects(test_user, test_user1, session):
     db = session
     project_data = [
-        {"name": "project1", "description": "description1",
-         "project_type": "COMMUNITY", "project_priority": "LOW PRIORITY", "manager_id": test_user["id"]},
-        {"name": "project2", "description": "description2",
-         "project_type": "PAID", "project_priority": "MEDIUM PRIORITY", "manager_id": test_user["id"]},
-        {"name": "project3", "description": "description3",
-         "project_type": "COMMUNITY", "project_priority": "HIGH PRIORITY", "manager_id": test_user1["id"]},
-        {"name": "project4", "description": "description4",
-         "project_type": "PAID", "project_priority": "LOW PRIORITY", "manager_id": test_user1["id"]},
+        {"name": "project1", "description": "description1", "project_type": "COMMUNITY",
+         "project_priority": "LOW PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project2", "description": "description2", "project_type": "PAID",
+         "project_priority": "MEDIUM PRIORITY", "manager_id": test_user["id"]},
+        {"name": "project3", "description": "description3", "project_type": "COMMUNITY",
+         "project_priority": "HIGH PRIORITY", "manager_id": test_user1["id"]},
+        {"name": "project4", "description": "description4", "project_type": "PAID", "project_priority": "LOW PRIORITY",
+         "manager_id": test_user1["id"]},
     ]
 
     projects = [Project(**project) for project in project_data]
@@ -295,7 +310,6 @@ def test_projects(test_user, test_user1, session):
     projects = db.query(Project).all()
 
     return projects
-
 
 @pytest.fixture
 def populate_skills(session):
