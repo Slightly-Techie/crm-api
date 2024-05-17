@@ -69,7 +69,7 @@ def update_task(
             detail=f"Technical Task with id {task_id} is not found"
             )
     try:
-        tech_task.update(payload.dict(exclude_unset=True))
+        tech_task.update(payload.model_dump(exclude_unset=True))
         db.commit()
         db.refresh(old_task)
     except Exception as tech_update_err:
@@ -192,7 +192,7 @@ def update_submission(
             detail=f"Task Submission with id {submission_id} is not found"
             )
     try:
-        tech_task.update(payload.dict(exclude_unset=True))
+        tech_task.update(payload.model_dump(exclude_unset=True))
         db.commit()
         db.refresh(old_task)
     except Exception as tech_update_err:

@@ -23,12 +23,12 @@ from fastapi_pagination import add_pagination
 create_roles()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await create_bucket()
-    yield
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     await create_bucket()
+#     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 # origins = [
 #     "http://localhost",

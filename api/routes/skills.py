@@ -90,7 +90,6 @@ def populate_skills():
         db.commit()
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Skill insertion error")
     finally:
         db.close()
     return {"message": "Skills table populated successfully!"}

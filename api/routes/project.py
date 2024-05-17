@@ -23,7 +23,7 @@ def create(project: CreateProject, db: Session = Depends(get_db), user: User = D
     if not manager:
         raise HTTPException(status_code=404, detail="Manager not found")
 
-    new_project = Project(**project.dict())
+    new_project = Project(**project.model_dump())
     db.add(new_project)
     db.commit()
     db.refresh(new_project)
@@ -45,7 +45,7 @@ def update(
         if not manager:
             raise HTTPException(status_code=404, detail="Manager not found")
 
-    for field, value in updated_project.dict().items():
+    for field, value in updated_project.model_dump().items():
         if value is not None:
             setattr(project, field, value)
 

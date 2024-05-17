@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status, File
 from fastapi_pagination.links import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import desc
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from api.api_models.email_template import EmailTemplateName
@@ -60,7 +60,7 @@ def get_all_profile(skill: str = Query(None, title="Skill", description="The ski
                     stack: str = Query(None, title="Stack", description="The stack to filter users"),
                     active: Optional[bool] = None, p: Optional[str] = None,
                     db: Session = Depends(get_db)):
-    query = db.query(User)
+    query = select(User).order_by(desc(User.created_at))
 
     if skill:
         query = query.join(users_skills.UserSkill).join(Skill).filter(Skill.name == skill.capitalize())
@@ -77,11 +77,7 @@ def get_all_profile(skill: str = Query(None, title="Skill", description="The ski
         if not query.all():
             raise HTTPException(status_code=404, detail="No users found")
 
-    users = paginate(query.order_by(desc(User.created_at)))
-
-    return users
-
-    # return paginate(db, select(User).order_by(desc(User.created_at)))
+    return paginate(db, query)
 
 
 @profile_route.put("/profile/{user_id}/activate", response_model=ProfileResponse, status_code=status.HTTP_200_OK)

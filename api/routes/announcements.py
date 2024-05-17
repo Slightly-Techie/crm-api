@@ -49,7 +49,7 @@ def update_announcement_by_id(
     if not old_announcement:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"announcement with id: {announcement_id} was not found")
 
-    announcement_query.update(announcement.dict())
+    announcement_query.update(announcement.model_dump())
     db.commit()
 
     return announcement_query.first()
