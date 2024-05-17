@@ -100,7 +100,7 @@ def update_profile_status(user_id: int, db: Session = Depends(get_db), current_u
 
 @profile_route.get("/user_info", response_model=dict)
 def get_user_info(email: str, db: Session = Depends(get_db)):
-    user_details = db.query(User).filter(User.email == email).first()
+    user_details = db.query(User).filter(User.email == email.lower()).first()
     if user_details:
         return {
             "status": 200,

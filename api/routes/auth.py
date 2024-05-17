@@ -33,7 +33,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def signup(user: UserSignUp, db: Session = Depends(get_db)):
-
+    user.email = user.email.lower()
     user_name = db.query(User).filter(User.username == user.username).first()
     if user_name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -51,6 +51,7 @@ async def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
     user.password = hash_passwd
     new_user = create_new_user(user, db)
+    
     try:
         task = db.query(TechnicalTask).filter(
             TechnicalTask.stack_id == new_user.stack_id,
@@ -72,6 +73,7 @@ async def signup(user: UserSignUp, db: Session = Depends(get_db)):
 
 @auth_router.post('/login', response_model=Token)
 def login(response: Response, user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user.username = user.username.lower()
     user_data = db.query(User).filter(User.email == user.username).first()
     if not user_data:
         raise HTTPException(
@@ -139,7 +141,7 @@ async def forgot_password(request: ForgotPasswordRequest, requested: Request, db
     Returns:
         JSONResponse: A response indicating the result of sending the reset password email.
     """
-    email = request.email
+    email = request.email.lower()
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
@@ -164,6 +166,7 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     """
     try:
         email = verify_reset_token(request.token)
+        email = email.lower()
         user = db.query(User).filter(User.email == email).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
