@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from api.routes.auth import auth_router
 from api.routes.email_templates import email_templates_route
 from api.routes.skills import skill_route
@@ -21,7 +22,13 @@ from fastapi_pagination import add_pagination
 # Base.metadata.create_all(bind=engine)
 create_roles()
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_bucket()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # origins = [
 #     "http://localhost",
@@ -38,12 +45,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    await create_bucket()
-
 
 @app.get('/')
 def index():

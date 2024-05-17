@@ -16,7 +16,7 @@ announcement_route = APIRouter(tags=["Announcements"], prefix="/announcements")
 def create_announcement(
     announcement: AnnouncementCreate, current_user=Depends(is_admin), db: Session = Depends(get_db)
 ):
-    new_announcement = Announcement(user_id=current_user.id, **announcement.dict())
+    new_announcement = Announcement(user_id=current_user.id, **announcement.model_dump())
 
     db.add(new_announcement)
     db.commit()

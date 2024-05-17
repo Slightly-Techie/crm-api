@@ -41,7 +41,7 @@ async def update_profile(
     try:
         if user_exists.first():
             # convert json into a python dict and exclude fields not specified
-            update_data = userDetails.dict(exclude_unset=True)
+            update_data = userDetails.model_dump(exclude_unset=True)
             user_exists.update(update_data)
 
             db.commit()

@@ -57,7 +57,7 @@ def update_feed_by_id(
             detail="You not authorized to perform this request",
         )
 
-    feed_query.update(updated_feed.dict())
+    feed_query.update(updated_feed.model_dump())
     db.commit()
 
     return feed_query.first()

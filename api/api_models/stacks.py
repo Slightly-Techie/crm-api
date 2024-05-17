@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 
 
@@ -8,8 +8,7 @@ class Stacks(BaseModel):
     created_at: datetime = Field(...)
     updated_at: datetime = Field(...)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StackCreate(BaseModel):
