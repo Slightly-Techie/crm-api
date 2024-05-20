@@ -1,8 +1,8 @@
 """added endpoints table
 
-Revision ID: 894654515194
+Revision ID: 51a77273c07b
 Revises: 32df0260ed96
-Create Date: 2024-05-20 12:03:08.574225
+Create Date: 2024-05-20 13:40:54.445906
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '894654515194'
+revision = '51a77273c07b'
 down_revision = '32df0260ed96'
 branch_labels = None
 depends_on = None
@@ -23,7 +23,8 @@ def upgrade() -> None:
     sa.Column('endpoint', sa.String(), nullable=False),
     sa.Column('status', sa.Boolean(), nullable=False),
     sa.Column('toggled_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('endpoint')
     )
     op.drop_index('ix_email_templates_id', table_name='email_templates')
     op.drop_index('ix_email_templates_template_name', table_name='email_templates')

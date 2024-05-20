@@ -17,6 +17,7 @@ from api.routes.stacks import stack_router
 from api.routes.project import project_router
 from api.routes.technical_task import tech_task_router, sub_tech_task_router
 from fastapi_pagination import add_pagination
+from api.routes.endpoints import endpoints_route
 
 # Base.metadata.create_all(bind=engine)
 create_roles()
@@ -69,6 +70,7 @@ app.include_router(project_router, prefix=v1_prefix)
 app.include_router(tech_task_router, prefix=v1_prefix)
 app.include_router(sub_tech_task_router, prefix=v1_prefix)
 app.include_router(email_templates_route, prefix=v1_prefix)
+app.include_router(endpoints_route, prefix=v1_prefix)
 
 add_pagination(app)
 
