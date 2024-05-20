@@ -3,10 +3,10 @@ from db.models.endpoints import Endpoints
 from fastapi import HTTPException, status
 
 
-async def check_endpoint(endpoint: str):
+def check_endpoint(endpoint: str):
     db = next(get_db())
-    endpoint_query = await db.query(Endpoints).filter(Endpoints.endpoint == endpoint).first()
-
+    endpoint_query = db.query(Endpoints).filter(Endpoints.endpoint == endpoint).first()
+    
     if not endpoint_query.status:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail=f"{endpoint.upper()} is closed")
 

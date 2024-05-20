@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from db.models.email_template import EmailTemplate
+from db.models.endpoints import Endpoints
 from db.models.roles import Role
 from db.models.feeds import Feed
 from db.models.stacks import Stack
@@ -335,3 +336,14 @@ def test_stacks(session):
     stacks = db.query(Stack).all()
 
     return stacks
+
+
+@pytest.fixture
+def endpoints_status(session):
+    db = session
+    endpoints_data = [Endpoints(endpoint="login"), Endpoints(endpoint="signup")]
+    db.add_all(endpoints_data)
+    db.commit()
+    endpoints = db.query(Endpoints).all()
+
+    return endpoints
