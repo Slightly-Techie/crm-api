@@ -23,10 +23,10 @@ from api.routes.endpoints import endpoints_route
 create_roles()
 
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     await create_bucket()
-#     yield
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_bucket()
+    yield
 
 app = FastAPI()
 
