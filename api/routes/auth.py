@@ -25,13 +25,15 @@ from utils.mail_service import  send_password_reset_email
 from utils.mail_service import send_email, send_applicant_task
 from utils.utils import get_key_by_value
 from utils.enums import UserStatus
+from utils.endpoints_status import endpoint_status_dependency
 
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+@auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse,
+                  dependencies=[Depends(endpoint_status_dependency("signup"))])
 async def signup(user: UserSignUp, db: Session = Depends(get_db)):
     user.email = user.email.lower()
     user_name = db.query(User).filter(User.username == user.username).first()
