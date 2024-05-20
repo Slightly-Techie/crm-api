@@ -11,3 +11,4 @@ from .models.techie_of_the_month import TechieOTM
 from .models.projects import Project
 from .models.users_projects import UserProject
 from .models.technical_task import TechnicalTask, TechnicalTaskSubmission
+from .models.endpoints import Endpoints

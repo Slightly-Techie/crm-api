@@ -90,7 +90,8 @@ def login(response: Response, user: OAuth2PasswordRequestForm = Depends(), db: S
         token=token,
         refresh_token=refresh_token,
         token_type="Bearer",
-        is_active=user_data.is_active
+        is_active=user_data.is_active,
+        user_status=user_data.status
     )
 
 
@@ -110,7 +111,8 @@ def refresh_token(refresh_token_data: RefreshTokenRequest, db: Session = Depends
             token=token,
             refresh_token=refresh_token,
             token_type="Bearer",
-            is_active=user.is_active
+            is_active=user.is_active,
+            user_status=user.status
         )
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
