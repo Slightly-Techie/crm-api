@@ -21,57 +21,68 @@ from utils.oauth2 import (
 )
 from utils.permissions import is_authenticated
 from core.config import settings
-from utils.mail_service import  send_password_reset_email
-from utils.mail_service import send_email, send_applicant_task
+from utils.mail_service import send_password_reset_email
+from utils.mail_service import send_applicant_task
 from utils.utils import get_key_by_value
 from utils.enums import UserStatus
+# from utils.endpoints_status import endpoint_status_dependency
+from db.models.endpoints import Endpoints
 
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def signup(user: UserSignUp, db: Session = Depends(get_db)):
+    endpoint_query = db.query(Endpoints).filter(Endpoints.endpoint == "signup").first()
+    if endpoint_query:
+        if not endpoint_query.status:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Signup is closed")
+        else:
+            user.email = user.email.lower()
+            user_name = db.query(User).filter(User.username == user.username).first()
+            if user_name:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=settings.ERRORS.get("USERNAME_EXISTS"))
 
-    user_name = db.query(User).filter(User.username == user.username).first()
-    if user_name:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=settings.ERRORS.get("USERNAME_EXISTS"))
+            user_data = db.query(User).filter(User.email == user.email).first()
+            if user_data:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=settings.ERRORS.get("USER_EXISTS"))
+            hash_passwd = get_password_hash(user.password)
 
-    user_data = db.query(User).filter(User.email == user.email).first()
-    if user_data:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=settings.ERRORS.get("USER_EXISTS"))
-    hash_passwd = get_password_hash(user.password)
+            if user.password != user.password_confirmation:
+                print("Passwords do not match")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
 
-    if user.password != user.password_confirmation:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
+            user.password = hash_passwd
+            new_user = create_new_user(user, db)
 
-    user.password = hash_passwd
-    new_user = create_new_user(user, db)
-    try:
-        task = db.query(TechnicalTask).filter(
-            TechnicalTask.stack_id == new_user.stack_id,
-            TechnicalTask.experience_level == get_key_by_value(new_user.years_of_experience)
-        ).first()
-        if task:
-            await send_applicant_task(
-                new_user.email, new_user.first_name, task.content
-                )
-            db.query(User).filter(User.id == new_user.id).update(
-                {"status": UserStatus.CONTACTED}
-                )
-            db.commit()
-    except Exception:
-        pass
+            try:
+                task = db.query(TechnicalTask).filter(
+                    TechnicalTask.stack_id == new_user.stack_id,
+                    TechnicalTask.experience_level == get_key_by_value(new_user.years_of_experience)
+                ).first()
+                if task:
+                    await send_applicant_task(
+                        new_user.email, new_user.first_name, task.content
+                        )
+                    db.query(User).filter(User.id == new_user.id).update(
+                        {"status": UserStatus.CONTACTED}
+                        )
+                    db.commit()
+            except Exception:
+                pass
 
-    return new_user
+            return new_user
 
 
 @auth_router.post('/login', response_model=Token)
 def login(response: Response, user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user.username = user.username.lower()
     user_data = db.query(User).filter(User.email == user.username).first()
     if not user_data:
         raise HTTPException(
@@ -88,7 +99,8 @@ def login(response: Response, user: OAuth2PasswordRequestForm = Depends(), db: S
         token=token,
         refresh_token=refresh_token,
         token_type="Bearer",
-        is_active=user_data.is_active
+        is_active=user_data.is_active,
+        user_status=user_data.status
     )
 
 
@@ -108,7 +120,8 @@ def refresh_token(refresh_token_data: RefreshTokenRequest, db: Session = Depends
             token=token,
             refresh_token=refresh_token,
             token_type="Bearer",
-            is_active=user.is_active
+            is_active=user.is_active,
+            user_status=user.status
         )
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
@@ -139,7 +152,7 @@ async def forgot_password(request: ForgotPasswordRequest, requested: Request, db
     Returns:
         JSONResponse: A response indicating the result of sending the reset password email.
     """
-    email = request.email
+    email = request.email.lower()
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
@@ -164,6 +177,7 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     """
     try:
         email = verify_reset_token(request.token)
+        email = email.lower()
         user = db.query(User).filter(User.email == email).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

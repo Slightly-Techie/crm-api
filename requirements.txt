@@ -44,7 +44,7 @@ packaging==21.3
 passlib==1.7.4  
 pluggy==1.0.0  
 protobuf==4.24.4  
-# psycopg2>=2.9.5  
+psycopg2-binary==2.9.9
 pyasn1-modules==0.3.0  
 pyasn1==0.4.8  
 pycparser==2.21  

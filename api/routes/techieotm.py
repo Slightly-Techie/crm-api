@@ -33,7 +33,7 @@ def create_techie_of_the_month(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    new_techieotm = TechieOTM(**techieotm.dict())
+    new_techieotm = TechieOTM(**techieotm.model_dump())
 
     db.add(new_techieotm)
     db.commit()

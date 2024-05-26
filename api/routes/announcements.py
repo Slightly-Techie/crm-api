@@ -16,7 +16,7 @@ announcement_route = APIRouter(tags=["Announcements"], prefix="/announcements")
 def create_announcement(
     announcement: AnnouncementCreate, current_user=Depends(is_admin), db: Session = Depends(get_db)
 ):
-    new_announcement = Announcement(user_id=current_user.id, **announcement.dict())
+    new_announcement = Announcement(user_id=current_user.id, **announcement.model_dump())
 
     db.add(new_announcement)
     db.commit()
@@ -49,7 +49,7 @@ def update_announcement_by_id(
     if not old_announcement:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"announcement with id: {announcement_id} was not found")
 
-    announcement_query.update(announcement.dict())
+    announcement_query.update(announcement.model_dump())
     db.commit()
 
     return announcement_query.first()

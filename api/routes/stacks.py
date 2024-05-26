@@ -71,7 +71,7 @@ async def update_stack(
             status_code=status.HTTP_404_NOT_FOUND, detail="Stack not found"
         )
     try:
-        stack_query.update(payload.dict(exclude_unset=True))
+        stack_query.update(payload.model_dump(exclude_unset=True))
         db.commit()
         db.refresh(old_stack)
     except Exception as e:

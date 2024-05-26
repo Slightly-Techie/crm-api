@@ -1,5 +1,5 @@
 from fastapi import Form, UploadFile
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from datetime import datetime
 from typing import Optional, Union
 from api.api_models.tags import TagBase
@@ -12,25 +12,20 @@ class Role(BaseModel):
     id: int = Field(...)
     name: str = Field(...)
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 class Skills(BaseModel):
     id: int
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserSkills(BaseModel):
     id: int
     skills: list[Skills]
 
-    class Config:
-        from_attributes = True
-        populate_by_name = True
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class Tags(TagBase):
@@ -41,9 +36,7 @@ class UserTags(TagBase):
     id: int = Field(...)
     tags: list[Tags]
 
-    class Config:
-        from_attributes = True
-        populate_by_name = True
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class FeedBase(BaseModel):
@@ -74,17 +67,15 @@ class UserSignUp(BaseModel):
     profile_pic_url: Optional[str] = Field(None)
     is_active: bool = False
 
-    class Config:
-        from_attributes = True
-        validate_assignment = True
+    model_config = ConfigDict(from_attributes=True, validate_assignment=True)
 
-    @validator("username")
+    @field_validator("username")
     def validate_username(cls, value):
         # Use a regular expression to remove non-alphanumeric characters and spaces
         cleaned_username = re.sub(r'[^a-zA-Z0-9]', '', value)
         return cleaned_username.lower()
 
-    @validator("role_id", pre=True, always=True)
+    @field_validator("role_id", mode="before", check_fields=True)
     def set_role_id(cls, role_id):
         from db.database import SessionLocal
         from db.models.roles import Role as _Role
@@ -118,8 +109,7 @@ class UserResponse(BaseModel):
     is_active: bool = Field(...)
     stack: Optional[Stacks] = Field(None)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProfileUpdate(BaseModel):
@@ -137,8 +127,7 @@ class ProfileUpdate(BaseModel):
     profile_pic_url: Optional[str] = None
     stack_id: Optional[int] = Field(None)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProfileResponse(ProfileUpdate):
@@ -159,8 +148,7 @@ class FeedOwner(BaseModel):
     username: str
     profile_pic_url: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Feeds(FeedBase):
@@ -169,8 +157,7 @@ class Feeds(FeedBase):
     feed_pic_url: Optional[str]
     user: FeedOwner
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FeedUpdate(BaseModel):
@@ -181,8 +168,7 @@ class TechieOTMCreate(BaseModel):
     user_id: int = Field(...)
     points: int = Field(...)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TechieOTMResponse(BaseModel):
@@ -191,8 +177,7 @@ class TechieOTMResponse(BaseModel):
     points: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserLogin(BaseModel):
@@ -204,6 +189,7 @@ class Token(BaseModel):
     token: str = Field(...)
     token_type: str = Field(...)
     is_active: bool = Field(...)
+    user_status: str = Field(...)
     refresh_token: str = Field(...)
 
 

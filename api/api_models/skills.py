@@ -1,13 +1,12 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class SkillBase(BaseModel):
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
-    @validator('name')
+    @field_validator('name')
     def convert_to_lower_case(cls, v):
         return v.lower()
 
