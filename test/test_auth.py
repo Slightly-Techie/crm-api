@@ -3,11 +3,11 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from jose import jwt
-from api.api_models.user import ForgotPasswordRequest, ResetPasswordRequest
+from api.api_models.user import ResetPasswordRequest
 from api.routes.auth import reset_password
 from app import app
 from core.config import settings
-from utils.mail_service import send_email
+# from utils.mail_service import send_email
 from utils.oauth2 import create_reset_token, verify_reset_token
 
 
@@ -37,16 +37,19 @@ user_signup_payload_incomplete = {
     "is_active": True
 }
 
+
 def test_user_signup_valid(client):
     res = client.post("/api/v1/users/register", json=user_signup_payload)
     res_body = res.json()
 
     assert res_body["email"] == user_signup_payload["email"]
     assert res.status_code == 201
-    
+
+
 def test_user_signup_invalid():
     res = client.post("/api/v1/users/register", json=user_signup_payload_incomplete)
     assert res.status_code == 422
+
 
 def test_user_signup_invalid_confirm_password():
     payload = user_signup_payload.copy()
@@ -56,7 +59,8 @@ def test_user_signup_invalid_confirm_password():
 
     assert res.status_code == 400
     assert res_body["detail"] == settings.ERRORS.get("PASSWORD_MATCH_DETAIL")
-    
+
+
 def test_user_login_valid(test_user):
     res = client.post("/api/v1/users/login", data={
         "username": test_user.get("email"),
@@ -66,7 +70,8 @@ def test_user_login_valid(test_user):
 
     assert res.status_code == 200
     assert res_body["token"] is not None
-    
+
+
 def test_user_login_invalid(test_user):
     res = client.post("/api/v1/users/login", data={
         "username": test_user.get("email"),
@@ -76,6 +81,7 @@ def test_user_login_invalid(test_user):
 
     assert res.status_code == 400
     assert res_body["detail"] == settings.ERRORS.get("INVALID_CREDENTIALS")
+
 
 def test_user_gets_token_and_refresh_token(test_user):
     login_response = client.post(
@@ -102,6 +108,7 @@ def test_create_reset_token_valid_email(test_user, mocker):
     mocker.patch('jose.jwt.encode', return_value=expected_token)
     assert create_reset_token(email) == expected_token
 
+
 def test_verify_reset_token_invalid_email_format():
     invalid_email = 'invalid_email'
     token = create_reset_token(invalid_email)
@@ -109,6 +116,7 @@ def test_verify_reset_token_invalid_email_format():
         verify_reset_token(token)
     assert exc.value.status_code == 400
     assert exc.value.detail == 'Invalid token'
+
 
 def test_verify_reset_token_expired_token():
     email = 'test@example.com'
@@ -124,13 +132,15 @@ def test_verify_reset_token_expired_token():
         verify_reset_token(expired_token)
     assert exc.value.status_code == 400
 
+
 def test_reset_password_invalid_token():
     with pytest.raises(HTTPException) as e:
         reset_password(ResetPasswordRequest(token='invalid_token', new_password='new_password'))
     assert e.value.status_code == 400
     assert e.value.detail == 'Invalid token'
 
-#test needs a valid email.
+
+# test needs a valid email.
 
 # @pytest.mark.asyncio
 # async def test_send_email():
@@ -138,4 +148,3 @@ def test_reset_password_invalid_token():
 #     reset_token = "test_reset_token"
 #     response = await send_email(email, reset_token)
 #     assert response.status_code == 200
-    

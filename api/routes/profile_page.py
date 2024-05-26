@@ -49,7 +49,7 @@ async def update_profile(
             return user_exists.first()
         else:
             raise HTTPException(
-                status_code=404, detail=settings.ERRORS.get("INVALID ID"))
+                status_code=status.HTTP_404_NOT_FOUND, detail=settings.ERRORS.get("INVALID ID"))
     except Exception:
         raise HTTPException(
             status_code=400, detail=settings.ERRORS.get("UNKNOWN ERROR"))

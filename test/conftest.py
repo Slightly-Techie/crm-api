@@ -29,12 +29,23 @@ from api.routes.auth import (
 )
 from api.api_models import user
 
-TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB_TEST}"
+pg_user = settings.POSTGRES_USER
+pg_pass = settings.POSTGRES_PASSWORD
+pg_host = settings.POSTGRES_SERVER
+pg_port = settings.POSTGRES_PORT
+pg_test_db = settings.POSTGRES_DB_TEST
+
+TEST_SQLALCHEMY_DATABASE_URL = f"postgresql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_test_db}"
 
 engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL)
 
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine)
+
+
+Base.metadata.drop_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
+
 
 @pytest.fixture()
 def session():
@@ -74,6 +85,32 @@ def create_roles(session):
             db.add(role)
 
     db.commit()
+
+
+@pytest.fixture(autouse=True)
+def create_signup_endpoint(session):
+    db = session
+    signup_endpoint_object = {
+        "endpoint": "signup",
+        "status": True
+    }
+    print(db.bind.url.database)
+    signup_obj = db.query(Endpoints).filter(Endpoints.endpoint == signup_endpoint_object["endpoint"])
+    if signup_obj.first():
+        print("Endpoint found in db", signup_obj.first().status)
+        if not signup_obj.first().status:
+            print("Updating the status for signup")
+            signup_obj.update({"status": True})
+            db.commit()
+            db.refresh(signup_obj)
+            return True
+    else:
+        signup_object = Endpoints(
+            endpoint=signup_endpoint_object["endpoint"],
+            status=signup_endpoint_object["status"]
+            )
+        db.add(signup_object)
+        db.commit()
 
 
 @pytest.fixture
@@ -202,23 +239,26 @@ def test_users(client, session):
 
     return users
 
+
 @pytest.fixture
 def test_email_templates(test_user, test_user1, session):
     db = session
-    template_Data =[ {
-                    "template_name":EmailTemplateName.ACCEPTED,
-                     "subject":"Welcome to Slightly Techie!",
-                     "html_content": "<p>Hello World {} 1</p>"},
-
-                    {"template_name":EmailTemplateName.REJECTED,
-                     "subject":"Update on Application",
-                     "html_content": "<p>Hello World {} 2</p>"}]
-    templates=[EmailTemplate(**template)for template in template_Data]
+    template_Data = [
+        {
+            "template_name": EmailTemplateName.ACCEPTED,
+            "subject": "Welcome to Slightly Techie!",
+            "html_content": "<p>Hello World {} 1</p>"
+        },
+        {"template_name": EmailTemplateName.REJECTED,
+            "subject": "Update on Application",
+            "html_content": "<p>Hello World {} 2</p>"}]
+    templates = [EmailTemplate(**template) for template in template_Data]
     db.add_all(templates)
     db.commit()
     email_templates = db.query(EmailTemplate).all()
 
     return email_templates
+
 
 @pytest.fixture
 def test_feeds(test_user, test_user1, session):
@@ -311,6 +351,7 @@ def test_projects(test_user, test_user1, session):
     projects = db.query(Project).all()
 
     return projects
+
 
 @pytest.fixture
 def populate_skills(session):

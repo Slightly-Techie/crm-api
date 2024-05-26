@@ -18,6 +18,7 @@ from api.routes.project import project_router
 from api.routes.technical_task import tech_task_router, sub_tech_task_router
 from fastapi_pagination import add_pagination
 from api.routes.endpoints import endpoints_route
+from utils.endpoints_status import create_signup_endpoint
 
 # Base.metadata.create_all(bind=engine)
 create_roles()
@@ -56,8 +57,12 @@ def redirect():
     return {"msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
 
 
+async def startup_event():
+    create_signup_endpoint()
+
 v1_prefix = "/api/v1"
 
+app.add_event_handler("startup", startup_event)
 app.include_router(auth_router, prefix=v1_prefix)
 app.include_router(profile_route, prefix=v1_prefix)
 app.include_router(skill_route, prefix=v1_prefix)
