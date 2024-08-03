@@ -37,6 +37,14 @@ class ProjectTeam(str, Enum):
     FULL_STACK = "FULL STACK"
 
 
+class ProjectStatus(str, Enum):
+    COMPLETED = "COMPLETED"
+    IN_PROGRESS = "IN PROGRESS"
+    ON_HOLD = "ON HOLD"
+    BLOCKED = "BLOCKED"
+    CANCELLED = "CANCELLED"
+
+
 class ExperienceLevel(str, Enum):
     JUNIOR = "JUNIOR"
     MID_LEVEL = "MID LEVEL"

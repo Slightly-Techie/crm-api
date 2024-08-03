@@ -21,7 +21,6 @@ from api.routes.endpoints import endpoints_route
 from utils.endpoints_status import create_signup_endpoint
 
 # Base.metadata.create_all(bind=engine)
-create_roles()
 
 
 @asynccontextmanager
@@ -58,11 +57,12 @@ def redirect():
 
 
 async def startup_event():
+    create_roles()
     create_signup_endpoint()
 
 v1_prefix = "/api/v1"
 
-app.add_event_handler("startup", startup_event)
+# app.add_event_handler("startup", startup_event)
 app.include_router(auth_router, prefix=v1_prefix)
 app.include_router(profile_route, prefix=v1_prefix)
 app.include_router(skill_route, prefix=v1_prefix)

@@ -82,8 +82,12 @@ def get_all(db: Session = Depends(get_db)):
 
 @skill_route.post("/data")
 def populate_skills():
+    from db.database import create_roles
+    from utils.endpoints_status import create_signup_endpoint
     db = SessionLocal()
     try:
+        create_roles()
+        create_signup_endpoint(status=True)
         for skill_name in skills_data:
             skill = Skill(name=skill_name)
             db.add(skill)

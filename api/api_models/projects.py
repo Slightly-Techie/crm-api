@@ -1,23 +1,31 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
-from utils.enums import ProjectType, ProjectPriority, ProjectTeam
+from utils.enums import ProjectType, ProjectPriority, ProjectTeam, ProjectStatus
 from ..api_models.stacks import Stacks
+from ..api_models.user import UserResponse
 
 
-class CreateProject(BaseModel):
+class ProjectBase(BaseModel):
     name: str = Field(...)
     description: str = Field(...)
     project_type: ProjectType = Field(...)
     project_priority: ProjectPriority = Field(...)
-    project_tools: Optional[List[str]]
+    project_tools: Optional[List[str]] = Field(None)
     manager_id: int = Field(...)
 
+class CreateProject(ProjectBase):
+    stacks: Optional[list[int] | None] = Field(None)
+    members: Optional[list[int] | None] = Field(None)
 
-class ProjectResponse(CreateProject):
+
+class ProjectResponse(ProjectBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    members: Optional[list[UserResponse]] = Field(None)
+    stacks: Optional[list[Stacks]] = Field(None)
+    status: ProjectStatus
 
     model_config = ConfigDict(from_attributes=True)
 
