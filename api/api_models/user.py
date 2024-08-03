@@ -17,6 +17,7 @@ class Role(BaseModel):
 class Skills(BaseModel):
     id: int
     name: str
+    image_url: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
