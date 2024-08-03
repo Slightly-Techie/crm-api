@@ -8,6 +8,7 @@ from api.api_models.projects import CreateProject, MembersResponse, ProjectRespo
 from sqlalchemy.orm import Session
 from db.database import get_db
 from db.models.users import User
+from db.models.stacks import Stack
 from db.models.projects import Project
 from db.models.users_projects import UserProject
 from utils.permissions import is_admin, is_project_manager
@@ -22,8 +23,20 @@ def create(project: CreateProject, db: Session = Depends(get_db), user: User = D
     manager = db.query(User).filter(User.id == project.manager_id).first()
     if not manager:
         raise HTTPException(status_code=404, detail="Manager not found")
+    
+    new_project = Project(**project.model_dump(exclude=['members', 'stacks']))
+    if project.members:
+        # set members on project
+        members_list = project.members
+        for member in members_list:
+            members_obj = db.query(User).get(member)
+            new_project.members.append(members_obj)
+    if project.stacks:
+        stacks_list = project.stacks
+        for stack in stacks_list:
+            stack_obj = db.query(Stack).get(stack)
+            new_project.stacks.append(stack_obj)
 
-    new_project = Project(**project.model_dump())
     db.add(new_project)
     db.commit()
     db.refresh(new_project)

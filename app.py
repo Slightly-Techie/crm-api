@@ -7,6 +7,7 @@ from api.routes.profile_page import profile_route
 from api.routes.feeds import feed_route
 from api.routes.techieotm import techieotm_router
 from api.routes.announcements import announcement_route
+
 # from db.database import engine
 # from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,13 +22,13 @@ from api.routes.endpoints import endpoints_route
 from utils.endpoints_status import create_signup_endpoint
 
 # Base.metadata.create_all(bind=engine)
-create_roles()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_bucket()
     yield
+
 
 app = FastAPI()
 
@@ -47,22 +48,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get('/')
+
+@app.get("/")
 def index():
     return {"msg": "home"}
 
 
-@app.get('/inactive')
+@app.get("/inactive")
 def redirect():
-    return {"msg": "Your account would be activated after a successful interview, thank you for your patience"}  # noqa: E501
+    return {
+        "msg": "Your account would be activated after a successful interview, thank you for your patience"
+    }  # noqa: E501
 
 
 async def startup_event():
+    create_roles()
     create_signup_endpoint()
+
 
 v1_prefix = "/api/v1"
 
-app.add_event_handler("startup", startup_event)
+# app.add_event_handler("startup", startup_event)
 app.include_router(auth_router, prefix=v1_prefix)
 app.include_router(profile_route, prefix=v1_prefix)
 app.include_router(skill_route, prefix=v1_prefix)

@@ -2,6 +2,8 @@ from db.database import Base
 from sqlalchemy import Column, String, Integer, TIMESTAMP, Text, text, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
+from sqlalchemy import Enum as SQLAlchemyEnum
+from utils.enums import ProjectStatus
 
 
 class Project(Base):
@@ -20,3 +22,8 @@ class Project(Base):
     manager_id = Column(Integer, ForeignKey("users.id"))
     manager = relationship("User", back_populates="managed_projects")
     members = relationship("User", secondary="users_projects", back_populates="projects")
+    stacks = relationship("Stack", secondary="project_stacks", back_populates="projects")
+    status = Column(
+        SQLAlchemyEnum(ProjectStatus),
+        default=ProjectStatus.IN_PROGRESS, nullable=True
+        )

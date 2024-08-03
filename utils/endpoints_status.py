@@ -12,7 +12,7 @@ def check_endpoint(endpoint: str):
         else:
             return True
     else:
-        create_signup_endpoint(status=False)
+        create_signup_endpoint(status=True)
         return check_endpoint("signup")
 
 
