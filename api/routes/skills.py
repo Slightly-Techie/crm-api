@@ -13,7 +13,7 @@ from db.models.users import User
 from db.models.skills import Skill
 from db.models.users_skills import UserSkill
 from api.api_models.user import Skills
-from utils.tools import tools as skills_data
+from utils.tools import tools as skills_data, get_skills_image
 
 
 skill_route = APIRouter(tags=["Skills"], prefix="/skills")
@@ -89,10 +89,21 @@ def populate_skills():
         create_roles()
         create_signup_endpoint(status=True)
         for skill_name in skills_data:
-            skill = Skill(name=skill_name)
+            skill = db.query(Skill).filter(Skill.name == skill_name).first()
+            if skill:
+                if skill.image_url:
+                    pass
+                else:
+                    # print("updating the url")
+                    skill.image_url = get_skills_image(skill_name)
+                    # print(skill.image_url)
+            else:
+                skill = Skill(name=skill_name, image_url=get_skills_image(skill_name))
             db.add(skill)
         db.commit()
-    except Exception:
+        db.refresh(skill)
+    except Exception as skill_exception:
+        print(f"Exception from populating skills {skill_exception}")
         db.rollback()
     finally:
         db.close()
