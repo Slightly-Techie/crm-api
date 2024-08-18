@@ -14,6 +14,7 @@ from db.models.users_projects import UserProject
 from utils.permissions import is_admin, is_project_manager
 from utils.enums import ProjectTeam
 from db.models.project_stacks import ProjectStack
+from db.models.skills import Skill
 
 
 project_router = APIRouter(tags=["Project"], prefix="/projects")
@@ -25,7 +26,7 @@ def create(project: CreateProject, db: Session = Depends(get_db), user: User = D
     if not manager:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
     
-    new_project = Project(**project.model_dump(exclude=['members', 'stacks']))
+    new_project = Project(**project.model_dump(exclude=['members', 'stacks', 'project_tools']))
     if project.members:
         # set members on project
         members_list = project.members
@@ -58,6 +59,25 @@ def create(project: CreateProject, db: Session = Depends(get_db), user: User = D
                 
             new_project.stacks.append(stack_obj)
             stack_list.append(stack)
+    if project.project_tools:
+        print("Skills located")
+        skill_list = []
+        for skill in project.project_tools:
+            skill_obj = db.query(Skill).get(skill)
+            stmt = (
+                select(Project)
+                .filter(Project.id == new_project.id)
+                .filter(Skill.id == skill_obj.id)
+                .join(Project.project_tools)
+            )
+            project_skill = db.execute(stmt).scalar()
+            if project_skill or skill in skill_list:
+                raise HTTPException(
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    detail=f"Duplicate error: Project {new_project.name} already has {skill_obj.name} assigned"
+                )
+            new_project.project_tools.append(skill_obj)
+            skill_list.append(skill)
 
     db.add(new_project)
     db.commit()

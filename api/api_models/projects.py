@@ -4,6 +4,7 @@ from typing import Optional, List
 from utils.enums import ProjectType, ProjectPriority, ProjectTeam, ProjectStatus
 from ..api_models.stacks import Stacks
 from ..api_models.user import UserResponse
+from ..api_models.user import Skills
 
 
 class ProjectBase(BaseModel):
@@ -11,12 +12,12 @@ class ProjectBase(BaseModel):
     description: str = Field(...)
     project_type: ProjectType = Field(...)
     project_priority: ProjectPriority = Field(...)
-    project_tools: Optional[List[str]] = Field(None)
     manager_id: int = Field(...)
 
 class CreateProject(ProjectBase):
     stacks: Optional[list[int] | None] = Field(None)
     members: Optional[list[int] | None] = Field(None)
+    project_tools: Optional[List[int]] = Field(None)
 
 
 class ProjectResponse(ProjectBase):
@@ -25,6 +26,7 @@ class ProjectResponse(ProjectBase):
     updated_at: datetime
     members: Optional[list[UserResponse]] = Field(None)
     stacks: Optional[list[Stacks]] = Field(None)
+    project_tools: Optional[list[Skills]] = Field(None)
     status: ProjectStatus
 
     model_config = ConfigDict(from_attributes=True)

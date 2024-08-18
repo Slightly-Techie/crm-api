@@ -13,3 +13,4 @@ from .models.users_projects import UserProject
 from .models.technical_task import TechnicalTask, TechnicalTaskSubmission
 from .models.endpoints import Endpoints
 from .models.project_stacks import ProjectStack
+from .models.project_skills import ProjectSkill

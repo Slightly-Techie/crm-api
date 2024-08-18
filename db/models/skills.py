@@ -14,3 +14,4 @@ class Skill(Base):
                         nullable=False, server_default=text('now()'))
 
     users = relationship('User', secondary="users_skills", back_populates='skills')
+    projects = relationship("Project", secondary="project_skills", back_populates="project_tools")

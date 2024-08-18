@@ -13,7 +13,7 @@ class Project(Base):
     description = Column(Text, nullable=False)
     project_type = Column(String, nullable=False)
     project_priority = Column(String, nullable=False)
-    project_tools = Column(ARRAY(String), nullable=True)
+    project_tools = relationship('Skill', secondary="project_skills", back_populates='projects')
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True),
