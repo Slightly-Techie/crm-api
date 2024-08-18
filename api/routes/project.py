@@ -13,6 +13,7 @@ from db.models.projects import Project
 from db.models.users_projects import UserProject
 from utils.permissions import is_admin, is_project_manager
 from utils.enums import ProjectTeam
+from db.models.project_stacks import ProjectStack
 
 
 project_router = APIRouter(tags=["Project"], prefix="/projects")
@@ -22,7 +23,7 @@ project_router = APIRouter(tags=["Project"], prefix="/projects")
 def create(project: CreateProject, db: Session = Depends(get_db), user: User = Depends(is_admin)):
     manager = db.query(User).filter(User.id == project.manager_id).first()
     if not manager:
-        raise HTTPException(status_code=404, detail="Manager not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
     
     new_project = Project(**project.model_dump(exclude=['members', 'stacks']))
     if project.members:
@@ -30,12 +31,33 @@ def create(project: CreateProject, db: Session = Depends(get_db), user: User = D
         members_list = project.members
         for member in members_list:
             members_obj = db.query(User).get(member)
-            new_project.members.append(members_obj)
+            if members_obj.is_active:
+                new_project.members.append(members_obj)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"{members_obj.first_name} is not an active member"
+                    )
     if project.stacks:
+        stack_list = []
         stacks_list = project.stacks
         for stack in stacks_list:
             stack_obj = db.query(Stack).get(stack)
+            stmt = (
+                select(Project)
+                .filter(Project.id == new_project.id)
+                .filter(Stack.id == stack_obj.id)
+                .join(Project.stacks)
+            )
+            project_stack = db.execute(stmt).scalar()
+            if project_stack or stack in stack_list:
+                raise HTTPException(
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    detail=f"Duplicate error: Project {new_project.name} already has {stack_obj.name} assigned"
+                )
+                
             new_project.stacks.append(stack_obj)
+            stack_list.append(stack)
 
     db.add(new_project)
     db.commit()
@@ -76,6 +98,10 @@ def delete(project_id: int, db: Session = Depends(get_db), user: User = Depends(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    user_project = db.query(UserProject).filter(
+        UserProject.project_id == project.id
+        )
+    user_project.delete()
     project_query.delete()
     db.commit()
 
