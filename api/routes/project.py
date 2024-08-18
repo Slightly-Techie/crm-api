@@ -100,7 +100,7 @@ def update(
         if not manager:
             raise HTTPException(status_code=404, detail="Manager not found")
 
-    for field, value in updated_project.model_dump().items():
+    for field, value in updated_project.model_dump(exclude=['members', 'stacks', 'project_tools']).items():
         if value is not None:
             setattr(project, field, value)
 

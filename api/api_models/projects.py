@@ -37,7 +37,7 @@ class UpdateProject(BaseModel):
     description: Optional[str]
     project_type: Optional[ProjectType]
     project_priority: Optional[ProjectPriority]
-    project_tools: Optional[List[str]]
+    project_tools: Optional[List[int]] = Field(None)
     manager_id: Optional[int]
 
 
