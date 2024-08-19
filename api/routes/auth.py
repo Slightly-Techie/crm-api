@@ -74,7 +74,11 @@ async def signup(user: UserSignUp, db: Session = Depends(get_db)):
                         {"status": UserStatus.CONTACTED}
                         )
                     db.commit()
-            except Exception:
+                else:
+                    print("Task not found")
+                    pass
+            except Exception as user_reg_e:
+                print(user_reg_e)
                 pass
 
             return new_user

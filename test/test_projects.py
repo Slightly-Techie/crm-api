@@ -13,7 +13,7 @@ def test_create_project(session, client, user_cred, test_projects):
         "description": "test_description",
         "project_type": "COMMUNITY",
         "project_priority": "HIGH PRIORITY",
-        "project_tools": ["python", "fastapi"],
+        # "project_tools": [68, 25],
         "manager_id": 1
     }
 
@@ -32,7 +32,7 @@ def test_create_project_manager_not_found(session, client, user_cred, test_proje
         "description": "test_description",
         "project_type": "COMMUNITY",
         "project_priority": "HIGH PRIORITY",
-        "project_tools": ["python", "fastapi"],
+        # "project_tools": [68, 25],
         "manager_id": 100
     }
 
@@ -49,7 +49,7 @@ def test_create_project_not_authorized(client, test_projects):
         "description": "test_description",
         "project_type": "COMMUNITY",
         "project_priority": "HIGH PRIORITY",
-        "project_tools": ["python", "fastapi"],
+        # "project_tools": [68, 25],
         "manager_id": 1
     }
     res = client.post(url, json=data)
@@ -92,7 +92,7 @@ def test_update_project(session, client, user_cred, test_projects):
         "description": "test_description_updated",
         "project_type": "COMMUNITY",
         "project_priority": "MEDIUM PRIORITY",
-        "project_tools": ["python", "fastapi", "javascript", "react"],
+        # "project_tools": [68, 25],
         "manager_id": 1
     }
 
@@ -111,7 +111,7 @@ def test_update_project_does_not_exist(session, client, user_cred, test_projects
         "description": "test_description_updated",
         "project_type": "COMMUNITY",
         "project_priority": "MEDIUM PRIORITY",
-        "project_tools": ["python", "fastapi", "javascript", "react"],
+        # "project_tools": [68, 25],
         "manager_id": 1
     }
 
@@ -128,7 +128,7 @@ def test_update_project_not_authorized(client, test_projects):
         "description": "test_description_updated",
         "project_type": "COMMUNITY",
         "project_priority": "MEDIUM PRIORITY",
-        "project_tools": ["python", "fastapi", "javascript", "react"],
+        # "project_tools": [68, 25],
         "manager_id": 1
     }
 
