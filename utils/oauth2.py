@@ -83,6 +83,8 @@ def get_current_user(
     if not user:
         raise credential_exception
     if not user.is_active:
+        if user.status == "CONTACTED":
+            return user
         # Redirect the user to a default URL
         raise HTTPException(status_code=302, headers={"Location": "/inactive"})
     return user
