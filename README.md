@@ -316,4 +316,5 @@ visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fl
 - [@JerryAgbesi](https://github.com/JerryAgbesi)
 - [@Kryzbone](https://github.com/kryzbone)
 - [@GreatnessMensah](https://github.com/greatnessmensah)
-- [@CozyBrian](https://github.com/CozyBrian)``
+- [@CozyBrian](https://github.com/CozyBrian)
+- [@Tonny-Bright](https://github.com/TMCreme)

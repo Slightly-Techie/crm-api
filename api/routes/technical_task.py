@@ -15,7 +15,7 @@ from utils.utils import get_key_by_value
 
 
 tech_task_router = APIRouter(tags=["Applicant Task"], prefix="/applicant/task")
-sub_tech_task_router = APIRouter(tags=["Applicant Task"], prefix="/applicant/submission")
+sub_tech_task_router = APIRouter(tags=["Applicant Task Submission"], prefix="/applicant/submission")
 
 
 @tech_task_router.post("/", status_code=status.HTTP_201_CREATED, response_model=TechnicalTaskResponse)
@@ -132,17 +132,24 @@ def create_task_submission(
     db: Session = Depends(get_db)
 ):
     """Submit the technical task"""
-    user_exp = get_key_by_value(current_user.years_of_experience)
-    print(current_user.stack_id)
     if not current_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    user_exp = get_key_by_value(current_user.years_of_experience)
     user_task = db.query(TechnicalTask).filter(
         TechnicalTask.stack_id == current_user.stack_id,
         TechnicalTask.experience_level == user_exp
         ).first()
     if not user_task:
         raise HTTPException(
-           status_code=404, detail="Cannot find a task for this submission"
+           status_code=status.HTTP_404_NOT_FOUND, detail="Cannot find a task for this submission"
+        )
+    existing_submission = db.query(TechnicalTaskSubmission).filter(
+        TechnicalTaskSubmission.user_id == current_user.id,
+    )
+    if existing_submission.first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Multiple submissions not allowed. Kindly contact admin."
         )
     new_tech_task = TechnicalTaskSubmission(
         task_id=user_task.id,

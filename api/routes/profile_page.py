@@ -5,14 +5,15 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from api.api_models.email_template import EmailTemplateName
-from api.api_models.user import ProfileUpdate, ProfileResponse
+# from api.api_models.email_template import EmailTemplateName
+from api.api_models.user import ProfileUpdate, ProfileResponse, ApplicantProfileResponse
 from core.config import settings
 from db.database import get_db
 from db.models.email_template import EmailTemplate
 from db.models.skills import Skill
 from db.models.users import User
-from utils.mail_service import send_email, read_html_file
+from db.models.technical_task import TechnicalTaskSubmission
+from utils.mail_service import send_email
 from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 from utils.enums import UserStatus
@@ -23,11 +24,21 @@ from db.models import users_skills
 profile_route = APIRouter(tags=["User"], prefix="/users")
 
 
-@profile_route.get("/profile/{user_id}", response_model=ProfileResponse)
+@profile_route.get("/profile/{user_id}", response_model=ApplicantProfileResponse)
 async def get_profile(user_id: int, db: Session = Depends(get_db)):
     user_details = db.query(User).filter(User.id == user_id).first()
     if user_details:
-        return user_details
+        try:
+            technical_task = db.query(TechnicalTaskSubmission).filter(
+                TechnicalTaskSubmission.user_id == user_id
+            ).first()
+            user_details.technical_task = technical_task if technical_task else None
+
+            return user_details
+        except Exception as profile_except:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=profile_except.__str__()
+            )
     else:
         raise HTTPException(
             status_code=404, detail=settings.ERRORS.get("INVALID ID"))
@@ -111,8 +122,9 @@ def get_user_info(email: str, db: Session = Depends(get_db)):
 
 
 @profile_route.put("/profile/{user_id}/status", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
-async def update_user_status(user_id: int, new_status: UserStatus, db: Session = Depends(get_db),
-                       current_user: User = Depends(is_admin)):
+async def update_user_status(
+        user_id: int, new_status: UserStatus, db: Session = Depends(get_db),
+        current_user: User = Depends(is_admin)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
