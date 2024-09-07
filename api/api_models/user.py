@@ -5,6 +5,7 @@ from typing import Optional, Union
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
+from .technical_task import TechnicalTaskSubmissionResponse
 import re
 
 
@@ -13,6 +14,7 @@ class Role(BaseModel):
     name: str = Field(...)
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class Skills(BaseModel):
     id: int
@@ -140,6 +142,10 @@ class ProfileResponse(ProfileUpdate):
     role: Optional[Role] = Field(None)
     is_active: bool = Field(...)
     status: str = Field(...)
+
+
+class ApplicantProfileResponse(ProfileResponse):
+    technical_task: Optional[TechnicalTaskSubmissionResponse]
 
 
 class FeedOwner(BaseModel):
