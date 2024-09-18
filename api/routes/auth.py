@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from utils.utils import get_password_hash
 
 from db.models.users import User
-
+from db.models.email_template import EmailTemplate
+from api.api_models.email_template import EmailTemplateName
 from db.database import get_db
 from db.repository.users import create_new_user
 
@@ -163,7 +164,13 @@ async def forgot_password(request: ForgotPasswordRequest, requested: Request, db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     reset_token = create_reset_token(email)
-    result = await send_password_reset_email(email, reset_token, user.username)
+    try:
+        email_template = db.query(EmailTemplate).filter(
+            EmailTemplate.template_name == EmailTemplateName.password_reset).first()
+    except Exception:
+        email_template = None
+    result = await send_password_reset_email(
+        email, reset_token, user.username, email_template)
     return result
 
 

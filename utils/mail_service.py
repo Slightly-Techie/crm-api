@@ -5,17 +5,16 @@ from email.mime.multipart import MIMEMultipart
 from urllib.parse import urlencode
 from starlette.responses import JSONResponse
 
-from api.api_models.email_template import EmailTemplateName
+# from api.api_models.email_template import EmailTemplateName
 from core.config import settings
-from db.models.email_template import EmailTemplate
-from sqlalchemy.orm import Session
-from fastapi import Depends
-from db.database import get_db
+# from db.models.email_template import EmailTemplate
 
 
 def read_html_file(file_path):
     with open(file_path, 'r') as file:
         return file.read()
+
+
 async def send_email(subject: str, recipient_email: str, html_content: str) -> JSONResponse:
     """
     Generic email sending function.
@@ -42,21 +41,23 @@ async def send_email(subject: str, recipient_email: str, html_content: str) -> J
         return JSONResponse(status_code=500, content={"message": f"An error occurred: {e}"})
 
 
-async def send_password_reset_email(email: str, reset_token: str, username: str,db: Session = Depends(get_db)):
-    subject = "Reset Password"
+async def send_password_reset_email(email: str, reset_token: str, username: str, email_template):
+    # subject = "Reset Password"
     reset_password_url = f"{settings.BASE_URL}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
 
-    email_template = db.query(EmailTemplate).filter(EmailTemplate.template_name == EmailTemplateName.password_reset).first()
-    
     if email_template:
         html_content = email_template.html_content.format(username, reset_password_url)
+        email_subject = email_template.subject
     else:
         try:
-            html_content = read_html_file('utils/email_templates/password-reset.html').format(username, reset_password_url)
+            html_content = read_html_file(
+                'utils/email_templates/password-reset.html'
+                ).format(username, reset_password_url)
         except FileNotFoundError:
             html_content = f"Hello {username}, please reset your password by clicking this link: {reset_password_url}"
-    
-    await send_email(email_template.subject, email, html_content)
+        email_subject = "Slightly Techie Password Reset"
+
+    await send_email(email_subject, email, html_content)
 
 
 async def send_applicant_task(
