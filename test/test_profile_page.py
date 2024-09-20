@@ -19,16 +19,22 @@ def test_update_user_status(mock_send_email, client, test_user, test_user1, test
     mock_send_email.assert_called_once()
     assert mock_send_email.call_args[0][0] == "Welcome to Slightly Techie!"
 
-def test_get_all_users(client, test_users):
-    res = client.get("/api/v1/users/?page=1&size=3")
+
+def test_get_all_users(client, test_users, user_cred,):
+    res = client.get(
+        "/api/v1/users/?page=1&size=3",
+        headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
     assert res.status_code == 200
     assert len(res.json()["items"]) == 3
+
 
 def test_get_user_by_id(client, test_user):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
     user_id = test_user["id"]
-    profile_res = client.get(f"/api/v1/users/profile/{user_id}")
+    profile_res = client.get(
+        f"/api/v1/users/profile/{user_id}", headers={'Authorization': f'Bearer {token}'})
 
     assert profile_res.status_code == 200
     assert profile_res.json()["email"] == test_user["email"]
@@ -130,7 +136,8 @@ def test_activate_invalid_user_profile(client, test_user):
 
     # Then the response should be unsuccessful with a 404 Not Found status code
     assert response.status_code == 404
-    
+
+
 def test_get_user_info(client, test_user):
     # Given a test_user
     email = test_user["email"]
@@ -146,6 +153,7 @@ def test_get_user_info(client, test_user):
     assert "last_name" in response.json()["data"]
     assert "phone_number" in response.json()["data"]
 
+
 def test_get_all_profile(client, test_user, test_users, test_stacks, populate_skills):
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
@@ -155,18 +163,23 @@ def test_get_all_profile(client, test_user, test_users, test_stacks, populate_sk
 
     assert skill_res.status_code == 201
     assert stack_res.status_code == 200
-    
-    response = client.get("/api/v1/users/")
+
+    response = client.get("/api/v1/users/", headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert len(response.json()["items"]) == 4
 
-    response = client.get("/api/v1/users/?skill=python&stack=Backend&active=true")
+    response = client.get(
+        "/api/v1/users/?skill=python&stack=Backend&active=true",
+        headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert len(response.json()["items"]) == 1
 
-    response = client.get("/api/v1/users/?skill=python&active=true")
+    response = client.get(
+        "/api/v1/users/?skill=python&active=true",
+        headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert len(response.json()["items"]) == 1
+
 
 def test_search_user_not_found(client, test_users):
     response = client.get("/api/v1/users/search?p=notfound&page=1&size=2")

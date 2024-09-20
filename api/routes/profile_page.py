@@ -25,13 +25,12 @@ profile_route = APIRouter(tags=["User"], prefix="/users")
 
 
 @profile_route.get("/profile/{user_id}", response_model=ApplicantProfileResponse)
-async def get_profile(user_id: int, db: Session = Depends(get_db)):
+async def get_profile(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_details = db.query(User).filter(User.id == user_id).first()
     if user_details:
         try:
             technical_task = db.query(TechnicalTaskSubmission).filter(
-                TechnicalTaskSubmission.user_id == user_id
-            ).first()
+                TechnicalTaskSubmission.user_id == user_id).first()
             user_details.technical_task = technical_task if technical_task else None
 
             return user_details
@@ -70,7 +69,13 @@ async def update_profile(
 def get_all_profile(skill: str = Query(None, title="Skill", description="The skill to filter users"),
                     stack: str = Query(None, title="Stack", description="The stack to filter users"),
                     active: Optional[bool] = None, p: Optional[str] = None,
-                    db: Session = Depends(get_db)):
+                    db: Session = Depends(get_db),
+                    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not authorized to view this page"
+        )
     query = select(User).order_by(desc(User.created_at))
 
     if skill:
