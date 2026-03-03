@@ -37,52 +37,60 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def signup(user: UserSignUp, db: Session = Depends(get_db)):
-    endpoint_query = db.query(Endpoints).filter(Endpoints.endpoint == "signup").first()
-    if endpoint_query:
-        if not endpoint_query.status:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Signup is closed")
+    endpoint_query = db.query(Endpoints).filter(
+        Endpoints.endpoint == "signup").first()
+    if endpoint_query and not endpoint_query.status:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            detail="Signup is closed")
+
+    user.email = user.email.lower()
+    user_name = db.query(User).filter(User.username == user.username).first()
+    if user_name:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.ERRORS.get("USERNAME_EXISTS"))
+
+    user_data = db.query(User).filter(User.email == user.email).first()
+    if user_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.ERRORS.get("USER_EXISTS"))
+
+    if user.password != user.password_confirmation:
+        print("Passwords do not match")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
+
+    if len(user.password) > 72:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be 72 characters or less")
+
+    hash_passwd = get_password_hash(user.password)
+
+    user.password = hash_passwd
+    new_user = create_new_user(user, db)
+
+    try:
+        task = db.query(TechnicalTask).filter(
+            TechnicalTask.stack_id == new_user.stack_id,
+            TechnicalTask.experience_level == get_key_by_value(
+                new_user.years_of_experience)
+        ).first()
+        if task:
+            await send_applicant_task(
+                new_user.email, new_user.first_name, task.content
+            )
+            db.query(User).filter(User.id == new_user.id).update(
+                {"status": UserStatus.CONTACTED}
+            )
+            db.commit()
         else:
-            user.email = user.email.lower()
-            user_name = db.query(User).filter(User.username == user.username).first()
-            if user_name:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                    detail=settings.ERRORS.get("USERNAME_EXISTS"))
+            print("Task not found")
+            pass
+    except Exception as user_reg_e:
+        print(user_reg_e)
+        pass
 
-            user_data = db.query(User).filter(User.email == user.email).first()
-            if user_data:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                    detail=settings.ERRORS.get("USER_EXISTS"))
-            hash_passwd = get_password_hash(user.password)
-
-            if user.password != user.password_confirmation:
-                print("Passwords do not match")
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
-
-            user.password = hash_passwd
-            new_user = create_new_user(user, db)
-
-            try:
-                task = db.query(TechnicalTask).filter(
-                    TechnicalTask.stack_id == new_user.stack_id,
-                    TechnicalTask.experience_level == get_key_by_value(new_user.years_of_experience)
-                ).first()
-                if task:
-                    await send_applicant_task(
-                        new_user.email, new_user.first_name, task.content
-                        )
-                    db.query(User).filter(User.id == new_user.id).update(
-                        {"status": UserStatus.CONTACTED}
-                        )
-                    db.commit()
-                else:
-                    print("Task not found")
-                    pass
-            except Exception as user_reg_e:
-                print(user_reg_e)
-                pass
-
-            return new_user
+    return new_user
 
 
 @auth_router.post('/login', response_model=Token)
@@ -113,7 +121,8 @@ def login(response: Response, user: OAuth2PasswordRequestForm = Depends(), db: S
 def refresh_token(refresh_token_data: RefreshTokenRequest, db: Session = Depends(get_db)):
     refresh_token = refresh_token_data.refresh_token
     if not refresh_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     try:
         payload = verify_refresh_token(refresh_token)
         user = db.query(User).filter(User.id == payload.id).first()
@@ -129,19 +138,22 @@ def refresh_token(refresh_token_data: RefreshTokenRequest, db: Session = Depends
             user_status=user.status
         )
     except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
 
 
 @auth_router.post('/logout')
 def logout(response: Response):
-    response.set_cookie(key="st.token", value="", httponly=True, max_age=10, samesite="none", secure=True)
+    response.set_cookie(key="st.token", value="", httponly=True,
+                        max_age=10, samesite="none", secure=True)
     return {"message": "Logout Successful"}
 
 
 @auth_router.get("/me", response_model=ProfileResponse)
 def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
     return user
 
 
@@ -161,7 +173,8 @@ async def forgot_password(request: ForgotPasswordRequest, requested: Request, db
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     reset_token = create_reset_token(email)
     try:
@@ -191,7 +204,8 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
         email = email.lower()
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
         hashed_password = get_password_hash(request.new_password)
         user.password = hashed_password
