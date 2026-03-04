@@ -12,7 +12,7 @@ from api.routes.announcements import announcement_route
 # from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
 from utils.s3 import create_bucket
-from db.database import create_roles
+from db.database import create_roles, create_stacks
 from api.routes.tags import tag_route
 from api.routes.stacks import stack_router
 from api.routes.project import project_router
@@ -27,6 +27,12 @@ from utils.endpoints_status import create_signup_endpoint
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_bucket()
+    try:
+        create_roles()
+        create_stacks()
+        print("Required database records created/verified.")
+    except Exception as e:
+        print(f"Error seeding database: {e}")
     yield
 
 

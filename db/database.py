@@ -52,3 +52,26 @@ def create_roles():
 
     db.commit()
     db.close()
+
+
+def create_stacks():
+    from db.models.stacks import Stack
+
+    db = SessionLocal()
+
+    default_stacks = [
+        "Backend",
+        "Frontend",
+        "Fullstack",
+        "Mobile",
+        "UI/UX",
+        "DevOps",
+        "Data Science"
+    ]
+    for stack_name in default_stacks:
+        check_stack = db.query(Stack).filter(Stack.name == stack_name).first()
+        if not check_stack:
+            db.add(Stack(name=stack_name))
+
+    db.commit()
+    db.close()
