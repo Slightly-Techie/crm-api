@@ -2,7 +2,7 @@ aiosmtplib==2.0.2
 alembic==1.9.0  
 anyio>=4.4.0  
 attrs==22.1.0  
-bcrypt==3.1.12 
+bcrypt==4.0.1 
 blinker==1.6.2  
 boto3==1.28.73  
 botocore==1.31.73  
