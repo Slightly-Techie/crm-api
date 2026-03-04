@@ -17,12 +17,16 @@ class Settings:
         "POSTGRES_PORT", 5432)  # default postgres port is 5432
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "postgres")
     POSTGRES_DB_TEST: str = os.getenv("POSTGRES_DB_TEST", "postgres")
-    DATABASE_URL = os.getenv( 
-        "DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
+    _DATABASE_URL = os.getenv("DATABASE_URL")
+    if _DATABASE_URL and _DATABASE_URL.startswith("postgres://"):
+        _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    DATABASE_URL = _DATABASE_URL or f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    
     SECRET: str = os.getenv("SECRET", "ABnfjEINSKl3ECmsnoINEnwmkWAS")
     REFRESH_SECRET: str = os.getenv(
         "REFRESH_SECRET", "NIk10kHWwa2Fbl6Pt46E+OSiC1h6")
-    PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", 'False') == 'True'
+    PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", "False").lower() == "true"
     REFRESH_TOKEN_EXPIRE_MINUTES: int = os.getenv(
         "REFRESH_TOKEN_EXPIRE_MINUTES", 60*24*30)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv(
