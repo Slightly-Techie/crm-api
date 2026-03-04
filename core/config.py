@@ -17,9 +17,8 @@ class Settings:
         "POSTGRES_PORT", 5432)  # default postgres port is 5432
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "postgres")
     POSTGRES_DB_TEST: str = os.getenv("POSTGRES_DB_TEST", "postgres")
-    # DATABASE_URL = os.getenv(
-    #     "DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
-    DATABASE_URL = os.getenv("DATABASE_URL")
+    DATABASE_URL = os.getenv( 
+        "DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
     SECRET: str = os.getenv("SECRET", "ABnfjEINSKl3ECmsnoINEnwmkWAS")
     REFRESH_SECRET: str = os.getenv(
         "REFRESH_SECRET", "NIk10kHWwa2Fbl6Pt46E+OSiC1h6")

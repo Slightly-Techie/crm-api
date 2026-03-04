@@ -13,7 +13,8 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{pg_user}:{pg_pass}@{pg_server}:{pg_por
 
 def set_up_db(production_env):
     if production_env:
-        engine = create_engine(settings.DATABASE_URL)
+        engine = create_engine(settings.DATABASE_URL , 
+        connect_args={"sslmode": "require"})
     else:
         engine = create_engine(SQLALCHEMY_DATABASE_URL)
     SessionLocal = sessionmaker(
