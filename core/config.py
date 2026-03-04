@@ -22,7 +22,7 @@ class Settings:
     SECRET: str = os.getenv("SECRET", "ABnfjEINSKl3ECmsnoINEnwmkWAS")
     REFRESH_SECRET: str = os.getenv(
         "REFRESH_SECRET", "NIk10kHWwa2Fbl6Pt46E+OSiC1h6")
-    PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", False)
+    PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", 'False') == 'True'
     REFRESH_TOKEN_EXPIRE_MINUTES: int = os.getenv(
         "REFRESH_TOKEN_EXPIRE_MINUTES", 60*24*30)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv(
