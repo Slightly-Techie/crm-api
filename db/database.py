@@ -85,11 +85,13 @@ def promote_user_to_admin(email: str):
     user = db.query(User).filter(User.email == email).first()
     admin_role = db.query(Role).filter(Role.name == RoleChoices.ADMIN).first()
 
-    if user and admin_role:
-        user.role_id = admin_role.id
-        user.is_active = True  # Admins should be active
-        db.commit()
-        print(f"User {email} has been promoted to ADMIN.")
+    if not admin_role:
+        print("Promotion failed: ADMIN role not initialized yet.")
+    elif not user:
+        print(f"Promotion failed: User with email {email} not found. Please register first.")
     else:
-        print(f"Promotion failed: User or Admin Role not found.")
+        user.role_id = admin_role.id
+        user.is_active = True  
+        db.commit()
+        print(f"User {email} successfully promoted to ADMIN.")
     db.close()
