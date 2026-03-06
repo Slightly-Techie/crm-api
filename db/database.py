@@ -75,3 +75,21 @@ def create_stacks():
 
     db.commit()
     db.close()
+
+
+def promote_user_to_admin(email: str):
+    from db.models.users import User
+    from db.models.roles import Role
+
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    admin_role = db.query(Role).filter(Role.name == RoleChoices.ADMIN).first()
+
+    if user and admin_role:
+        user.role_id = admin_role.id
+        user.is_active = True  # Admins should be active
+        db.commit()
+        print(f"User {email} has been promoted to ADMIN.")
+    else:
+        print(f"Promotion failed: User or Admin Role not found.")
+    db.close()

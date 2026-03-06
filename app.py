@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import os
 from contextlib import asynccontextmanager
 from api.routes.auth import auth_router
 from api.routes.email_templates import email_templates_route
@@ -12,7 +13,7 @@ from api.routes.announcements import announcement_route
 # from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
 from utils.s3 import create_bucket
-from db.database import create_roles, create_stacks
+from db.database import create_roles, create_stacks, promote_user_to_admin
 from api.routes.tags import tag_route
 from api.routes.stacks import stack_router
 from api.routes.project import project_router
@@ -30,6 +31,9 @@ async def lifespan(app: FastAPI):
     try:
         create_roles()
         create_stacks()
+        admin_email = os.getenv("ADMIN_EMAIL")
+        if admin_email:
+            promote_user_to_admin(admin_email)
         print("Required database records created/verified.")
     except Exception as e:
         print(f"Error seeding database: {e}")
