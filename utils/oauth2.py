@@ -48,15 +48,19 @@ def get_refresh_token(sub: str):
 
 def verify_token(token: str, credential_exception):
     try:
-        payload = jwt.decode(token, settings.SECRET, algorithms=settings.ALGORITHM)
+        payload = jwt.decode(token, settings.SECRET, algorithms=[settings.ALGORITHM])
         sub = payload.get('sub')
         if sub is None:
+            print("Token verification failed: 'sub' missing from payload.")
             raise credential_exception
         token_data = TokenData(id=sub)
-    except JWTError:
+        return token_data
+    except JWTError as e:
+        print(f"JWT Verification Error: {str(e)}")
         raise credential_exception
-
-    return token_data
+    except Exception as e:
+        print(f"Unexpected Token Error: {str(e)}")
+        raise credential_exception
 
 
 def verify_refresh_token(token: str):
