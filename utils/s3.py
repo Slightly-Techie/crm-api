@@ -15,20 +15,19 @@ secret_key = settings.AWS_SECRET_KEY
 
 
 async def create_bucket():
-    s3 = boto3.client('s3', region_name=region,
-                      aws_access_key_id=access_key,
-                      aws_secret_access_key=secret_key)
-    response = s3.list_buckets()
+    if not access_key or not secret_key:
+        print("S3 credentials not found. Skipping bucket creation.")
+        return False
 
-    buckets = [bucket['Name'] for bucket in response['Buckets']]
-    if bucket_name not in buckets:
-        try:
-            s3_client = boto3.client(
-                's3', region_name=region,
-                aws_access_key_id=access_key,
-                aws_secret_access_key=secret_key)
-            # location = {'LocationConstraint': region}
-            s3_client.create_bucket(Bucket=bucket_name)
+    try:
+        s3 = boto3.client('s3', region_name=region,
+                          aws_access_key_id=access_key,
+                          aws_secret_access_key=secret_key)
+        response = s3.list_buckets()
+
+        buckets = [bucket['Name'] for bucket in response['Buckets']]
+        if bucket_name not in buckets:
+            s3.create_bucket(Bucket=bucket_name)
             bucket_policy = {
                 "Version": "2008-10-17",
                 "Statement": [
@@ -44,13 +43,12 @@ async def create_bucket():
                 ]
             }
             bucket_policy = json.dumps(bucket_policy)
-
-            s3_client.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
-        except ClientError as e:
-            logging.error(e)
-            return False
+            s3.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
+            print(f"Bucket {bucket_name} created successfully.")
         return True
-    return True
+    except Exception as e:
+        print(f"S3/Bucket Initialization failed: {e}")
+        return False
 
 
 async def upload_file_to_s3(file: UploadFile, username, type: str) -> str:

@@ -27,8 +27,8 @@ from utils.endpoints_status import create_signup_endpoint
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_bucket()
     try:
+        await create_bucket()
         create_roles()
         create_stacks()
         admin_email = os.getenv("ADMIN_EMAIL")
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
         create_signup_endpoint()
         print("Required database records created/verified.")
     except Exception as e:
-        print(f"Error seeding database: {e}")
+        print(f"Error during startup: {e}")
     yield
 
 
