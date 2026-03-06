@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from db import database
 from db.models.users import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='api/v1/users/login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/users/login')
 
 
 credentials_exception = HTTPException(
