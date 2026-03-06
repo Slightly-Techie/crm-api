@@ -32,7 +32,7 @@ from db.models.endpoints import Endpoints
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 
 @auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
