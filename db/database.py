@@ -80,6 +80,7 @@ def create_stacks():
 def promote_user_to_admin(email: str):
     from db.models.users import User
     from db.models.roles import Role
+    from utils.utils import RoleChoices
 
     db = SessionLocal()
     user = db.query(User).filter(User.email == email).first()

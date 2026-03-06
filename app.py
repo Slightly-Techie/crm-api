@@ -34,13 +34,14 @@ async def lifespan(app: FastAPI):
         admin_email = os.getenv("ADMIN_EMAIL")
         if admin_email:
             promote_user_to_admin(admin_email)
+        create_signup_endpoint()
         print("Required database records created/verified.")
     except Exception as e:
         print(f"Error seeding database: {e}")
     yield
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # origins = [
 #     "http://localhost",
