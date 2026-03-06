@@ -78,10 +78,17 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    token = verify_token(token, credentials_exception)
-    user = db.query(User).filter(User.id == token.id).first()
-    if not user:
+    try:
+        token_data = verify_token(token, credential_exception)
+    except Exception as e:
+        print(f"Token verification failed: {e}")
         raise credential_exception
+
+    user = db.query(User).filter(User.id == token_data.id).first()
+    if not user:
+        print(f"User with ID {token_data.id} not found in database.")
+        raise credential_exception
+    
     if not user.is_active:
         if user.status == "CONTACTED":
             return user
