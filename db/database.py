@@ -56,24 +56,33 @@ def create_roles():
 
 def create_stacks():
     from db.models.stacks import Stack
+    from sqlalchemy import func, text
 
     db = SessionLocal()
 
-    default_stacks = [
-        "Backend",
-        "Frontend",
-        "Fullstack",
-        "Mobile",
-        "UI/UX",
-        "DevOps",
-        "Data Science"
-    ]
-    for stack_name in default_stacks:
-        check_stack = db.query(Stack).filter(Stack.name == stack_name).first()
-        if not check_stack:
-            db.add(Stack(name=stack_name))
+    # 1. First, fix the broken ID sequence in your production database 
+    # to prevent "UniqueViolation: stacks_pkey"
+    try:
+        db.execute(text("SELECT setval('stacks_id_seq', (SELECT MAX(id) FROM stacks))"))
+        db.commit()
+    except Exception:
+        db.rollback()
 
-    db.commit()
+    default_stacks = [
+        "Backend", "Frontend", "Fullstack", "Mobile", "UI/UX", "DevOps", "Data Science"
+    ]
+    
+    for stack_name in default_stacks:
+        # 2. STRICT CHECK: Only add if the name doesn't exist (case-insensitive)
+        exists = db.query(Stack).filter(func.lower(Stack.name) == stack_name.lower()).first()
+        
+        if not exists:
+            try:
+                db.add(Stack(name=stack_name))
+                db.commit()
+            except Exception:
+                db.rollback()
+
     db.close()
 
 
