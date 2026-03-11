@@ -32,18 +32,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI()
 
-# origins = [
-#     "http://localhost",
-#     "http://localhost:3000",
-#     "https://crm-web.fly.dev",
-#     "https://app.slightlytechie.com"
-# ]
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "https://crm-web.fly.dev",
+    "https://app.slightlytechie.com",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_origin_regex="https:\/\/.*\.uffizzi\.com",
+    allow_origin_regex=r"https://.*\.uffizzi\.com",
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -3,7 +3,7 @@ from unittest.mock import patch
 from api.api_models import user
 
 
-@patch('api.routes.profile_page.send_email')
+@patch('services.user_service.send_email')
 def test_update_user_status(mock_send_email, client, test_user, test_user1, test_email_templates):
 
     login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})

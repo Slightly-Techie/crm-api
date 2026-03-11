@@ -1,225 +1,74 @@
-from datetime import datetime
 from typing import List, Optional
-from fastapi_pagination.links import Page
+
+from fastapi import APIRouter, Depends, status
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import desc, select
-from fastapi import APIRouter, Depends, HTTPException, status
-from api.api_models.projects import CreateProject, MembersResponse, ProjectResponse, UpdateProject, ProjectMember
+from fastapi_pagination.links import Page
 from sqlalchemy.orm import Session
+
+from api.api_models.projects import CreateProject, MembersResponse, ProjectMember, ProjectResponse, UpdateProject
 from db.database import get_db
 from db.models.users import User
-from db.models.stacks import Stack
-from db.models.projects import Project
-from db.models.users_projects import UserProject
-from utils.permissions import is_admin, is_project_manager
+from db.repository.projects import ProjectRepository
+from db.repository.skills import SkillRepository
+from db.repository.stacks import StackRepository
+from db.repository.users import UserRepository
+from services.project_service import ProjectService
 from utils.enums import ProjectTeam
-from db.models.project_stacks import ProjectStack
-from db.models.skills import Skill
-
+from utils.permissions import is_admin, is_project_manager
 
 project_router = APIRouter(tags=["Project"], prefix="/projects")
 
 
+def _service(db: Session) -> ProjectService:
+    return ProjectService(
+        ProjectRepository(db),
+        UserRepository(db),
+        StackRepository(db),
+        SkillRepository(db)
+    )
+
+
 @project_router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProjectResponse)
 def create(project: CreateProject, db: Session = Depends(get_db), user: User = Depends(is_admin)):
-    manager = db.query(User).filter(User.id == project.manager_id).first()
-    if not manager:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
-    
-    new_project = Project(**project.model_dump(exclude=['members', 'stacks', 'project_tools']))
-    if project.members:
-        # set members on project
-        members_list = project.members
-        for member in members_list:
-            members_obj = db.query(User).get(member)
-            if members_obj.is_active:
-                new_project.members.append(members_obj)
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"{members_obj.first_name} is not an active member"
-                    )
-    if project.stacks:
-        stack_list = []
-        stacks_list = project.stacks
-        for stack in stacks_list:
-            stack_obj = db.query(Stack).get(stack)
-            stmt = (
-                select(Project)
-                .filter(Project.id == new_project.id)
-                .filter(Stack.id == stack_obj.id)
-                .join(Project.stacks)
-            )
-            project_stack = db.execute(stmt).scalar()
-            if project_stack or stack in stack_list:
-                raise HTTPException(
-                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                    detail=f"Duplicate error: Project {new_project.name} already has {stack_obj.name} assigned"
-                )
-                
-            new_project.stacks.append(stack_obj)
-            stack_list.append(stack)
-    if project.project_tools:
-        print("Skills located")
-        skill_list = []
-        for skill in project.project_tools:
-            skill_obj = db.query(Skill).get(skill)
-            stmt = (
-                select(Project)
-                .filter(Project.id == new_project.id)
-                .filter(Skill.id == skill_obj.id)
-                .join(Project.project_tools)
-            )
-            project_skill = db.execute(stmt).scalar()
-            if project_skill or skill in skill_list:
-                raise HTTPException(
-                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                    detail=f"Duplicate error: Project {new_project.name} already has {skill_obj.name} assigned"
-                )
-            new_project.project_tools.append(skill_obj)
-            skill_list.append(skill)
-
-    db.add(new_project)
-    db.commit()
-    db.refresh(new_project)
-
-    return new_project
+    return _service(db).create_project(project)
 
 
-@project_router.put("/{project_id}", status_code=status.HTTP_201_CREATED, response_model=ProjectResponse)
-def update(
-    project_id: int, updated_project: UpdateProject, db: Session = Depends(get_db), user: User = Depends(is_admin)
-):
-    project_query = db.query(Project).filter(Project.id == project_id)
-    project = project_query.first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    if updated_project.manager_id and updated_project.manager_id != project.manager_id:
-        manager = db.query(User).filter(User.id == updated_project.manager_id).first()
-        if not manager:
-            raise HTTPException(status_code=404, detail="Manager not found")
-
-    for field, value in updated_project.model_dump(exclude=['members', 'stacks', 'project_tools']).items():
-        if value is not None:
-            setattr(project, field, value)
-
-    project.updated_at = datetime.now()
-    db.commit()
-    db.refresh(project)
-
-    return project
+@project_router.put("/{project_id}", status_code=status.HTTP_200_OK, response_model=ProjectResponse)
+def update(project_id: int, updated_project: UpdateProject, db: Session = Depends(get_db),
+           user: User = Depends(is_admin)):
+    return _service(db).update_project(project_id, updated_project)
 
 
 @project_router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(project_id: int, db: Session = Depends(get_db), user: User = Depends(is_admin)):
-    project_query = db.query(Project).filter(Project.id == project_id)
-    project = project_query.first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    user_project = db.query(UserProject).filter(
-        UserProject.project_id == project.id
-        )
-    user_project.delete()
-    project_query.delete()
-    db.commit()
+    _service(db).delete_project(project_id)
 
 
 @project_router.get("/{project_id}", status_code=status.HTTP_200_OK, response_model=ProjectResponse)
 def get(project_id: int, db: Session = Depends(get_db)):
-    project_query = db.query(Project).filter(Project.id == project_id)
-    project = project_query.first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    return project
+    return _service(db).get_project(project_id)
 
 
 @project_router.get("/", status_code=status.HTTP_200_OK, response_model=Page[ProjectResponse])
 def get_all(db: Session = Depends(get_db)):
-    return paginate(db, select(Project).order_by(desc(Project.created_at)))
+    return paginate(db, _service(db).get_all_query())
 
 
 @project_router.post("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)
-def add_user_to_project(
-    project_id: int, user_id: int, user_project_data: ProjectMember,
-    db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)
-):
-    # Check if the project exists
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # Check if the user exists
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Check if the user is already a member of the project
-    existing_member = db.query(
-        UserProject).filter(UserProject.user_id == user_id, UserProject.project_id == project_id).first()
-    if existing_member:
-        raise HTTPException(status_code=400, detail="User is already a member of the project")
-
-    # Create a UserProject entry with the specified role
-    user_project = UserProject(user_id=user_id, project_id=project_id, team=user_project_data.team)
-    db.add(user_project)
-    db.commit()
-
-    return {"message": "User added to project with team specified"}
+def add_user_to_project(project_id: int, user_id: int, user_project_data: ProjectMember,
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(is_project_manager)):
+    return _service(db).add_member(project_id, user_id, user_project_data.team)
 
 
 @project_router.delete("/{project_id}/remove/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_user_from_project(
-    project_id: int, user_id: int, db: Session = Depends(get_db), current_user: User = Depends(is_project_manager)
-):
-    # Check if the project exists
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # Check if the user exists
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Query the UserProject table to find the entry linking the user to the project
-    user_project_entry = db.query(
-        UserProject).filter(UserProject.user_id == user_id, UserProject.project_id == project_id).first()
-
-    if user_project_entry:
-        # Delete the entry if it exists
-        db.delete(user_project_entry)
-        db.commit()
-    else:
-        raise HTTPException(status_code=404, detail="User is not associated with the project")
-
-    return None
+def remove_user_from_project(project_id: int, user_id: int, db: Session = Depends(get_db),
+                              current_user: User = Depends(is_project_manager)):
+    _service(db).remove_member(project_id, user_id)
 
 
-@project_router.get("/{project_id}/members", status_code=status.HTTP_200_OK, response_model=List[MembersResponse])
-def get_project_members(project_id: int, team: Optional[ProjectTeam] = None, db: Session = Depends(get_db)):
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    user_project_query = db.query(UserProject).filter(UserProject.project_id == project_id)
-
-    if team:
-        user_project_query = user_project_query.filter(UserProject.team == team)
-
-    user_project_rows = user_project_query.all()
-    user_ids = [row.user_id for row in user_project_rows]
-
-    members = db.query(User).filter(User.id.in_(user_ids)).all()
-
-    # user_responses = [
-    #     MembersResponse(
-    #         id=user.id, first_name=user.first_name, last_name=user.last_name,
-    #         email=user.email, username=user.username, profile_pic_url=user.profile_pic_url, stack=user.stack)
-    #     for user in members
-    # ]
-    # print(user_responses)
-
-    return members
+@project_router.get("/{project_id}/members", status_code=status.HTTP_200_OK,
+                    response_model=List[MembersResponse])
+def get_project_members(project_id: int, team: Optional[ProjectTeam] = None,
+                        db: Session = Depends(get_db)):
+    return _service(db).get_project_members(project_id, team)

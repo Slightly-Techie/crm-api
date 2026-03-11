@@ -99,7 +99,7 @@ def test_update_project(session, client, user_cred, test_projects):
     res = client.put(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
     res_data = res.json()
 
-    assert res.status_code == status.HTTP_201_CREATED
+    assert res.status_code == status.HTTP_200_OK
     assert res_data['name'] == data['name']
 
 

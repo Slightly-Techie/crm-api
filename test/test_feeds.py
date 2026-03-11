@@ -83,7 +83,7 @@ def test_update_feed(client, test_feeds, test_user):
 
     res = client.put(f"/api/v1/feed/{test_feeds[0].id}", json=data, headers={'Authorization': f'Bearer {token}'})
     updated_feed = FeedUpdate(**res.json())
-    assert res.status_code == 201
+    assert res.status_code == 200
     assert updated_feed.content == data["content"]
 
 

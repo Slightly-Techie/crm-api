@@ -18,10 +18,11 @@ class Settings:
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "postgres")
     POSTGRES_DB_TEST: str = os.getenv("POSTGRES_DB_TEST", "postgres")
     DATABASE_URL = os.getenv(
-        "DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
-    SECRET: str = os.getenv("SECRET", "ABnfjEINSKl3ECmsnoINEnwmkWAS")
-    REFRESH_SECRET: str = os.getenv(
-        "REFRESH_SECRET", "NIk10kHWwa2Fbl6Pt46E+OSiC1h6")
+        "DATABASE_URL",
+        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}",
+    )
+    SECRET: str = os.getenv("SECRET")
+    REFRESH_SECRET: str = os.getenv("REFRESH_SECRET")
     PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", False)
     REFRESH_TOKEN_EXPIRE_MINUTES: int = os.getenv(
         "REFRESH_TOKEN_EXPIRE_MINUTES", 60*24*30)
@@ -32,6 +33,7 @@ class Settings:
         "INVALID_CREDENTIALS": "Invalid Credentials",
         "PASSWORD_MATCH_DETAIL": "Passwords do not match",
         "USER_EXISTS": "User with email already exists",
+        "USERNAME_EXISTS": "Username already exists",
         "INVALID ID": "ID does not exist",
         "UNKNOWN ERROR": "Something went wrong",
         "USER ALREADY ACTIVE": "User is already active",
@@ -49,3 +51,17 @@ class Settings:
 
 
 settings = Settings()
+
+_missing_vars = [
+    name for name, val in [
+        ("SECRET", settings.SECRET),
+        ("REFRESH_SECRET", settings.REFRESH_SECRET),
+        ("EMAIL_PASSWORD", settings.EMAIL_PASSWORD),
+    ]
+    if not val
+]
+if _missing_vars:
+    raise ValueError(
+        f"Missing required environment variables: {', '.join(_missing_vars)}. "
+        "Set them in .env or the deployment environment before starting."
+    )
