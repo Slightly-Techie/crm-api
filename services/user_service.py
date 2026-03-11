@@ -10,7 +10,7 @@ from db.repository.technical_tasks import TechnicalTaskSubmissionRepository
 from db.repository.users import UserRepository
 from utils.enums import UserStatus
 from utils.mail_service import send_email
-from utils.s3 import upload_file_to_s3
+from utils.cloudinary import upload_file
 from utils.utils import is_image_file
 
 
@@ -87,7 +87,7 @@ class UserService:
         if not is_image_file(file.filename):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="Invalid file format. Please upload an image.")
-        url = await upload_file_to_s3(file, user.username, "profile")
+        url = await upload_file(file, user.username, "profile")
         if not url:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail="Failed to upload profile picture")

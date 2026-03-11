@@ -4,7 +4,7 @@ from fastapi import HTTPException, UploadFile, status
 
 from db.models.feeds import Feed
 from db.repository.feeds import FeedRepository
-from utils.s3 import upload_file_to_s3
+from utils.cloudinary import upload_file
 from utils.utils import is_image_file
 
 
@@ -21,7 +21,7 @@ class FeedService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid file format. Please upload an image."
                 )
-            image_url = await upload_file_to_s3(file, username, "feed")
+            image_url = await upload_file(file, username, "feed")
         return self.feed_repo.create(user_id, content, image_url)
 
     def update_feed(self, feed_id: int, user_id: int, update_data: dict) -> Feed:

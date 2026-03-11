@@ -41,10 +41,9 @@ class Settings:
     BASE_URL: str = os.getenv("BASE_URL")
     EMAIL_SERVER: str = os.getenv("EMAIL_SERVER", "smtp.gmail.com")
     EMAIL_PORT: int = os.getenv("EMAIL_PORT", 465)
-    AWS_BUCKET_NAME: str = os.getenv("AWS_BUCKET_NAME", "aws_bucket_name")
-    AWS_REGOIN: str = os.getenv("AWS_REGION", "us-east-1")
-    AWS_ACCESS_KEY: str = os.getenv("AWS_ACCESS_KEY", "aws_access_key")
-    AWS_SECRET_KEY: str = os.getenv("AWS_SECRET_KEY", "aws_secret_key")
+    CLOUDINARY_CLOUD_NAME: str = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+    CLOUDINARY_API_KEY: str = os.getenv("CLOUDINARY_API_KEY", "")
+    CLOUDINARY_API_SECRET: str = os.getenv("CLOUDINARY_API_SECRET", "")
     EMAIL_SENDER: str = os.getenv("EMAIL_SENDER", "slightly.techie@gmail.com")
     EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD")
     URL_PATH: str = os.getenv("URL_PATH")
@@ -57,6 +56,9 @@ _missing_vars = [
         ("SECRET", settings.SECRET),
         ("REFRESH_SECRET", settings.REFRESH_SECRET),
         ("EMAIL_PASSWORD", settings.EMAIL_PASSWORD),
+        ("CLOUDINARY_CLOUD_NAME", settings.CLOUDINARY_CLOUD_NAME),
+        ("CLOUDINARY_API_KEY", settings.CLOUDINARY_API_KEY),
+        ("CLOUDINARY_API_SECRET", settings.CLOUDINARY_API_SECRET),
     ]
     if not val
 ]

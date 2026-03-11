@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
 from api.routes.auth import auth_router
 from api.routes.email_templates import email_templates_route
 from api.routes.skills import skill_route
@@ -11,7 +10,6 @@ from api.routes.announcements import announcement_route
 # from db.database import engine
 # from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
-from utils.s3 import create_bucket
 from db.database import create_roles
 from api.routes.tags import tag_route
 from api.routes.stacks import stack_router
@@ -22,12 +20,6 @@ from api.routes.endpoints import endpoints_route
 from utils.endpoints_status import create_signup_endpoint
 
 # Base.metadata.create_all(bind=engine)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await create_bucket()
-    yield
 
 
 app = FastAPI()
