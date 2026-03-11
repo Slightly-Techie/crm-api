@@ -35,12 +35,16 @@ def get_announcement_by_id(announcement_id: int, db: Session = Depends(get_db)):
 
 @announcement_route.put("/{announcement_id}", status_code=status.HTTP_200_OK,
                         response_model=AnnouncementResponse)
-def update_announcement_by_id(announcement_id: int, announcement: AnnouncementUpdate,
-                               current_user=Depends(is_admin), db: Session = Depends(get_db)):
+def update_announcement_by_id(
+    announcement_id: int, announcement: AnnouncementUpdate,
+    current_user=Depends(is_admin), db: Session = Depends(get_db)
+):
     return _service(db).update(announcement_id, announcement.model_dump())
 
 
 @announcement_route.delete("/{announcement_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_announcement_by_id(announcement_id: int, db: Session = Depends(get_db),
-                               current_user=Depends(is_admin)):
+def delete_announcement_by_id(
+    announcement_id: int, db: Session = Depends(get_db),
+    current_user=Depends(is_admin)
+):
     _service(db).delete(announcement_id)

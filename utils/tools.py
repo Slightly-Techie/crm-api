@@ -1,5 +1,4 @@
 from io import BytesIO
-import re
 import logging
 from datetime import datetime
 from core.config import settings
@@ -35,7 +34,7 @@ def get_skills_image(skill_name: str):
         return None
 
 
-def get_icon(icon_name):
+def get_icon(icon_name) -> str | None:
     url = f"https://api.iconify.design/{icon_name.lower()}.svg"
     response = requests.get(url)
     # print(f"Status Code is {response.status_code}, {response.text}")
@@ -44,7 +43,8 @@ def get_icon(icon_name):
     else:
         return None
 
-def save_svg_as_png(svg_data, skill_name):
+
+def save_svg_as_png(svg_data, skill_name) -> str:
     png_output = BytesIO()
     cairosvg.svg2png(bytestring=svg_data, write_to=png_output)
     png_output.seek(0)

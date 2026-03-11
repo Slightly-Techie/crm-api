@@ -1,7 +1,3 @@
-from typing import Optional
-
-from sqlalchemy.orm import Session
-
 from db.models.stacks import Stack
 from db.repository.base import BaseRepository
 

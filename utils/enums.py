@@ -1,9 +1,11 @@
 from enum import Enum
 
+
 class EmailTemplateName(str, Enum):
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
     password_reset = "PASSWORD RESET"
+
 
 class UserStatus(str, Enum):
     TO_CONTACT = "TO CONTACT"

@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy import desc, select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import joinedload
 
 from db.models.skills import Skill
 from db.models.users import User
@@ -45,7 +45,7 @@ class SkillRepository(BaseRepository):
     def get_all_flat(self) -> list[Skill]:
         return self.db.query(Skill).all()
 
-    def get_all_paginated_query(self):
+    def get_all_paginated_query(self) -> Any:
         return select(Skill).order_by(desc(Skill.created_at))
 
     def get_by_name(self, name: str) -> Optional[Skill]:

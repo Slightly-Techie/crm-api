@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import joinedload
 
 from db.models.tags import Tag
 from db.models.users import User

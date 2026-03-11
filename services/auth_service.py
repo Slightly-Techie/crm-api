@@ -1,9 +1,5 @@
 import logging
-
 from fastapi import HTTPException, status
-
-logger = logging.getLogger(__name__)
-
 from api.api_models.user import Token, UserSignUp
 from core.config import settings
 from db.models.users import User
@@ -17,6 +13,8 @@ from utils.oauth2 import (
     verify_refresh_token, verify_reset_token
 )
 from utils.utils import get_key_by_value, get_password_hash, verify_password
+
+logger = logging.getLogger(__name__)
 
 
 class AuthService:

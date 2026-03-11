@@ -18,8 +18,10 @@ def _service(db: Session) -> TechieOTMService:
 
 
 @techieotm_router.post("/", status_code=status.HTTP_201_CREATED, response_model=TechieOTMResponse)
-def create_techie_of_the_month(techieotm: TechieOTMCreate, current_user=Depends(is_admin),
-                                db: Session = Depends(get_db)):
+def create_techie_of_the_month(
+    techieotm: TechieOTMCreate, current_user=Depends(is_admin),
+    db: Session = Depends(get_db)
+):
     return _service(db).create(techieotm.user_id, techieotm.points)
 
 

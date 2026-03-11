@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict
-from enum import Enum
 
 from utils.enums import EmailTemplateName
 

@@ -1,7 +1,5 @@
-from typing import Optional
-
 from fastapi import HTTPException, status
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz
 
 from db.models.skills import Skill
 from db.models.users import User
@@ -40,7 +38,7 @@ class SkillService:
             )
         self.skill_repo.delete_user_skill(skill_id)
 
-    def get_all_query(self):
+    def get_all_query(self) -> list[Skill]:
         return self.skill_repo.get_all_paginated_query()
 
     def populate_skills(self) -> dict:

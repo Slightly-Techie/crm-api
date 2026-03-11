@@ -79,7 +79,7 @@ def test_unauthorized_delete_skill(client, test_user, populate_skills):
     res = client.post("/api/v1/skills/", json=[50,60], headers={'Authorization': f'Bearer {token}'})
 
     assert res.status_code == 201
-    
+
     res = client.delete("/api/v1/skills/50")
 
     assert res.status_code == 401

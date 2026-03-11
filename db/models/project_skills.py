@@ -1,5 +1,5 @@
 from db.database import Base
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, PrimaryKeyConstraint
+from sqlalchemy import Column, Integer, ForeignKey, PrimaryKeyConstraint
 
 
 class ProjectSkill(Base):
