@@ -83,4 +83,5 @@ watchfiles>=0.24.0
 websockets>=13.0  
 werkzeug==3.0.1  
 xmltodict==0.13.0  
-cloudinary==1.44.1
+cloudinary==1.44.1 
+gunicorn
