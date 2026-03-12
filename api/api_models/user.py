@@ -56,8 +56,8 @@ class UserSignUp(BaseModel):
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
     last_name: str = Field(..., min_length=2)
-    password: str = Field(...)
-    password_confirmation: str = Field(...)
+    password: str = Field(..., min_length=8)
+    password_confirmation: str = Field(..., min_length=8)
     role_id: Optional[int] = Field(None)
     stack_id: Optional[int] = Field(None)
     bio: Optional[str] = Field(None)
@@ -71,6 +71,12 @@ class UserSignUp(BaseModel):
     is_active: bool = False
 
     model_config = ConfigDict(from_attributes=True, validate_assignment=True)
+
+    @field_validator("phone_number")
+    def validate_phone_number(cls, value):
+        if not re.match(r'^\+?[0-9]{7,15}$', value):
+            raise ValueError("Invalid phone number. Use 7–15 digits, optionally starting with '+'")
+        return value
 
     @field_validator("username")
     def validate_username(cls, value):

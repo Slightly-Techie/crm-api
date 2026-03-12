@@ -11,7 +11,7 @@ pg_db = settings.POSTGRES_DB
 SQLALCHEMY_DATABASE_URL = f"postgresql://{pg_user}:{pg_pass}@{pg_server}:{pg_port}/{pg_db}"
 
 
-def set_up_db(production_env):
+def set_up_db(production_env) -> tuple:
     if production_env:
         engine = create_engine(settings.DATABASE_URL, 
                              connect_args={"sslmode": "require"})
@@ -30,11 +30,14 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
 
 
-def create_roles():
+def create_roles() -> None:
     from db.models.roles import Role
     from utils.utils import RoleChoices
 

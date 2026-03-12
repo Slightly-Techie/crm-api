@@ -1,220 +1,68 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from utils.utils import get_password_hash
-
-from db.models.users import User
-from db.models.email_template import EmailTemplate
-from api.api_models.email_template import EmailTemplateName
-from db.database import get_db
-from db.repository.users import create_new_user
-
 from api.api_models.user import (
-    ProfileResponse, RefreshTokenRequest, UserSignUp, Token, ForgotPasswordRequest, ResetPasswordRequest
+    ForgotPasswordRequest, ProfileResponse, RefreshTokenRequest,
+    ResetPasswordRequest, Token, UserResponse, UserSignUp
 )
-from db.models.technical_task import TechnicalTask
-from api.api_models.user import UserResponse
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from utils.utils import verify_password
-from utils.oauth2 import (
-    get_access_token, get_refresh_token, verify_refresh_token, create_reset_token, verify_reset_token
-)
+from db.database import get_db
+from db.repository.email_templates import EmailTemplateRepository
+from db.repository.endpoints import EndpointRepository
+from db.repository.technical_tasks import TechnicalTaskRepository
+from db.repository.users import UserRepository
+from services.auth_service import AuthService
+from services.endpoint_service import EndpointService
 from utils.permissions import is_authenticated
-from core.config import settings
-from utils.mail_service import send_password_reset_email
-from utils.mail_service import send_applicant_task
-from utils.utils import get_key_by_value
-from utils.enums import UserStatus
-# from utils.endpoints_status import endpoint_status_dependency
-from db.models.endpoints import Endpoints
-
 
 auth_router = APIRouter(tags=["Auth"], prefix="/users")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+def _auth_service(db: Session) -> AuthService:
+    return AuthService(UserRepository(db), TechnicalTaskRepository(db), EmailTemplateRepository(db))
 
 
-@auth_router.post('/register', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+def _endpoint_service(db: Session) -> EndpointService:
+    return EndpointService(EndpointRepository(db))
+
+
+@auth_router.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def signup(user: UserSignUp, db: Session = Depends(get_db)):
-    endpoint_query = db.query(Endpoints).filter(
-        Endpoints.endpoint == "signup").first()
-    if endpoint_query and not endpoint_query.status:
-        raise HTTPException(status.HTTP_403_FORBIDDEN,
-                            detail="Signup is closed")
-
-    user.email = user.email.lower()
-    user_name = db.query(User).filter(User.username == user.username).first()
-    if user_name:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=settings.ERRORS.get("USERNAME_EXISTS"))
-
-    user_data = db.query(User).filter(User.email == user.email).first()
-    if user_data:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=settings.ERRORS.get("USER_EXISTS"))
-
-    if user.password != user.password_confirmation:
-        print("Passwords do not match")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("PASSWORD_MATCH_DETAIL"))
-
-    if len(user.password) > 72:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be 72 characters or less")
-
-    hash_passwd = get_password_hash(user.password)
-
-    user.password = hash_passwd
-    new_user = create_new_user(user, db)
-
-    try:
-        task = db.query(TechnicalTask).filter(
-            TechnicalTask.stack_id == new_user.stack_id,
-            TechnicalTask.experience_level == get_key_by_value(
-                new_user.years_of_experience)
-        ).first()
-        if task:
-            await send_applicant_task(
-                new_user.email, new_user.first_name, task.content
-            )
-            db.query(User).filter(User.id == new_user.id).update(
-                {"status": UserStatus.CONTACTED}
-            )
-            db.commit()
-        else:
-            print("Task not found")
-            pass
-    except Exception as user_reg_e:
-        print(user_reg_e)
-        pass
-
-    return new_user
+    _endpoint_service(db).is_signup_open()
+    return await _auth_service(db).register(user)
 
 
-@auth_router.post('/login', response_model=Token)
-def login(response: Response, user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user.username = user.username.lower()
-    user_data = db.query(User).filter(User.email == user.username).first()
-    if not user_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
-
-    if not verify_password(user.password, user_data.password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
-
-    token = get_access_token(str(user_data.id))
-    refresh_token = get_refresh_token(str(user_data.id))
-
-    return Token(
-        token=token,
-        refresh_token=refresh_token,
-        token_type="Bearer",
-        is_active=user_data.is_active,
-        user_status=user_data.status
-    )
+@auth_router.post("/login", response_model=Token)
+def login(response: Response, user: OAuth2PasswordRequestForm = Depends(),
+          db: Session = Depends(get_db)):
+    return _auth_service(db).login(user.username, user.password)
 
 
-@auth_router.post('/refresh', response_model=Token)
+@auth_router.post("/refresh", response_model=Token)
 def refresh_token(refresh_token_data: RefreshTokenRequest, db: Session = Depends(get_db)):
-    refresh_token = refresh_token_data.refresh_token
-    if not refresh_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
-    try:
-        payload = verify_refresh_token(refresh_token)
-        user = db.query(User).filter(User.id == payload.id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
-        token = get_access_token(str(user.id))
-        return Token(
-            token=token,
-            refresh_token=refresh_token,
-            token_type="Bearer",
-            is_active=user.is_active,
-            user_status=user.status
-        )
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+    return _auth_service(db).refresh(refresh_token_data.refresh_token)
 
 
-@auth_router.post('/logout')
+@auth_router.post("/logout")
 def logout(response: Response):
-    response.set_cookie(key="st.token", value="", httponly=True,
-                        max_age=10, samesite="none", secure=True)
+    response.set_cookie(key="st.token", value="", httponly=True, max_age=10,
+                        samesite="none", secure=True)
     return {"message": "Logout Successful"}
 
 
 @auth_router.get("/me", response_model=ProfileResponse)
-def me(user: User = Depends(is_authenticated), db: Session = Depends(get_db)):
+def me(user=Depends(is_authenticated), db: Session = Depends(get_db)):
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=settings.ERRORS.get("INVALID_CREDENTIALS"))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Credentials")
     return user
 
 
-@auth_router.post('/forgot-password')
-async def forgot_password(request: ForgotPasswordRequest, requested: Request, db: Session = Depends(get_db)):
-    """
-    Send a reset password email to the user.
-
-    Args:
-        request (ForgotPasswordRequest): The request containing the user's email.
-        db (Session, optional): The database session. Defaults to Depends(get_db).
-
-    Returns:
-        JSONResponse: A response indicating the result of sending the reset password email.
-    """
-    email = request.email.lower()
-    user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    reset_token = create_reset_token(email)
-    try:
-        email_template = db.query(EmailTemplate).filter(
-            EmailTemplate.template_name == EmailTemplateName.password_reset).first()
-    except Exception:
-        email_template = None
-    result = await send_password_reset_email(
-        email, reset_token, user.username, email_template)
-    return result
+@auth_router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    return await _auth_service(db).forgot_password(request.email)
 
 
-@auth_router.post('/reset-password')
-def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
-    """
-    Reset the user's password with a valid reset token.
-
-    Args:
-        request (ResetPasswordRequest): The request containing the reset token and new password.
-        db (Session, optional): The database session. Defaults to Depends(get_db).
-
-    Returns:
-        dict: A message indicating the result of the password reset.
-    """
-    try:
-        email = verify_reset_token(request.token)
-        email = email.lower()
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-        hashed_password = get_password_hash(request.new_password)
-        user.password = hashed_password
-
-        db.commit()
-
-        return {"message": "Password reset successful"}
-    except HTTPException as e:
-        raise e
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while resetting the password.")
+@auth_router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    return _auth_service(db).reset_password(request.token, request.new_password)

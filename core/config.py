@@ -17,16 +17,13 @@ class Settings:
         "POSTGRES_PORT", 5432)  # default postgres port is 5432
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "postgres")
     POSTGRES_DB_TEST: str = os.getenv("POSTGRES_DB_TEST", "postgres")
-    _DATABASE_URL = os.getenv("DATABASE_URL")
-    if _DATABASE_URL and _DATABASE_URL.startswith("postgres://"):
-        _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    
-    DATABASE_URL = _DATABASE_URL or f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    
-    SECRET: str = os.getenv("SECRET", "ABnfjEINSKl3ECmsnoINEnwmkWAS")
-    REFRESH_SECRET: str = os.getenv(
-        "REFRESH_SECRET", "NIk10kHWwa2Fbl6Pt46E+OSiC1h6")
-    PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", "False").lower() == "true"
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}",
+    )
+    SECRET: str = os.getenv("SECRET")
+    REFRESH_SECRET: str = os.getenv("REFRESH_SECRET")
+    PRODUCTION_ENV: bool = os.getenv("PRODUCTION_ENV", False)
     REFRESH_TOKEN_EXPIRE_MINUTES: int = os.getenv(
         "REFRESH_TOKEN_EXPIRE_MINUTES", 60*24*30)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv(
@@ -36,6 +33,7 @@ class Settings:
         "INVALID_CREDENTIALS": "Invalid Credentials",
         "PASSWORD_MATCH_DETAIL": "Passwords do not match",
         "USER_EXISTS": "User with email already exists",
+        "USERNAME_EXISTS": "Username already exists",
         "INVALID ID": "ID does not exist",
         "UNKNOWN ERROR": "Something went wrong",
         "USER ALREADY ACTIVE": "User is already active",
@@ -43,13 +41,29 @@ class Settings:
     BASE_URL: str = os.getenv("BASE_URL")
     EMAIL_SERVER: str = os.getenv("EMAIL_SERVER", "smtp.gmail.com")
     EMAIL_PORT: int = os.getenv("EMAIL_PORT", 465)
-    AWS_BUCKET_NAME: str = os.getenv("AWS_BUCKET_NAME", "aws_bucket_name")
-    AWS_REGOIN: str = os.getenv("AWS_REGION", "us-east-1")
-    AWS_ACCESS_KEY: str = os.getenv("AWS_ACCESS_KEY", "aws_access_key")
-    AWS_SECRET_KEY: str = os.getenv("AWS_SECRET_KEY", "aws_secret_key")
+    CLOUDINARY_CLOUD_NAME: str = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+    CLOUDINARY_API_KEY: str = os.getenv("CLOUDINARY_API_KEY", "")
+    CLOUDINARY_API_SECRET: str = os.getenv("CLOUDINARY_API_SECRET", "")
     EMAIL_SENDER: str = os.getenv("EMAIL_SENDER", "slightly.techie@gmail.com")
     EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD")
     URL_PATH: str = os.getenv("URL_PATH")
 
 
 settings = Settings()
+
+_missing_vars = [
+    name for name, val in [
+        ("SECRET", settings.SECRET),
+        ("REFRESH_SECRET", settings.REFRESH_SECRET),
+        ("EMAIL_PASSWORD", settings.EMAIL_PASSWORD),
+        ("CLOUDINARY_CLOUD_NAME", settings.CLOUDINARY_CLOUD_NAME),
+        ("CLOUDINARY_API_KEY", settings.CLOUDINARY_API_KEY),
+        ("CLOUDINARY_API_SECRET", settings.CLOUDINARY_API_SECRET),
+    ]
+    if not val
+]
+if _missing_vars:
+    raise ValueError(
+        f"Missing required environment variables: {', '.join(_missing_vars)}. "
+        "Set them in .env or the deployment environment before starting."
+    )

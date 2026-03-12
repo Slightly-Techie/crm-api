@@ -1,5 +1,5 @@
 from jose import jwt, JWTError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import re
 from api.api_models.user import TokenData
 from fastapi import Depends, HTTPException, status
@@ -103,7 +103,7 @@ def get_current_user(
 
 def create_reset_token(email: str) -> str:
     delta = timedelta(minutes=15)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": email,
         "iat": now,
@@ -120,8 +120,8 @@ def verify_reset_token(token: str) -> str:
             raise HTTPException(status_code=400, detail="Invalid token")
         expiration = payload.get("exp")
         if expiration:
-            expiration_datetime = datetime.utcfromtimestamp(expiration)
-            if datetime.utcnow() > expiration_datetime:
+            expiration_datetime = datetime.fromtimestamp(expiration, tz=timezone.utc)
+            if datetime.now(timezone.utc) > expiration_datetime:
                 raise HTTPException(status_code=400, detail="Token has expired")
         return email
     except JWTError:
