@@ -61,6 +61,9 @@ jobs:
             ./
             *.py
         if: always()
+      
+      - name: Copy .env.sample to .env
+        run: cp .env.sample .env
 
       - name: Run migration
         run: alembic upgrade head
