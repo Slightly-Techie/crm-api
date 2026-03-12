@@ -1,7 +1,7 @@
 from db.database import get_db
 from db.models.projects import Project
 from .oauth2 import get_current_user
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from api.api_models.user import UserResponse
 from utils.utils import RoleChoices
 from core.exceptions import ForbiddenError
@@ -29,12 +29,15 @@ def is_admin(user: UserResponse = Depends(is_authenticated)):
 
 
 def is_project_manager(
-    project_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user),
 ):
+    project_id = request.path_params.get("project_id")
+    if project_id is None:
+        raise HTTPException(status_code=500, detail="project_id path parameter missing")
     project = db.query(Project).filter(
-        Project.id == project_id, Project.manager_id == user.id
+        Project.id == int(project_id), Project.manager_id == user.id
     )
     if not project.first():
         raise HTTPException(

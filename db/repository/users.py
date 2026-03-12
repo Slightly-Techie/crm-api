@@ -1,17 +1,80 @@
+from typing import Optional
+
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from api.api_models.user import UserSignUp
 from db.models.users import User
+from db.models.skills import Skill
+from db.models import users_skills
+from db.repository.base import BaseRepository
 
 
-def create_new_user(user: UserSignUp, db: Session):
+class UserRepository(BaseRepository):
+    model = User
 
-    new_user = user.model_dump().copy()
-    new_user.pop("password_confirmation")
+    def get_by_email(self, email: str) -> Optional[User]:
+        return self.db.query(User).filter(User.email == email).first()
 
-    new_user = User(**new_user)
+    def get_by_username(self, username: str) -> Optional[User]:
+        return self.db.query(User).filter(User.username == username).first()
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    def create(self, user_data: UserSignUp) -> User:
+        data = user_data.model_dump().copy()
+        data.pop("password_confirmation")
+        new_user = User(**data)
+        return self.save(new_user)
+
+    def update_by_id(self, user_id: int, update_data: dict) -> Optional[User]:
+        query = self.db.query(User).filter(User.id == user_id)
+        query.update(update_data)
+        self.db.commit()
+        return query.first()
+
+    def update_status(self, user: User, new_status) -> User:
+        user.status = new_status
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def activate(self, user: User) -> User:
+        user.is_active = True
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def update_password(self, user: User, hashed_password: str) -> User:
+        user.password = hashed_password
+        self.db.commit()
+        return user
+
+    def update_avatar(self, user: User, url: str) -> User:
+        user.profile_pic_url = url
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def build_search_query(self, skill: Optional[str], stack: Optional[str],
+                           active: Optional[bool], p: Optional[str]):
+        query = select(User).order_by(desc(User.created_at))
+        if skill:
+            query = query.join(users_skills.UserSkill).join(Skill).filter(
+                Skill.name == skill.capitalize()
+            )
+        if stack:
+            query = query.filter(User.stack.has(name=stack.capitalize()))
+        if active is not None:
+            query = query.filter(User.is_active == active)
+        if p:
+            p_escaped = p.replace("%", r"\%").replace("_", r"\_")
+            query = query.filter(
+                User.username.ilike(f"%{p_escaped}%", escape="\\")
+                | User.first_name.ilike(f"%{p_escaped}%", escape="\\")
+                | User.last_name.ilike(f"%{p_escaped}%", escape="\\")
+            )
+        return query
+
+
+# Backwards-compatibility shim — remove in Phase 4 once all callers use UserRepository directly
+def create_new_user(user: UserSignUp, db: Session) -> User:
+    return UserRepository(db).create(user)

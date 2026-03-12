@@ -20,6 +20,12 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: github_actions_db
           POSTGRES_HOST: localhost
+          SECRET: RMi7R08iX02B8s85QXmXvCK7
+          REFRESH_SECRET: 2B8s85QXmXvCK7RMi7R08iX0
+          EMAIL_PASSWORD: 5ioVUFj4KdOF1aR15iLS9HvZ
+          CLOUDINARY_CLOUD_NAME: Xl9q9TVz88jF8gxrb9XudOX2
+          CLOUDINARY_API_KEY: Jfu39X7wCmS05aBd2oJb9j3c
+          CLOUDINARY_API_SECRET: 7W8b0ksC84cQq9n97tXqu8gW
         options: >-
           --health-cmd pg_isready 
           --health-interval 10s 
@@ -55,6 +61,9 @@ jobs:
             ./
             *.py
         if: always()
+      
+      - name: Copy .env.sample to .env
+        run: cp .env.sample .env
 
       - name: Run migration
         run: alembic upgrade head

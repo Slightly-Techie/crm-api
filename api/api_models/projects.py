@@ -14,6 +14,7 @@ class ProjectBase(BaseModel):
     project_priority: ProjectPriority = Field(...)
     manager_id: int = Field(...)
 
+
 class CreateProject(ProjectBase):
     stacks: Optional[list[int] | None] = Field(None)
     members: Optional[list[int] | None] = Field(None)
