@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from fastapi import Form, UploadFile
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from datetime import datetime
-from typing import Optional, Union
+from typing import List, Optional, Union
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
@@ -97,6 +99,63 @@ class UserSignUp(BaseModel):
         return role_id or check_role.id
 
 
+# ---------------------------------------------------------------------------
+# Hierarchy / tree schemas
+# ---------------------------------------------------------------------------
+
+class ManagerInfo(BaseModel):
+    """Slim representation of a manager – embedded in user responses."""
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    profile_pic_url: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SubordinateResponse(BaseModel):
+    """One direct report returned by GET /users/{id}/subordinates."""
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    email: Optional[EmailStr] = None
+    profile_pic_url: Optional[str] = None
+    role: Optional[Role] = None
+    stack: Optional[Stacks] = None
+    manager_id: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OrgChartNode(BaseModel):
+    """Recursive node used in GET /users/{id}/org-chart and GET /org-chart."""
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    profile_pic_url: Optional[str] = None
+    role: Optional[Role] = None
+    stack: Optional[Stacks] = None
+    manager_id: Optional[int] = None
+    subordinates: List[OrgChartNode] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+OrgChartNode.model_rebuild()  # Required for self-referential model
+
+
+class UpdateManagerRequest(BaseModel):
+    """Body for PATCH /users/{id}/manager."""
+    manager_id: Optional[int] = Field(None, description="Set to null to remove manager")
+
+
+# ---------------------------------------------------------------------------
+# Core user response schemas (updated to include hierarchy fields)
+# ---------------------------------------------------------------------------
+
 class UserResponse(BaseModel):
     id: int = Field(...)
     username: str = Field(...)
@@ -117,6 +176,8 @@ class UserResponse(BaseModel):
     created_at: datetime = Field(...)
     is_active: bool = Field(...)
     stack: Optional[Stacks] = Field(None)
+    manager_id: Optional[int] = Field(None)
+    manager: Optional[ManagerInfo] = Field(None)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -148,6 +209,8 @@ class ProfileResponse(ProfileUpdate):
     role: Optional[Role] = Field(None)
     is_active: bool = Field(...)
     status: str = Field(...)
+    manager_id: Optional[int] = Field(None)
+    manager: Optional[ManagerInfo] = Field(None)
 
 
 class ApplicantProfileResponse(ProfileResponse):

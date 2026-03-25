@@ -24,6 +24,8 @@ class User(Base):
     portfolio_url = Column(String)
     profile_pic_url = Column(String)
     stack_id = Column(Integer, ForeignKey("stacks.id"), nullable=True)
+    # --- Org-chart / tree hierarchy ---
+    manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(
         TIMESTAMP(timezone=True),
         nullable=False, server_default=text('now()'))
@@ -40,3 +42,6 @@ class User(Base):
     projects = relationship("Project", secondary="users_projects", back_populates="members")
     managed_projects = relationship("Project", back_populates="manager")
     technical_task_submission = relationship("TechnicalTaskSubmission", back_populates="user")
+    # Self-referential: manager points up; subordinates points down
+    manager = relationship("User", remote_side="User.id", back_populates="subordinates", foreign_keys=[manager_id])
+    subordinates = relationship("User", back_populates="manager", foreign_keys=[manager_id])
