@@ -13,8 +13,10 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{pg_user}:{pg_pass}@{pg_server}:{pg_por
 
 def set_up_db(production_env) -> tuple:
     if production_env:
-        engine = create_engine(settings.DATABASE_URL, 
-                             connect_args={"sslmode": "require"})
+        engine = create_engine(
+            settings.DATABASE_URL,
+            connect_args={"sslmode": "require"}
+        )
     else:
         engine = create_engine(settings.DATABASE_URL)
     SessionLocal = sessionmaker(
@@ -63,7 +65,7 @@ def create_stacks():
 
     db = SessionLocal()
 
-    # 1. First, fix the broken ID sequence in your production database 
+    # 1. First, fix the broken ID sequence in your production database
     # to prevent "UniqueViolation: stacks_pkey"
     try:
         db.execute(text("SELECT setval('stacks_id_seq', (SELECT MAX(id) FROM stacks))"))
@@ -74,11 +76,11 @@ def create_stacks():
     default_stacks = [
         "Backend", "Frontend", "Fullstack", "Mobile", "UI/UX", "DevOps", "Data Science"
     ]
-    
+
     for stack_name in default_stacks:
         # 2. STRICT CHECK: Only add if the name doesn't exist (case-insensitive)
         exists = db.query(Stack).filter(func.lower(Stack.name) == stack_name.lower()).first()
-        
+
         if not exists:
             try:
                 db.add(Stack(name=stack_name))
@@ -104,7 +106,7 @@ def promote_user_to_admin(email: str):
         print(f"Promotion failed: User with email {email} not found. Please register first.")
     else:
         user.role_id = admin_role.id
-        user.is_active = True  
+        user.is_active = True
         db.commit()
         print(f"User {email} successfully promoted to ADMIN.")
     db.close()

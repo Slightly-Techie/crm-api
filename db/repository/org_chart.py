@@ -1,7 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import literal, select, union_all
-from sqlalchemy.orm import Session
+from sqlalchemy import literal, select
+# from sqlalchemy.orm import Session
 
 from db.models.users import User
 from db.repository.base import BaseRepository

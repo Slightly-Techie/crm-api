@@ -142,7 +142,7 @@ class OrgChartService:
         return self.repo.set_manager(user, manager_id)
 
     def bulk_assign_subordinates(self, manager_id: int, user_ids: list[int]) -> dict:
-        manager = self._get_user_or_404(manager_id)
+        _ = self._get_user_or_404(manager_id)
 
         if manager_id in user_ids:
             raise HTTPException(

@@ -91,7 +91,7 @@ def get_current_user(
     if not user:
         print(f"User with ID {token_data.id} not found in database.")
         raise credential_exception
-    
+
     if not user.is_active:
         if user.status == "CONTACTED":
             return user
