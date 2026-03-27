@@ -1,59 +1,107 @@
 """
-GET  /users/{user_id}/subordinates     – direct reports of a user
-GET  /users/{user_id}/org-chart        – full subtree rooted at a user
-PATCH /users/{user_id}/manager         – assign / remove a user's manager
-GET  /org-chart                        – the full organisational tree (all roots)
+Org-chart endpoints.
+
+**Admin-only** (full visibility):
+  GET  /users/org-chart                – complete organisational tree
+  GET  /users/{user_id}/subordinates   – direct reports of any user
+  GET  /users/{user_id}/org-chart      – full subtree rooted at any user
+  PATCH /users/{user_id}/manager       – assign / remove a user's manager
+
+**Authenticated accepted users** (self-scoped):
+  GET  /users/me/manager               – my manager
+  GET  /users/me/subordinates          – my direct reports
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from api.api_models.user import OrgChartNode, SubordinateResponse, UpdateManagerRequest
+from api.api_models.user import (
+    BulkAssignSubordinatesRequest,
+    BulkAssignSubordinatesResponse,
+    ManagerInfo,
+    OrgChartNode,
+    SubordinateResponse,
+    UpdateManagerRequest,
+)
 from db.database import get_db
-from db.models.users import User
-from utils.oauth2 import get_current_user
-from utils.permissions import is_admin
+from db.repository.org_chart import OrgChartRepository
+from services.org_chart_service import OrgChartService
+from utils.permissions import is_admin, user_accepted
 
 users_route = APIRouter(tags=["Org Chart"], prefix="/users")
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _get_user_or_404(user_id: int, db: Session) -> User:
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {user_id} not found",
-        )
-    return user
-
-
-def _build_org_chart_node(user: User) -> OrgChartNode:
-    """Recursively build an OrgChartNode from a User ORM object.
-
-    SQLAlchemy's adjacency-list ``subordinates`` relationship is already
-    loaded (lazy by default), so this traverses the in-session graph.
-    """
-    return OrgChartNode(
-        id=user.id,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        username=user.username,
-        profile_pic_url=user.profile_pic_url,
-        role=user.role,
-        stack=user.stack,
-        manager_id=user.manager_id,
-        subordinates=[_build_org_chart_node(sub) for sub in user.subordinates],
-    )
+def _get_service(db: Session = Depends(get_db)) -> OrgChartService:
+    return OrgChartService(OrgChartRepository(db))
 
 
 # ---------------------------------------------------------------------------
-# Endpoints
+# Self-scoped endpoints (accepted users)
+# ---------------------------------------------------------------------------
+
+@users_route.get(
+    "/me/manager",
+    response_model=Optional[ManagerInfo],
+    summary="Get my manager",
+)
+def get_my_manager(
+    current_user=Depends(user_accepted),
+    service: OrgChartService = Depends(_get_service),
+):
+    manager = service.get_manager(current_user.id)
+    return manager
+
+
+@users_route.get(
+    "/me/subordinates",
+    response_model=list[SubordinateResponse],
+    summary="Get my direct reports",
+)
+def get_my_subordinates(
+    current_user=Depends(user_accepted),
+    service: OrgChartService = Depends(_get_service),
+):
+    return service.get_direct_subordinates(current_user.id)
+
+
+# ---------------------------------------------------------------------------
+# Admin endpoints — static routes BEFORE parameterised ones
+# ---------------------------------------------------------------------------
+
+@users_route.get(
+    "/org-chart",
+    response_model=list[OrgChartNode],
+    summary="Get the complete organisational tree",
+)
+def get_full_org_chart(
+    max_depth: int = Query(default=5, ge=1, le=20),
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
+):
+    return service.get_full_org_chart(max_depth)
+
+
+@users_route.post(
+    "/assign-subordinates",
+    response_model=BulkAssignSubordinatesResponse,
+    summary="Bulk assign subordinates to a manager",
+)
+def bulk_assign_subordinates(
+    payload: BulkAssignSubordinatesRequest,
+    manager_id: int = Query(..., description="The user ID of the manager"),
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
+):
+    """Assign multiple users as subordinates of a given manager in one call."""
+    return service.bulk_assign_subordinates(manager_id, payload.user_ids)
+
+
+# ---------------------------------------------------------------------------
+# Admin endpoints — parameterised
 # ---------------------------------------------------------------------------
 
 @users_route.get(
@@ -63,12 +111,10 @@ def _build_org_chart_node(user: User) -> OrgChartNode:
 )
 def get_subordinates(
     user_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
 ):
-    """Return the **immediate** direct reports of the given user."""
-    user = _get_user_or_404(user_id, db)
-    return user.subordinates
+    return service.get_direct_subordinates(user_id)
 
 
 @users_route.get(
@@ -78,13 +124,11 @@ def get_subordinates(
 )
 def get_user_org_chart(
     user_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    max_depth: int = Query(default=5, ge=1, le=20),
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
 ):
-    """Return the user as the root of a recursive org-chart tree containing
-    all subordinates at every depth."""
-    user = _get_user_or_404(user_id, db)
-    return _build_org_chart_node(user)
+    return service.get_subtree(user_id, max_depth)
 
 
 @users_route.patch(
@@ -95,68 +139,27 @@ def get_user_org_chart(
 def update_manager(
     user_id: int,
     payload: UpdateManagerRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(is_admin),
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
 ):
     """Set or clear ``manager_id`` for a user.
 
     * Pass ``manager_id: <int>`` to assign a manager.
-    * Pass ``manager_id: null`` to remove the current manager relationship.
-
-    Prevents circular references: a user cannot be set as their own manager,
-    and the proposed manager must not already report (directly or indirectly)
-    to the target user.
+    * Pass ``manager_id: null`` to remove the current manager.
     """
-    user = _get_user_or_404(user_id, db)
-
-    if payload.manager_id is not None:
-        if payload.manager_id == user_id:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="A user cannot be their own manager.",
-            )
-
-        new_manager = _get_user_or_404(payload.manager_id, db)
-
-        # Circular-reference guard: walk up the proposed manager's chain and
-        # make sure we never encounter the target user.
-        from typing import Optional as _Opt
-        current_ancestor: _Opt[User] = new_manager
-        visited: set[int] = set()
-        while current_ancestor is not None and current_ancestor.manager_id is not None:
-            next_manager_id: int = current_ancestor.manager_id
-            if next_manager_id in visited:
-                break  # already-circular chain in data – stop gracefully
-            visited.add(next_manager_id)
-            if next_manager_id == user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=(
-                        f"Circular reference detected: user {payload.manager_id} "
-                        f"already reports (directly or indirectly) to user {user_id}."
-                    ),
-                )
-            current_ancestor = db.query(User).filter(User.id == next_manager_id).first()
-
-    user.manager_id = payload.manager_id
-    db.commit()
-    db.refresh(user)
-    return user
+    return service.update_manager(user_id, payload.manager_id)
 
 
-@users_route.get(
-    "/org-chart",
-    response_model=list[OrgChartNode],
-    summary="Get the complete organisational tree",
+@users_route.delete(
+    "/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a user and reassign their subordinates",
 )
-def get_full_org_chart(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+def delete_user(
+    user_id: int,
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
 ):
-    """Return the entire org chart as a forest (list of root nodes).
-
-    Root nodes are users whose ``manager_id`` is NULL (i.e. they have no
-    manager — typically the CEO / co-founders).
-    """
-    roots = db.query(User).filter(User.manager_id.is_(None)).all()
-    return [_build_org_chart_node(root) for root in roots]
+    """Delete a user. Their subordinates are reassigned to the deleted user's
+    manager. If the deleted user had no manager, subordinates become roots."""
+    service.delete_user(user_id)

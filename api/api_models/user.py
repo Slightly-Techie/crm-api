@@ -152,6 +152,17 @@ class UpdateManagerRequest(BaseModel):
     manager_id: Optional[int] = Field(None, description="Set to null to remove manager")
 
 
+class BulkAssignSubordinatesRequest(BaseModel):
+    """Body for POST /users/assign-subordinates."""
+    user_ids: List[int] = Field(..., min_length=1)
+
+
+class BulkAssignSubordinatesResponse(BaseModel):
+    """Response for POST /users/assign-subordinates."""
+    updated: List[SubordinateResponse]
+    not_found: List[int] = []
+
+
 # ---------------------------------------------------------------------------
 # Core user response schemas (updated to include hierarchy fields)
 # ---------------------------------------------------------------------------

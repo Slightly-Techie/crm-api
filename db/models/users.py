@@ -25,7 +25,7 @@ class User(Base):
     profile_pic_url = Column(String)
     stack_id = Column(Integer, ForeignKey("stacks.id"), nullable=True)
     # --- Org-chart / tree hierarchy ---
-    manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    manager_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=True)
     created_at = Column(
         TIMESTAMP(timezone=True),
         nullable=False, server_default=text('now()'))
