@@ -88,10 +88,10 @@ def _find_cloudinary_url(s3_url: str, mapping: dict[str, str]) -> str | None:
     return None
 
 
-@migrate_media_route.post(
-    "/s3-to-cloudinary",
-    summary="Replace S3 URLs with Cloudinary URLs in the database",
-)
+# @migrate_media_route.post(
+#     "/s3-to-cloudinary",
+#     summary="Replace S3 URLs with Cloudinary URLs in the database",
+# )
 def migrate_s3_to_cloudinary(
     dry_run: bool = True,
     db: Session = Depends(get_db),
