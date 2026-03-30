@@ -6,11 +6,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from core.config import settings
 from sqlalchemy.orm import Session
-
 from db import database
 from db.models.users import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/users/login')
 
 
 credentials_exception = HTTPException(
@@ -22,7 +21,7 @@ credentials_exception = HTTPException(
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET, algorithm=settings.ALGORITHM)
     return encoded_jwt
@@ -30,7 +29,7 @@ def create_access_token(data: dict):
 
 def create_refresh_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     token = jwt.encode(to_encode, settings.REFRESH_SECRET, algorithm=settings.ALGORITHM)
     return token
@@ -48,15 +47,19 @@ def get_refresh_token(sub: str):
 
 def verify_token(token: str, credential_exception):
     try:
-        payload = jwt.decode(token, settings.SECRET, algorithms=settings.ALGORITHM)
+        payload = jwt.decode(token, settings.SECRET, algorithms=[settings.ALGORITHM])
         sub = payload.get('sub')
         if sub is None:
+            print("Token verification failed: 'sub' missing from payload.")
             raise credential_exception
         token_data = TokenData(id=sub)
-    except JWTError:
+        return token_data
+    except JWTError as e:
+        print(f"JWT Verification Error: {str(e)}")
         raise credential_exception
-
-    return token_data
+    except Exception as e:
+        print(f"Unexpected Token Error: {str(e)}")
+        raise credential_exception
 
 
 def verify_refresh_token(token: str):
@@ -78,10 +81,17 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    token = verify_token(token, credentials_exception)
-    user = db.query(User).filter(User.id == token.id).first()
-    if not user:
+    try:
+        token_data = verify_token(token, credential_exception)
+    except Exception as e:
+        print(f"Token verification failed: {e}")
         raise credential_exception
+
+    user = db.query(User).filter(User.id == token_data.id).first()
+    if not user:
+        print(f"User with ID {token_data.id} not found in database.")
+        raise credential_exception
+
     if not user.is_active:
         if user.status == "CONTACTED":
             return user

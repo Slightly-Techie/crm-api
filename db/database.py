@@ -13,9 +13,12 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{pg_user}:{pg_pass}@{pg_server}:{pg_por
 
 def set_up_db(production_env) -> tuple:
     if production_env:
-        engine = create_engine(settings.DATABASE_URL)
+        engine = create_engine(
+            settings.DATABASE_URL,
+            connect_args={"sslmode": "require"}
+        )
     else:
-        engine = create_engine(SQLALCHEMY_DATABASE_URL)
+        engine = create_engine(settings.DATABASE_URL)
     SessionLocal = sessionmaker(
         autocommit=False, autoflush=False, bind=engine)
     Base = declarative_base()
@@ -53,4 +56,57 @@ def create_roles() -> None:
             db.add(role)
 
     db.commit()
+    db.close()
+
+
+def create_stacks():
+    from db.models.stacks import Stack
+    from sqlalchemy import func, text
+
+    db = SessionLocal()
+
+    # 1. First, fix the broken ID sequence in your production database
+    # to prevent "UniqueViolation: stacks_pkey"
+    try:
+        db.execute(text("SELECT setval('stacks_id_seq', (SELECT MAX(id) FROM stacks))"))
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    default_stacks = [
+        "Backend", "Frontend", "Fullstack", "Mobile", "UI/UX", "DevOps", "Data Science"
+    ]
+
+    for stack_name in default_stacks:
+        # 2. STRICT CHECK: Only add if the name doesn't exist (case-insensitive)
+        exists = db.query(Stack).filter(func.lower(Stack.name) == stack_name.lower()).first()
+
+        if not exists:
+            try:
+                db.add(Stack(name=stack_name))
+                db.commit()
+            except Exception:
+                db.rollback()
+
+    db.close()
+
+
+def promote_user_to_admin(email: str):
+    from db.models.users import User
+    from db.models.roles import Role
+    from utils.utils import RoleChoices
+
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    admin_role = db.query(Role).filter(Role.name == RoleChoices.ADMIN).first()
+
+    if not admin_role:
+        print("Promotion failed: ADMIN role not initialized yet.")
+    elif not user:
+        print(f"Promotion failed: User with email {email} not found. Please register first.")
+    else:
+        user.role_id = admin_role.id
+        user.is_active = True
+        db.commit()
+        print(f"User {email} successfully promoted to ADMIN.")
     db.close()

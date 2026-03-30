@@ -181,8 +181,11 @@ def test_get_all_profile(client, test_user, test_users, test_stacks, populate_sk
     assert len(response.json()["items"]) == 1
 
 
-def test_search_user_not_found(client, test_users):
-    response = client.get("/api/v1/users/search?p=notfound&page=1&size=2")
+def test_search_user_not_found(client, test_users, user_cred):
+    response = client.get(
+        "/api/v1/users/?p=notfound&page=1&size=2",
+        headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"},
+    )
 
-    assert response.status_code == 404
-    
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 0
