@@ -1,5 +1,6 @@
 import logging
 from fastapi import HTTPException, status
+from sqlalchemy.exc import ProgrammingError
 from api.api_models.user import Token, UserSignUp
 from core.config import settings
 from db.models.users import User
@@ -109,13 +110,36 @@ class AuthService:
             )
 
     async def forgot_password(self, email: str) -> dict:
-        email = email.lower()
-        user = self.user_repo.get_by_email(email)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        reset_token = create_reset_token(email)
-        email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
-        return await send_password_reset_email(email, reset_token, user.username, email_template)
+        try:
+            email = email.lower()
+            user = self.user_repo.get_by_email(email)
+            if not user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            reset_token = create_reset_token(email)
+            try:
+                email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
+            except ProgrammingError:
+                # Fallback when migrations haven't created the email_templates table yet.
+                email_template = None
+            response = await send_password_reset_email(email, reset_token, user.username, email_template)
+            # If response is JSONResponse, extract the content
+            if hasattr(response, 'body'):
+                import json
+                content = json.loads(response.body)
+                if response.status_code != 200:
+                    raise HTTPException(
+                        status_code=response.status_code,
+                        detail=content.get("message", "Failed to send password reset email")
+                    )
+            return {"message": "Password reset email sent successfully"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error("Forgot password failed: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to process password reset request. Please check your email address and try again."
+            )
 
     def reset_password(self, token: str, new_password: str) -> dict:
         try:

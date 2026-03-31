@@ -17,7 +17,6 @@
 </p>
 
 ## 📝 Table of Contents
-- [TODO](#todo)
 - [About](#about)
 - [Getting Started](#getting_started)
 - [Running the tests](#tests)
@@ -27,11 +26,34 @@
 - [Built Using](#built_using)
 - [Team](#team)
 
-## Todo <a name = "todo"></a>
-See [TODO](./docs/TODO.md)
 
 ## About <a name = "about"></a>
-This project is a CRM API for Slightly Techie. It is built using [these](#built_using) technologies.
+The Slightly Techie CRM API is a comprehensive backend service for managing customer relationships, user profiles, projects, skills, announcements, and more. It provides RESTful endpoints for all CRM operations. and includes features like:
+
+Built with FastAPI for high performance and automatic API documentation.
+
+### Automatic Initialization on Startup
+
+When the application starts, it automatically initializes essential seed data:
+
+**Roles**
+- Admin
+- User  
+- Guest
+
+**Stacks (Technical Specializations)**
+- Backend
+- Frontend
+- Fullstack
+- Mobile
+- UI/UX
+- DevOps
+- Data Science
+
+**Signup Endpoint**
+- Created automatically for user registration tracking
+
+This ensures the application is ready to use without manual database setup for these core entities.
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -101,32 +123,49 @@ pip install <package-name>
 #### Step 5: Create a `.env` file in the project's root directory and add the following environment variables, replacing the placeholders with your specific values:
 
 ```bash
-POSTGRES_USER= #e.g postgres
-POSTGRES_PASSWORD= #e.g password123
-POSTGRES_SERVER= #e.g localhost
-POSTGRES_PORT= #e.g 5432
-POSTGRES_DB= #e.g st_crm_db
-SECRET= #notasecretkey
-BASE_URL= #http://127.0.0.1:8080/
+# Database Configuration
+POSTGRES_USER=postgres              # e.g., postgres
+POSTGRES_PASSWORD=password123       # e.g., your_secure_password
+POSTGRES_SERVER=localhost           # e.g., localhost or your_db_host
+POSTGRES_PORT=5432                 # Default PostgreSQL port
+POSTGRES_DB=st_crm_db              # e.g., st_crm_db
+POSTGRES_DB_TEST=st_crm_db_test    # Test database
+
+# Security & Authentication
+SECRET=your_secret_key_here         # JWT secret key (use a strong value)
+REFRESH_SECRET=your_refresh_key     # JWT refresh secret key (use a strong value)
+
+# Server Configuration
+BASE_URL=http://localhost:3000      # Frontend URL for CORS and links
+URL_PATH=/users/reset-password/new-password
+
+# Email Configuration (Gmail SMTP)
 EMAIL_SENDER=someawesomeemail@gmail.com
-EMAIL_PASSWORD=xxxxxxxxxxx
+EMAIL_PASSWORD=your_app_password    # Use Gmail app-specific password
 EMAIL_SERVER=smtp.gmail.com
 EMAIL_PORT=587
-AWS_ACCESS_KEY=xxxxxxxxxxxxx
-AWS_SECRET_KEY=xxxxxxxxxxx
-AWS_BUCKET_NAME=stncrmutilities
-AWS_REGION=eu-west-1
-URL_PATH=/users/reset-password/new-password
+
+# Cloudinary Configuration (Media Storage)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 #### Step 6: Create a `test.env` file in the root directory and add the following environment variables
 
 ```bash
-POSTGRES_USER= #e.g postgres
-POSTGRES_PASSWORD= #e.g password123
-POSTGRES_SERVER= #e.g localhost
-POSTGRES_PORT= #e.g 5432
-POSTGRES_DB= #e.g st_crm_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=st_crm_db_test
+
+# Optional: Add these if running tests that involve media uploads
+SECRET=test_secret_key
+REFRESH_SECRET=test_refresh_secret
+CLOUDINARY_CLOUD_NAME=your_test_cloud_name
+CLOUDINARY_API_KEY=your_test_api_key
+CLOUDINARY_API_SECRET=your_test_api_secret
 ```
 
 #### Step 7: Start the uvicorn server
@@ -135,7 +174,50 @@ POSTGRES_DB= #e.g st_crm_db
 uvicorn app:app --reload
 ```
 
-### Step 8: Interact with the Database
+> **⚠️ Important - First Time Setup**: 
+> On the **first startup**, the application automatically initializes seed data:
+> - **Roles**: Admin, User, Guest
+> - **Stacks**: Backend, Frontend, Fullstack, Mobile, UI/UX, DevOps, Data Science
+> - **Signup Endpoint**: Required for user registration
+>
+> This is handled by the `startup_event()` in `app.py` which is enabled via:
+> ```python
+> app.add_event_handler("startup", startup_event)
+> ```
+> 
+> If this event handler is commented out and you need to re-initialize the database, you can:
+> - Uncomment `app.add_event_handler("startup", startup_event)` in `app.py`, OR
+> - Run manually in Python:
+>   ```python
+>   from db.database import create_roles, create_stacks
+>   create_roles()
+>   create_stacks()
+>   ```
+
+### Step 8: (Optional) Populate Test Data and Update Users
+
+To create 20 dummy users for testing:
+
+```bash
+python create_dummy_users.py
+```
+
+This creates test users with credentials:
+- Email: `user1@slightlytechie.com` → `user20@slightlytechie.com`
+- Password: `TestPassword123!` (for all)
+- Users are distributed across different stacks
+
+**Additional user management scripts** (if needed):
+
+```bash
+# Update all users' status from TO_CONTACT to ACCEPTED
+python update_users_status.py
+
+# Update all users' role_id to 2 (User role)
+python update_users_role.py
+```
+
+### Step 9: Interact with the Database
 To interact with the database, you can use tools like psql, pgAdmin or any database client that supports PostgreSQL. Here are some basic commands:
 
 - Connect to the database:
@@ -239,9 +321,6 @@ pytest
 │   │    users.py
 │   └───repository
 │        users.py
-├───docs
-│       TODO.md
-│
 ├───test
 │   │   conftest.py
 │   │   test_announcements.py
@@ -299,13 +378,14 @@ visit the API Documentation at [https://crm-api.fly.dev/docs](https://crm-api.fl
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 - [FastAPI](https://fastapi.tiangolo.com/) - Python Framework
-- [Postgres](https://www.postgresql.org/) - Database
-- [Fly.io](https://fly.io/) - Cloud Hosting
-- [Poetry](https://python-poetry.org/) - Python Package Manager
-- [Docker](https://www.docker.com/) - Containerization
-- [SqlAlchemy](https://www.sqlalchemy.org/) - ORM
-- [Alembic](https://alembic.sqlalchemy.org/en/latest/) - Database Migration
+- [PostgreSQL](https://www.postgresql.org/) - Relational Database
+- [SQLAlchemy](https://www.sqlalchemy.org/) - ORM (Object-Relational Mapping)
+- [Alembic](https://alembic.sqlalchemy.org/en/latest/) - Database Migration Tool
+- [Cloudinary](https://cloudinary.com/) - Media Storage & CDN
 - [Pytest](https://docs.pytest.org/en/6.2.x/) - Testing Framework
+- [Poetry](https://python-poetry.org/) - Python Dependency Manager
+- [Docker](https://www.docker.com/) - Containerization
+- [Fly.io](https://fly.io/) - Cloud Hosting Platform
 
 ## ✍️ Team <a name = "team"></a>
 - [@RansfordGenesis](https://github.com/RansfordGenesis)

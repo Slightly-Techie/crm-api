@@ -17,11 +17,12 @@ def read_html_file(file_path):
 
 async def send_email(subject: str, recipient_email: str, html_content: str) -> JSONResponse:
     """
-    Generic email sending function.
+    Generic email sending function supporting both SMTP (port 587 with STARTTLS) and SMTP_SSL (port 465).
     """
     email_sender = settings.EMAIL_SENDER
     email_password = settings.EMAIL_PASSWORD
     email_receiver = recipient_email
+    email_port = int(settings.EMAIL_PORT)
 
     em = MIMEMultipart()
     em['From'] = email_sender
@@ -33,12 +34,27 @@ async def send_email(subject: str, recipient_email: str, html_content: str) -> J
     context = ssl.create_default_context()
 
     try:
-        with smtplib.SMTP_SSL(settings.EMAIL_SERVER, settings.EMAIL_PORT, context=context) as smtp:
-            smtp.login(email_sender, email_password)
-            smtp.sendmail(email_sender, email_receiver, em.as_string())
+        # Port 587 uses STARTTLS, port 465 uses SMTP_SSL
+        if email_port == 465:
+            with smtplib.SMTP_SSL(settings.EMAIL_SERVER, email_port, context=context) as smtp:
+                smtp.login(email_sender, email_password)
+                smtp.sendmail(email_sender, email_receiver, em.as_string())
+        else:  # Port 587 or other non-SSL ports
+            with smtplib.SMTP(settings.EMAIL_SERVER, email_port, timeout=10) as smtp:
+                smtp.starttls(context=context)
+                smtp.login(email_sender, email_password)
+                smtp.sendmail(email_sender, email_receiver, em.as_string())
+        
         return JSONResponse(status_code=200, content={"message": "Email sent successfully"})
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"SMTP Authentication Error: {e}")
+        return JSONResponse(status_code=500, content={"message": "Email authentication failed. Check EMAIL_PASSWORD and EMAIL_SENDER."})
+    except smtplib.SMTPException as e:
+        print(f"SMTP Error: {e}")
+        return JSONResponse(status_code=500, content={"message": f"Email server error: {str(e)}"})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": f"An error occurred: {e}"})
+        print(f"Unexpected error sending email: {e}")
+        return JSONResponse(status_code=500, content={"message": f"An error occurred: {str(e)}"})
 
 
 async def send_password_reset_email(email: str, reset_token: str, username: str, email_template):

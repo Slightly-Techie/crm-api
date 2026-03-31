@@ -3,13 +3,13 @@ Org-chart endpoints.
 
 **Admin-only** (full visibility):
   GET  /users/org-chart                – complete organisational tree
-  GET  /users/{user_id}/subordinates   – direct reports of any user
   GET  /users/{user_id}/org-chart      – full subtree rooted at any user
   PATCH /users/{user_id}/manager       – assign / remove a user's manager
 
-**Authenticated accepted users** (self-scoped):
+**Authenticated accepted users**:
   GET  /users/me/manager               – my manager
   GET  /users/me/subordinates          – my direct reports
+  GET  /users/{user_id}/subordinates   – direct reports of any user (visible to all)
 """
 
 from __future__ import annotations
@@ -111,7 +111,7 @@ def bulk_assign_subordinates(
 )
 def get_subordinates(
     user_id: int,
-    current_user=Depends(is_admin),
+    current_user=Depends(user_accepted),
     service: OrgChartService = Depends(_get_service),
 ):
     return service.get_direct_subordinates(user_id)

@@ -23,5 +23,6 @@ class AnnouncementResponse(AnnouncementBase):
 class AnnouncementUpdate(BaseModel):
     title: Optional[str]
     content: Optional[str]
+    image_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

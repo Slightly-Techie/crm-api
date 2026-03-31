@@ -6,11 +6,13 @@ from api.routes.profile_page import profile_route
 from api.routes.feeds import feed_route
 from api.routes.techieotm import techieotm_router
 from api.routes.announcements import announcement_route
+from api.routes.weekly_meetings import weekly_meeting_route
+from api.routes.coding_challenges import coding_challenge_route
 
 # from db.database import engine
 # from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
-from db.database import create_roles
+from db.database import create_roles, create_stacks, SessionLocal
 from api.routes.tags import tag_route
 from api.routes.stacks import stack_router
 from api.routes.project import project_router
@@ -20,6 +22,8 @@ from api.routes.endpoints import endpoints_route
 from api.routes.users import users_route
 from api.routes.migrate_media import migrate_media_route
 from utils.endpoints_status import create_signup_endpoint
+from db.models.users import User
+from sqlalchemy import func
 
 # Base.metadata.create_all(bind=engine)
 
@@ -27,8 +31,13 @@ from utils.endpoints_status import create_signup_endpoint
 app = FastAPI()
 
 origins = [
-    "http://localhost",
     "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://localhost:8000",
+    "https://20d9-154-161-108-106.ngrok-free.app",
+    "https://unalacritous-glory-bedfast.ngrok-free.dev",
+    "http://127.0.0.1:4040",
     "https://crm-web.fly.dev",
     "https://app.slightlytechie.com",
 ]
@@ -55,14 +64,38 @@ def redirect():
     }  # noqa: E501
 
 
+@app.get("/api/v1/health")
+def health_check():
+    """Health check endpoint - accessible without authentication"""
+    try:
+        db = SessionLocal()
+        # Try to count users to verify database connection
+        user_count = db.query(func.count(User.id)).scalar()
+        db.close()
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "user_count": user_count,
+            "message": "API is running and connected to database"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e),
+            "message": "Database connection failed"
+        }, 500
+
+
 async def startup_event():
     create_roles()
+    create_stacks()
     create_signup_endpoint()
 
 
 v1_prefix = "/api/v1"
 
-# app.add_event_handler("startup", startup_event)
+app.add_event_handler("startup", startup_event)
 app.include_router(auth_router, prefix=v1_prefix)
 app.include_router(profile_route, prefix=v1_prefix)
 app.include_router(skill_route, prefix=v1_prefix)
@@ -78,6 +111,8 @@ app.include_router(email_templates_route, prefix=v1_prefix)
 app.include_router(endpoints_route, prefix=v1_prefix)
 app.include_router(users_route, prefix=v1_prefix)
 app.include_router(migrate_media_route, prefix=v1_prefix)
+app.include_router(weekly_meeting_route, prefix=v1_prefix)
+app.include_router(coding_challenge_route, prefix=v1_prefix)
 
 add_pagination(app)
 

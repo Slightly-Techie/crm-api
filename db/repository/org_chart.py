@@ -5,6 +5,7 @@ from sqlalchemy import literal, select
 
 from db.models.users import User
 from db.repository.base import BaseRepository
+from utils.enums import UserStatus
 
 
 class OrgChartRepository(BaseRepository):
@@ -16,7 +17,7 @@ class OrgChartRepository(BaseRepository):
     def get_direct_subordinates(self, user_id: int) -> list[User]:
         return (
             self.db.query(User)
-            .filter(User.manager_id == user_id)
+            .filter(User.manager_id == user_id, User.status == UserStatus.ACCEPTED)
             .all()
         )
 
@@ -25,18 +26,18 @@ class OrgChartRepository(BaseRepository):
 
         Returns a list of dicts: [{"id": ..., "manager_id": ..., "depth": ...}]
         """
-        # Anchor: the root user at depth 0
+        # Anchor: the root user at depth 0 (only accepted users)
         anchor = (
             select(
                 User.id,
                 User.manager_id,
                 literal(0).label("depth"),
             )
-            .where(User.id == root_id)
+            .where(User.id == root_id, User.status == UserStatus.ACCEPTED)
             .cte(name="org_tree", recursive=True)
         )
 
-        # Recursive member: children of current level, depth + 1
+        # Recursive member: children of current level, depth + 1 (only accepted)
         recursive = (
             select(
                 User.id,
@@ -44,7 +45,7 @@ class OrgChartRepository(BaseRepository):
                 (anchor.c.depth + 1).label("depth"),
             )
             .join(anchor, User.manager_id == anchor.c.id)
-            .where(anchor.c.depth < max_depth)
+            .where(anchor.c.depth < max_depth, User.status == UserStatus.ACCEPTED)
         )
 
         cte = anchor.union_all(recursive)
@@ -59,10 +60,10 @@ class OrgChartRepository(BaseRepository):
         return self.db.query(User).filter(User.id.in_(user_ids)).all()
 
     def get_root_users(self) -> list[User]:
-        """Return users with no manager (org tree roots)."""
+        """Return accepted users with no manager (org tree roots)."""
         return (
             self.db.query(User)
-            .filter(User.manager_id.is_(None))
+            .filter(User.manager_id.is_(None), User.status == UserStatus.ACCEPTED)
             .all()
         )
 

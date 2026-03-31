@@ -14,3 +14,6 @@ from .models.technical_task import TechnicalTask, TechnicalTaskSubmission
 from .models.endpoints import Endpoints
 from .models.project_stacks import ProjectStack
 from .models.project_skills import ProjectSkill
+from .models.email_template import EmailTemplate
+from .models.weekly_meetings import WeeklyMeeting
+from .models.coding_challenges import CodingChallenge

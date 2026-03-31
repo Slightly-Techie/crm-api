@@ -1,12 +1,24 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.links import Page
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from api.api_models.user import ApplicantProfileResponse, ProfileResponse, ProfileUpdate
 from utils.enums import UserStatus
+
+
+class BatchStatusUpdateRequest(BaseModel):
+    user_ids: List[int]
+    status: UserStatus
+
+
+class BatchStatusUpdateResponse(BaseModel):
+    updated_count: int
+    updated_users: List[ProfileResponse]
+    failed_ids: List[int]
 from db.database import get_db
 from db.models.users import User
 from db.repository.email_templates import EmailTemplateRepository
@@ -71,3 +83,29 @@ async def update_user_status(user_id: int, new_status: UserStatus, db: Session =
 async def update_avi(current_user: User = Depends(get_current_user),
                      db: Session = Depends(get_db), file: UploadFile = File(...)):
     return await _service(db).update_avatar(current_user, file)
+
+
+@profile_route.post("/batch/status", response_model=BatchStatusUpdateResponse,
+                    status_code=status.HTTP_200_OK)
+async def batch_update_status(
+    request: BatchStatusUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(is_admin)
+):
+    """Batch update user statuses - Admin only"""
+    updated_users = []
+    failed_ids = []
+
+    for user_id in request.user_ids:
+        try:
+            updated_user = await _service(db).update_user_status(user_id, request.status)
+            updated_users.append(updated_user)
+        except Exception as e:
+            print(f"Failed to update user {user_id}: {str(e)}")
+            failed_ids.append(user_id)
+
+    return BatchStatusUpdateResponse(
+        updated_count=len(updated_users),
+        updated_users=updated_users,
+        failed_ids=failed_ids
+    )
