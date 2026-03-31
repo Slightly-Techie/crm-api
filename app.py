@@ -18,7 +18,7 @@ from api.routes.technical_task import tech_task_router, sub_tech_task_router
 from fastapi_pagination import add_pagination
 from api.routes.endpoints import endpoints_route
 from api.routes.users import users_route
-from api.routes.migrate_media import migrate_media_route
+# from api.routes.migrate_media import migrate_media_route
 from utils.endpoints_status import create_signup_endpoint
 
 # Base.metadata.create_all(bind=engine)
@@ -77,7 +77,7 @@ app.include_router(sub_tech_task_router, prefix=v1_prefix)
 app.include_router(email_templates_route, prefix=v1_prefix)
 app.include_router(endpoints_route, prefix=v1_prefix)
 app.include_router(users_route, prefix=v1_prefix)
-app.include_router(migrate_media_route, prefix=v1_prefix)
+# app.include_router(migrate_media_route, prefix=v1_prefix)
 
 add_pagination(app)
 
