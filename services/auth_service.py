@@ -114,7 +114,11 @@ class AuthService:
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         reset_token = create_reset_token(email)
-        email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
+        try:
+            email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
+        except Exception:
+            logger.warning("email_templates table not found or inaccessible — falling back to HTML file template")
+            email_template = None
         return await send_password_reset_email(email, reset_token, user.username, email_template)
 
     def reset_password(self, token: str, new_password: str) -> dict:

@@ -1,3 +1,4 @@
+import asyncio
 import smtplib
 import ssl
 from email.mime.text import MIMEText
@@ -7,7 +8,6 @@ from starlette.responses import JSONResponse
 
 # from api.api_models.email_template import EmailTemplateName
 from core.config import settings
-# from db.models.email_template import EmailTemplate
 
 
 def read_html_file(file_path):
@@ -15,27 +15,35 @@ def read_html_file(file_path):
         return file.read()
 
 
-async def send_email(subject: str, recipient_email: str, html_content: str) -> JSONResponse:
+def _send_email_sync(subject: str, recipient_email: str, html_content: str):
     """
-    Generic email sending function.
+    Blocking SMTP call — intentionally synchronous so it can be
+    offloaded to a thread pool via asyncio.to_thread().
+    Uses SMTP_SSL (port 465). If switching to port 587, replace with
+    SMTP + starttls() instead.
     """
     email_sender = settings.EMAIL_SENDER
     email_password = settings.EMAIL_PASSWORD
-    email_receiver = recipient_email
 
     em = MIMEMultipart()
     em['From'] = email_sender
-    em['To'] = email_receiver
+    em['To'] = recipient_email
     em['Subject'] = subject
-    html_part = MIMEText(html_content, 'html')
-    em.attach(html_part)
+    em.attach(MIMEText(html_content, 'html'))
 
     context = ssl.create_default_context()
+    with smtplib.SMTP_SSL(settings.EMAIL_SERVER, settings.EMAIL_PORT, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, recipient_email, em.as_string())
 
+
+async def send_email(subject: str, recipient_email: str, html_content: str) -> JSONResponse:
+    """
+    Async wrapper — runs the blocking SMTP call in a thread pool
+    so it never blocks the FastAPI event loop.
+    """
     try:
-        with smtplib.SMTP_SSL(settings.EMAIL_SERVER, settings.EMAIL_PORT, context=context) as smtp:
-            smtp.login(email_sender, email_password)
-            smtp.sendmail(email_sender, email_receiver, em.as_string())
+        await asyncio.to_thread(_send_email_sync, subject, recipient_email, html_content)
         return JSONResponse(status_code=200, content={"message": "Email sent successfully"})
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": f"An error occurred: {e}"})
@@ -57,7 +65,7 @@ async def send_password_reset_email(email: str, reset_token: str, username: str,
             html_content = f"Hello {username}, please reset your password by clicking this link: {reset_password_url}"
         email_subject = "Slightly Techie Password Reset"
 
-    await send_email(email_subject, email, html_content)
+    return await send_email(email_subject, email, html_content)
 
 
 async def send_applicant_task(
