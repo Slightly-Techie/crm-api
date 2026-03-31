@@ -3,11 +3,12 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from jose import jwt
-from api.api_models.user import ResetPasswordRequest
-from api.routes.auth import reset_password
+from unittest.mock import AsyncMock, patch
+
+from api.api_models.user import ForgotPasswordRequest, ResetPasswordRequest
+from api.routes.auth import forgot_password, reset_password
 from app import app
 from core.config import settings
-# from utils.mail_service import send_email
 from utils.oauth2 import create_reset_token, verify_reset_token
 
 
@@ -140,11 +141,120 @@ def test_reset_password_invalid_token():
     assert e.value.detail == 'Invalid token'
 
 
-# test needs a valid email.
 
-# @pytest.mark.asyncio
-# async def test_send_email():
-#     email = "test@example.com"
-#     reset_token = "test_reset_token"
-#     response = await send_email(email, reset_token)
-#     assert response.status_code == 200
+# Forgot Password Tests
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_user_not_found(session):
+    """Should raise 404 when the email doesn't match any user in the DB."""
+    with pytest.raises(HTTPException) as exc:
+        await forgot_password(
+            ForgotPasswordRequest(email="ghost@nowhere.com"),
+            db=session
+        )
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "User not found"
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_success(test_user, session):
+    """
+    Happy path: user exists → reset token created → email dispatched.
+    The SMTP call is mocked so no real email is sent.
+
+    Flow traced here:
+      POST /forgot-password
+        → AuthService.forgot_password()
+          → UserRepo.get_by_email()        ✓ user found
+          → create_reset_token(email)      ✓ JWT built (mocked)
+          → EmailTemplateRepo.get_by_name  ✓ returns None (empty DB table)
+          → send_password_reset_email()
+              → reads utils/email_templates/password-reset.html
+              → injects {username} and {reset_url} into the template
+              → send_email() → _send_email_sync() [MOCKED]
+    """
+    email = test_user["email"]
+
+    # Mock SMTP so the test never opens a real connection
+    with patch(
+        "utils.mail_service._send_email_sync",
+        return_value=None          # sync mock — to_thread wraps it
+    ) as mock_smtp:
+        response = await forgot_password(
+            ForgotPasswordRequest(email=email),
+            db=session
+        )
+
+    # _send_email_sync should have been called exactly once
+    mock_smtp.assert_called_once()
+
+    # The subject and recipient in the call args
+    call_args = mock_smtp.call_args
+    subject, recipient, html_body = call_args.args
+
+    assert recipient == email
+    assert "Slightly Techie" in subject          # matches email_subject fallback
+
+    # Verify the HTML template was loaded and the username was injected
+    username = test_user["username"]
+    assert username in html_body                 # {0} → username substituted
+    assert "reset" in html_body.lower()          # sanity: reset link present
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_uses_db_template_when_present(test_user, session):
+    """
+    When a 'PASSWORD RESET' template exists in the DB, it should be used
+    instead of the HTML file.
+    """
+    from db.models.email_template import EmailTemplate
+
+    db_template = EmailTemplate(
+        template_name="PASSWORD RESET",
+        subject="Custom Reset Subject",
+        html_content="<p>Hi {0}, click here: {1}</p>"
+    )
+    session.add(db_template)
+    session.commit()
+
+    email = test_user["email"]
+
+    with patch("utils.mail_service._send_email_sync", return_value=None) as mock_smtp:
+        await forgot_password(
+            ForgotPasswordRequest(email=email),
+            db=session
+        )
+
+    call_args = mock_smtp.call_args
+    subject, recipient, html_body = call_args.args
+
+    assert subject == "Custom Reset Subject"     # DB template subject used
+    assert test_user["username"] in html_body    # {0} substituted with username
+    assert "http" in html_body                   # {1} substituted with reset URL
+
+
+def test_forgot_password_via_http_user_not_found(client):
+    """End-to-end HTTP test: unknown email → 404."""
+    res = client.post(
+        "/api/v1/users/forgot-password",
+        json={"email": "nobody@example.com"}
+    )
+    assert res.status_code == 404
+    assert res.json()["detail"] == "User not found"
+
+
+def test_forgot_password_via_http_success(client, test_user):
+    """
+    End-to-end HTTP test: registered user email → 200.
+    SMTP is mocked at the module level so no real email is sent.
+    """
+    with patch("utils.mail_service._send_email_sync", return_value=None):
+        res = client.post(
+            "/api/v1/users/forgot-password",
+            json={"email": test_user["email"]}
+        )
+
+    assert res.status_code == 200
+    assert res.json()["message"] == "Email sent successfully"
+
