@@ -20,7 +20,7 @@ class WeeklyMeetingRepository:
         """Get the most recent active meeting"""
         return (
             self.db.query(WeeklyMeeting)
-            .filter(WeeklyMeeting.is_active == True)
+            .filter(WeeklyMeeting.is_active.is_(True))
             .order_by(WeeklyMeeting.created_at.desc())
             .first()
         )

@@ -1,7 +1,7 @@
 """Add scheduled_time/recurrence to meetings, deadline to challenges
 
 Revision ID: c1d2e3f4a5b6
-Revises: b2c3d4e5f6a7
+Revises: e89564e882b1
 Create Date: 2026-03-31 10:00:00.000000
 
 """

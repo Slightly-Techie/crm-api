@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
@@ -29,6 +30,7 @@ from utils.oauth2 import get_current_user
 from utils.permissions import is_admin
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
+logger = logging.getLogger(__name__)
 
 
 def _service(db: Session) -> UserService:
@@ -100,8 +102,8 @@ async def batch_update_status(
         try:
             updated_user = await _service(db).update_user_status(user_id, request.status)
             updated_users.append(updated_user)
-        except Exception as e:
-            print(f"Failed to update user {user_id}: {str(e)}")
+        except Exception:
+            logger.exception("Failed to update user status in batch", extra={"user_id": user_id})
             failed_ids.append(user_id)
 
     return BatchStatusUpdateResponse(

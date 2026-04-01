@@ -120,6 +120,8 @@ class AuthService:
                 email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
             except ProgrammingError:
                 # Fallback when migrations haven't created the email_templates table yet.
+                # Also rollback the current DB transaction to avoid leaving the session in a failed state.
+                self.email_template_repo.rollback()
                 email_template = None
             response = await send_password_reset_email(email, reset_token, user.username, email_template)
             # If response is JSONResponse, extract the content

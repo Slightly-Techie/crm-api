@@ -2,13 +2,7 @@ from db.database import Base
 from sqlalchemy import Column, String, Integer, TIMESTAMP, text, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
-import enum
-
-
-class ChallengeType(str, enum.Enum):
-    LEETCODE = "LEETCODE"
-    SYSTEM_DESIGN = "SYSTEM_DESIGN"
-    GENERAL = "GENERAL"
+from utils.enums import ChallengeType
 
 
 class CodingChallenge(Base):

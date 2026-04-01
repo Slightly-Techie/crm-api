@@ -1,5 +1,7 @@
+import logging
 import smtplib
 import ssl
+import anyio
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from urllib.parse import urlencode
@@ -8,6 +10,9 @@ from starlette.responses import JSONResponse
 # from api.api_models.email_template import EmailTemplateName
 from core.config import settings
 # from db.models.email_template import EmailTemplate
+
+
+logger = logging.getLogger(__name__)
 
 
 def read_html_file(file_path):
@@ -33,7 +38,7 @@ async def send_email(subject: str, recipient_email: str, html_content: str) -> J
 
     context = ssl.create_default_context()
 
-    try:
+    def _send_email_sync() -> None:
         # Port 587 uses STARTTLS, port 465 uses SMTP_SSL
         if email_port == 465:
             with smtplib.SMTP_SSL(settings.EMAIL_SERVER, email_port, context=context) as smtp:
@@ -44,17 +49,20 @@ async def send_email(subject: str, recipient_email: str, html_content: str) -> J
                 smtp.starttls(context=context)
                 smtp.login(email_sender, email_password)
                 smtp.sendmail(email_sender, email_receiver, em.as_string())
+
+    try:
+        await anyio.to_thread.run_sync(_send_email_sync)
         
         return JSONResponse(status_code=200, content={"message": "Email sent successfully"})
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"SMTP Authentication Error: {e}")
-        return JSONResponse(status_code=500, content={"message": "Email authentication failed. Check EMAIL_PASSWORD and EMAIL_SENDER."})
-    except smtplib.SMTPException as e:
-        print(f"SMTP Error: {e}")
-        return JSONResponse(status_code=500, content={"message": f"Email server error: {str(e)}"})
-    except Exception as e:
-        print(f"Unexpected error sending email: {e}")
-        return JSONResponse(status_code=500, content={"message": f"An error occurred: {str(e)}"})
+    except smtplib.SMTPAuthenticationError:
+        logger.exception("SMTP authentication failed while sending email")
+        return JSONResponse(status_code=500, content={"message": "Unable to send email at the moment."})
+    except smtplib.SMTPException:
+        logger.exception("SMTP error while sending email")
+        return JSONResponse(status_code=500, content={"message": "Unable to send email at the moment."})
+    except Exception:
+        logger.exception("Unexpected error while sending email")
+        return JSONResponse(status_code=500, content={"message": "Unable to send email at the moment."})
 
 
 async def send_password_reset_email(email: str, reset_token: str, username: str, email_template):
@@ -86,8 +94,8 @@ async def send_applicant_task(
     try:
         html_content = read_html_file('utils/email_templates/task_template.html').format(first_name, task)
     except FileNotFoundError:
-        print("File not found")
-        html_content = f"Hello {first_name}, Kindly work on the this task and submit:\n {task}"
+        logger.warning("Task email template file not found; using fallback plain text")
+        html_content = f"Hello {first_name}, Kindly work on this task and submit:\n {task}"
     # html = task.format(first_name)
 
     # em = MIMEMultipart()

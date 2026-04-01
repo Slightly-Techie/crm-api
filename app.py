@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, HTTPException
 from api.routes.auth import auth_router
 from api.routes.email_templates import email_templates_route
 from api.routes.skills import skill_route
@@ -21,10 +22,12 @@ from fastapi_pagination import add_pagination
 from api.routes.endpoints import endpoints_route
 from api.routes.users import users_route
 from utils.endpoints_status import create_signup_endpoint
-from db.models.users import User
-from sqlalchemy import func
+from sqlalchemy import text
 
 # Base.metadata.create_all(bind=engine)
+
+
+logger = logging.getLogger(__name__)
 
 
 app = FastAPI()
@@ -58,27 +61,28 @@ def redirect():
     }  # noqa: E501
 
 
-@app.get("/api/v1/health")
+@app.get(
+    "/api/v1/health",
+    responses={500: {"description": "Service health check failed"}}
+)
 def health_check():
     """Health check endpoint - accessible without authentication"""
+    db = SessionLocal()
     try:
-        db = SessionLocal()
-        # Try to count users to verify database connection
-        user_count = db.query(func.count(User.id)).scalar()
-        db.close()
+        # Lightweight DB liveness probe without exposing operational metrics.
+        db.execute(text("SELECT 1"))
         return {
             "status": "healthy",
-            "database": "connected",
-            "user_count": user_count,
-            "message": "API is running and connected to database"
+            "message": "Service is healthy"
         }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "database": "disconnected",
-            "error": str(e),
-            "message": "Database connection failed"
-        }, 500
+    except Exception:
+        logger.exception("Health check failed")
+        raise HTTPException(
+            status_code=500,
+            detail={"status": "unhealthy", "message": "Service is unhealthy"}
+        )
+    finally:
+        db.close()
 
 
 async def startup_event():

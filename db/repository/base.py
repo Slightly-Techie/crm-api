@@ -23,5 +23,8 @@ class BaseRepository:
     def commit(self):
         self.db.commit()
 
+    def rollback(self):
+        self.db.rollback()
+
     def refresh(self, obj):
         self.db.refresh(obj)
