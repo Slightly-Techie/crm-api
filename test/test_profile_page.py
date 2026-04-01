@@ -189,3 +189,57 @@ def test_search_user_not_found(client, test_users, user_cred):
 
     assert response.status_code == 200
     assert len(response.json()["items"]) == 0
+
+
+def test_batch_update_status_admin_success(client, test_user, test_user1, inactive_user):
+    login_res = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user["email"], "password": test_user["password"]},
+    )
+    token = login_res.json()["token"]
+
+    res = client.post(
+        "/api/v1/users/batch/status",
+        json={"user_ids": [test_user1["id"], inactive_user["id"]], "status": "ACCEPTED"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["updated_count"] == 2
+    assert body["failed_ids"] == []
+
+
+def test_batch_update_status_admin_with_invalid_ids(client, test_user, test_user1):
+    login_res = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user["email"], "password": test_user["password"]},
+    )
+    token = login_res.json()["token"]
+
+    res = client.post(
+        "/api/v1/users/batch/status",
+        json={"user_ids": [test_user1["id"], 99999], "status": "ACCEPTED"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["updated_count"] == 1
+    assert 99999 in body["failed_ids"]
+
+
+def test_batch_update_status_forbidden_for_non_admin(client, test_user1, inactive_user):
+    login_res = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user1["email"], "password": test_user1["password"]},
+    )
+    token = login_res.json()["token"]
+
+    res = client.post(
+        "/api/v1/users/batch/status",
+        json={"user_ids": [inactive_user["id"]], "status": "ACCEPTED"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert res.status_code == 403

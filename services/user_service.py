@@ -2,6 +2,7 @@ import html
 from typing import Optional
 
 from fastapi import HTTPException, UploadFile, status
+from sqlalchemy.exc import ProgrammingError
 
 from core.config import settings
 from db.models.users import User
@@ -77,7 +78,12 @@ class UserService:
         self.user_repo.update_status(user, new_status)
 
         if new_status in (UserStatus.ACCEPTED, UserStatus.REJECTED):
-            template = self.email_template_repo.get_by_name(new_status.value)
+            try:
+                template = self.email_template_repo.get_by_name(new_status.value)
+            except ProgrammingError:
+                # Keep status changes working even if the email_templates migration has not run yet.
+                self.email_template_repo.db.rollback()
+                template = None
             if template:
                 html_content = template.html_content.format(html.escape(user.username))
                 await send_email(template.subject, user.email, html_content)

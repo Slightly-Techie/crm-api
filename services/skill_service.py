@@ -69,3 +69,21 @@ class SkillService:
             for skill in skills
             if fuzz.partial_ratio(name.lower(), skill.name.lower()) >= threshold
         ]
+
+    def create_pool_skill(self, name: str, image_url=None):
+        existing = self.skill_repo.get_by_name(name)
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Skill '{name}' already exists"
+            )
+        return self.skill_repo.create(name, image_url)
+
+    def delete_pool_skill(self, skill_id: int) -> None:
+        skill = self.skill_repo.get_by_id(skill_id)
+        if not skill:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Skill with id {skill_id} not found"
+            )
+        self.skill_repo.delete_from_pool(skill_id)

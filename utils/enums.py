@@ -51,3 +51,9 @@ class ExperienceLevel(str, Enum):
     JUNIOR = "JUNIOR"
     MID_LEVEL = "MID LEVEL"
     SENIOR = "SENIOR"
+
+
+class ChallengeType(str, Enum):
+    LEETCODE = "LEETCODE"
+    SYSTEM_DESIGN = "SYSTEM_DESIGN"
+    GENERAL = "GENERAL"

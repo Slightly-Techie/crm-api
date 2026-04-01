@@ -60,3 +60,19 @@ class SkillRepository(BaseRepository):
             skill = Skill(name=name, image_url=image_url)
         self.db.add(skill)
         return skill
+
+    def create(self, name: str, image_url: Optional[str]) -> Skill:
+        skill = Skill(name=name, image_url=image_url)
+        self.db.add(skill)
+        self.db.commit()
+        self.db.refresh(skill)
+        return skill
+
+    def delete_from_pool(self, skill_id: int) -> None:
+        skill = self.db.query(Skill).filter(Skill.id == skill_id).first()
+        if skill:
+            self.db.delete(skill)
+            self.db.commit()
+
+    def get_by_id(self, skill_id: int) -> Optional[Skill]:
+        return self.db.query(Skill).filter(Skill.id == skill_id).first()

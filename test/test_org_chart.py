@@ -290,6 +290,50 @@ class TestGetMySubordinates:
 
 
 # ===========================================================================
+# ACCEPTED-USER VIEW ENDPOINTS
+# ===========================================================================
+
+
+class TestAcceptedUserViewEndpoints:
+    """/api/v1/users/view/{user_id}/... endpoints (accepted users)"""
+
+    def test_view_user_manager(self, client, org_tree, accepted_user_headers, session):
+        _make_admin_accepted(session, org_tree["child"])
+        res = client.get(
+            f"/api/v1/users/view/{org_tree['child']['id']}/manager",
+            headers=accepted_user_headers,
+        )
+        assert res.status_code == 200
+        assert res.json()["id"] == org_tree["root"]["id"]
+
+    def test_view_user_subordinates(self, client, org_tree, accepted_user_headers, session):
+        _make_admin_accepted(session, org_tree["child"])
+        res = client.get(
+            f"/api/v1/users/view/{org_tree['root']['id']}/subordinates",
+            headers=accepted_user_headers,
+        )
+        assert res.status_code == 200
+        sub_ids = {s["id"] for s in res.json()}
+        assert org_tree["child"]["id"] in sub_ids
+
+    def test_view_user_org_chart(self, client, org_tree, accepted_user_headers, session):
+        _make_admin_accepted(session, org_tree["child"])
+        res = client.get(
+            f"/api/v1/users/view/{org_tree['root']['id']}/org-chart",
+            headers=accepted_user_headers,
+        )
+        assert res.status_code == 200
+        assert res.json()["id"] == org_tree["root"]["id"]
+
+    def test_view_endpoints_forbidden_for_non_accepted(self, client, org_tree, user_headers):
+        res = client.get(
+            f"/api/v1/users/view/{org_tree['root']['id']}/manager",
+            headers=user_headers,
+        )
+        assert res.status_code == 403
+
+
+# ===========================================================================
 # BULK ASSIGN SUBORDINATES
 # ===========================================================================
 

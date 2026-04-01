@@ -3,9 +3,13 @@ import logging
 from datetime import datetime
 
 import requests
-import cairosvg
 import cloudinary
 import cloudinary.uploader
+
+try:
+    import cairosvg
+except OSError:
+    cairosvg = None
 
 from core.config import settings
 
@@ -46,6 +50,9 @@ def get_icon(icon_name) -> str | None:
 
 
 def save_svg_as_png(svg_data, skill_name) -> str | None:
+    if cairosvg is None:
+        logger.warning("CairoSVG is unavailable; skipping svg->png conversion for skill '%s'", skill_name)
+        return None
     png_output = BytesIO()
     cairosvg.svg2png(bytestring=svg_data, write_to=png_output)
     png_output.seek(0)
