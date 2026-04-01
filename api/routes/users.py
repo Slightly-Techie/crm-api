@@ -3,13 +3,17 @@ Org-chart endpoints.
 
 **Admin-only** (full visibility):
   GET  /users/org-chart                – complete organisational tree
-  GET  /users/{user_id}/org-chart      – full subtree rooted at any user
+    GET  /users/{user_id}/manager        – manager of any user
+    GET  /users/{user_id}/subordinates   – direct reports of any user
+    GET  /users/{user_id}/org-chart      – full subtree rooted at any user
   PATCH /users/{user_id}/manager       – assign / remove a user's manager
 
 **Authenticated accepted users**:
   GET  /users/me/manager               – my manager
   GET  /users/me/subordinates          – my direct reports
-  GET  /users/{user_id}/subordinates   – direct reports of any user (visible to all)
+    GET  /users/view/{user_id}/manager        – manager of any user
+    GET  /users/view/{user_id}/subordinates   – direct reports of any user
+    GET  /users/view/{user_id}/org-chart      – full subtree rooted at any user
 """
 
 from __future__ import annotations
@@ -101,8 +105,65 @@ def bulk_assign_subordinates(
 
 
 # ---------------------------------------------------------------------------
+# Accepted-user read-only view endpoints
+# ---------------------------------------------------------------------------
+
+@users_route.get(
+    "/view/{user_id}/manager",
+    response_model=Optional[ManagerInfo],
+    summary="View manager of a user",
+)
+def view_user_manager(
+    user_id: int,
+    current_user=Depends(user_accepted),
+    service: OrgChartService = Depends(_get_service),
+):
+    return service.get_manager(user_id)
+
+
+@users_route.get(
+    "/view/{user_id}/subordinates",
+    response_model=list[SubordinateResponse],
+    summary="View direct reports of a user",
+)
+def view_subordinates(
+    user_id: int,
+    current_user=Depends(user_accepted),
+    service: OrgChartService = Depends(_get_service),
+):
+    return service.get_direct_subordinates(user_id)
+
+
+@users_route.get(
+    "/view/{user_id}/org-chart",
+    response_model=OrgChartNode,
+    summary="View full reporting subtree rooted at a user",
+)
+def view_user_org_chart(
+    user_id: int,
+    max_depth: int = Query(default=5, ge=1, le=20),
+    current_user=Depends(user_accepted),
+    service: OrgChartService = Depends(_get_service),
+):
+    return service.get_subtree(user_id, max_depth)
+
+
+# ---------------------------------------------------------------------------
 # Admin endpoints — parameterised
 # ---------------------------------------------------------------------------
+
+@users_route.get(
+    "/{user_id}/manager",
+    response_model=Optional[ManagerInfo],
+    summary="Get manager of a user",
+)
+def get_user_manager(
+    user_id: int,
+    current_user=Depends(is_admin),
+    service: OrgChartService = Depends(_get_service),
+):
+    return service.get_manager(user_id)
+
 
 @users_route.get(
     "/{user_id}/subordinates",
@@ -111,7 +172,7 @@ def bulk_assign_subordinates(
 )
 def get_subordinates(
     user_id: int,
-    current_user=Depends(user_accepted),
+    current_user=Depends(is_admin),
     service: OrgChartService = Depends(_get_service),
 ):
     return service.get_direct_subordinates(user_id)

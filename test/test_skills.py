@@ -83,3 +83,47 @@ def test_unauthorized_delete_skill(client, test_user, populate_skills):
     res = client.delete("/api/v1/skills/50")
 
     assert res.status_code == 401
+
+
+def test_admin_can_create_skill_in_pool(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+
+    res = client.post(
+        "/api/v1/skills/pool",
+        json={"name": "SuperNewSkill", "image_url": "https://example.com/s.png"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert res.status_code == 201
+    assert res.json()["name"] == "SuperNewSkill"
+
+
+def test_non_admin_cannot_create_skill_in_pool(client, test_user1):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user1["email"], "password": test_user1["password"]})
+    token = login_res.json()["token"]
+
+    res = client.post(
+        "/api/v1/skills/pool",
+        json={"name": "AnotherNewSkill"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert res.status_code == 403
+
+
+def test_admin_can_delete_skill_from_pool(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    create_res = client.post(
+        "/api/v1/skills/pool",
+        json={"name": "DeleteMeSkill"},
+        headers=headers,
+    )
+    assert create_res.status_code == 201
+
+    skill_id = create_res.json()["id"]
+    delete_res = client.delete(f"/api/v1/skills/pool/{skill_id}", headers=headers)
+    assert delete_res.status_code == 204
