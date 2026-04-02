@@ -77,6 +77,10 @@ class UserService:
                                 detail=settings.ERRORS.get("INVALID ID"))
         self.user_repo.update_status(user, new_status)
 
+        # Activate user when status becomes ACCEPTED
+        if new_status == UserStatus.ACCEPTED and not user.is_active:
+            self.user_repo.activate(user)
+
         if new_status in (UserStatus.ACCEPTED, UserStatus.REJECTED):
             try:
                 template = self.email_template_repo.get_by_name(new_status.value)

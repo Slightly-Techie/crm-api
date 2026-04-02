@@ -2,10 +2,11 @@
 <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
 <html lang="en">
   <head>
-    <title>Password Reset Email</title>
+    <title>New Task Assignment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
 
-  <body style="background-color: #fff; padding: 10px 0">
+  <body style="background-color: #f5f5f5; padding: 20px 0; margin: 0; font-family: 'Inter', sans-serif;">
     <table
       align="center"
       role="presentation"
@@ -13,92 +14,74 @@
       cellpadding="0"
       border="0"
       width="100%"
-      style="
-        max-width: 37.5em;
-        background-color: #000000;
-        border: 1px solid #f0f0f0;
-        padding: 45px;
-        color: white;
-      "
+      style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin: 20px auto;"
     >
-      <tr style="width: 100%">
-        <td>
+      <!-- Header with gradient -->
+      <tr>
+        <td style="background: linear-gradient(135deg, #154212 0%, #1a5c1f 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
           <img
-            alt="SlightlyTechieLogo"
+            alt="Slightly Techie Logo"
             src="https://slightlytechie.com/_next/image?url=%2Flogo.png&w=32&q=75"
-            width="80"
-            height="80"
-            style="
-              display: block;
-              outline: none;
-              border: none;
-              text-decoration: none;
-            "
+            width="60"
+            height="60"
+            style="display: block; outline: none; border: none; text-decoration: none; margin: 0 auto 12px;"
           />
-          <table
-            align="center"
-            border="0"
-            cellpadding="0"
-            cellspacing="0"
-            role="presentation"
-            width="100%"
-            style="margin-left: 10px"
-          >
-            <tbody>
-              <tr>
-                <td>
-                  <p
-                    style="
-                      font-size: 16px;
-                      line-height: 26px;
-                      margin: 16px 0;
-                      font-family: Open Sans, HelveticaNeue-Light,
-                        Helvetica Neue Light, Helvetica Neue, Helvetica, Arial,
-                        Lucida Grande, sans-serif;
-                      font-weight: 300;
-                      color: #f4f1f1;
-                    "
-                  >
-                    Hi {}
-                  </p>
-                  <p
-                    style="
-                      font-size: 16px;
-                      line-height: 26px;
-                      margin: 16px 0;
-                      font-family: Open Sans, HelveticaNeue-Light,
-                        Helvetica Neue Light, Helvetica Neue, Helvetica, Arial,
-                        Lucida Grande, sans-serif;
-                      font-weight: 300;
-                      color: #ffffff;
-                    "
-                  >
-                  {}
+          <h1 style="color: #ffffff; margin: 0; font-family: 'Public Sans', sans-serif; font-size: 24px; font-weight: 700;">ST Network</h1>
+        </td>
+      </tr>
+
+      <!-- Content -->
+      <tr>
+        <td style="padding: 40px 30px;">
+          <p style="font-size: 16px; line-height: 24px; margin: 0 0 20px 0; color: #1a1a1a; font-weight: 500;">
+            Hi <strong>{}!</strong>
+          </p>
+
+          <p style="font-size: 14px; line-height: 22px; margin: 0 0 20px 0; color: #5E5E5E;">
+            {}
+          </p>
+
+          <!-- Task CTA Section -->
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin: 30px 0; width: 100%;">
+            <tr>
+              <td style="background-color: #f9f9f9; border-left: 4px solid #154212; padding: 20px; border-radius: 4px;">
+                <p style="font-size: 13px; line-height: 20px; margin: 0 0 12px 0; color: #5E5E5E; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Next Steps</p>
+                <p style="font-size: 14px; line-height: 22px; margin: 0; color: #1a1a1a;">
+                  Sign in to <a href="https://app.slightlytechie.com" style="color: #154212; text-decoration: none; font-weight: 600;">app.slightlytechie.com</a> to view and submit your task.
                 </p>
-                <p>Kindly sign in to <a href="https://app.slightlytechie.com">app.slightlytechie.com</a> to submit your task when completed.</p>
-                  <a></a>
-                  <p>
-                  </p>
-                  <p
-                    style="
-                      font-size: 16px;
-                      line-height: 26px;
-                      margin: 16px 0;
-                      font-family: Open Sans, HelveticaNeue-Light,
-                        Helvetica Neue Light, Helvetica Neue, Helvetica, Arial,
-                        Lucida Grande, sans-serif;
-                      font-weight: 300;
-                      color: #ffffff;
-                    "
-                  >
-                  Contact us on
-                  <a href="#" style="color: #4192e3">info@slightlytechie.com</a> for more
-                  information
-                  </p>
-                </td>
-              </tr>
-            </tbody>
+              </td>
+            </tr>
           </table>
+
+          <!-- Primary CTA Button -->
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin: 30px 0;">
+            <tr>
+              <td style="background-color: #154212; border-radius: 6px; text-align: center;">
+                <a
+                  href="https://app.slightlytechie.com"
+                  target="_blank"
+                  style="background-color: #154212; border-radius: 6px; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; text-decoration: none; display: inline-block; padding: 12px 28px; line-height: 100%;"
+                >Go to Dashboard</a>
+              </td>
+            </tr>
+          </table>
+
+          <p style="font-size: 13px; line-height: 20px; margin: 0 0 20px 0; color: #5E5E5E;">
+            If you have any questions about this task, please reach out to your team lead or contact support.
+          </p>
+
+          <!-- Divider -->
+          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+
+          <!-- Footer -->
+          <p style="font-size: 12px; line-height: 18px; margin: 0 0 10px 0; color: #5E5E5E;">
+            Have questions? Contact us at
+            <a href="mailto:info@slightlytechie.com" style="color: #154212; text-decoration: none; font-weight: 500;">info@slightlytechie.com</a>
+          </p>
+
+          <p style="font-size: 12px; line-height: 18px; margin: 0; color: #5E5E5E;">
+            © 2026 Slightly Techie. All rights reserved.
+          </p>
         </td>
       </tr>
     </table>

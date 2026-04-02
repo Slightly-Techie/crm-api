@@ -21,11 +21,28 @@ class CreateProject(ProjectBase):
     project_tools: Optional[List[int]] = Field(None)
 
 
+class MemberWithTeamResponse(BaseModel):
+    id: int
+    first_name: str = Field(...)
+    last_name: str = Field(...)
+    username: str = Field(...)
+    email: str = Field(...)
+    profile_pic_url: Optional[str] = None
+    team: Optional[str] = Field(None)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Alias for backward compatibility
+MembersResponse = MemberWithTeamResponse
+
+
 class ProjectResponse(ProjectBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    members: Optional[list[UserResponse]] = Field(None)
+    manager: Optional[UserResponse] = Field(None)
+    members: Optional[list[MemberWithTeamResponse]] = Field(None)
     stacks: Optional[list[Stacks]] = Field(None)
     project_tools: Optional[list[Skills]] = Field(None)
     status: ProjectStatus
@@ -44,13 +61,3 @@ class UpdateProject(BaseModel):
 
 class ProjectMember(BaseModel):
     team: ProjectTeam = Field(...)
-
-
-class MembersResponse(BaseModel):
-    id: int
-    first_name: str = Field(...)
-    last_name: str = Field(...)
-    username: str = Field(...)
-    email: str = Field(...)
-    profile_pic_url: Optional[str] = None
-    stack: Optional[Stacks] = Field(None)

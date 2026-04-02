@@ -154,7 +154,14 @@ def test_get_user_info(client, test_user):
     assert "phone_number" in response.json()["data"]
 
 
-def test_get_all_profile(client, test_user, test_users, test_stacks, populate_skills):
+def test_get_all_profile(client, test_user, test_users, test_stacks, populate_skills, session):
+    # Set test_user to ACCEPTED status so they appear in active directory
+    from db.models.users import User
+    from utils.enums import UserStatus
+    user = session.query(User).filter(User.id == test_user["id"]).first()
+    user.status = UserStatus.ACCEPTED
+    session.commit()
+
     login_res = client.post(
         "/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]

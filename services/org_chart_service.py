@@ -76,22 +76,41 @@ class OrgChartService:
     # Read operations
     # ------------------------------------------------------------------
 
-    def get_direct_subordinates(self, user_id: int) -> list[User]:
-        self._get_user_or_404(user_id)
-        return self.repo.get_direct_subordinates(user_id)
+    def get_direct_subordinates(self, user_id: int, filter_active: bool = False) -> list[User]:
+        """Get direct subordinates of a user.
 
-    def get_subtree(self, root_id: int, max_depth: Optional[int] = None) -> OrgChartNode:
+        Args:
+            user_id: The manager's user ID
+            filter_active: If True, only return ACCEPTED + is_active users (default: False - show all assigned team members)
+        """
+        self._get_user_or_404(user_id)
+        return self.repo.get_direct_subordinates(user_id, filter_active=filter_active)
+
+    def get_subtree(self, root_id: int, max_depth: Optional[int] = None, filter_active: bool = True) -> OrgChartNode:
+        """Get the org chart subtree for a given root user.
+
+        Args:
+            root_id: The root user's ID
+            max_depth: Maximum depth to traverse
+            filter_active: If True, only include ACCEPTED + is_active users (default: True)
+        """
         max_depth = max_depth if max_depth is not None else self.DEFAULT_MAX_DEPTH
         self._get_user_or_404(root_id)
         rows = self.repo.get_subtree_ids(root_id, max_depth)
         user_ids = [r["id"] for r in rows]
         users = self.repo.get_users_by_ids(user_ids)
         users_by_id = {u.id: u for u in users}
-        return self._build_tree(users_by_id, root_id, rows)
+        return self._build_tree_filtered(users_by_id, root_id, rows, filter_active)
 
-    def get_full_org_chart(self, max_depth: Optional[int] = None) -> list[OrgChartNode]:
+    def get_full_org_chart(self, max_depth: Optional[int] = None, filter_active: bool = True) -> list[OrgChartNode]:
+        """Get the full organizational chart.
+
+        Args:
+            max_depth: Maximum depth to traverse for each root
+            filter_active: If True, only include ACCEPTED + is_active users (default: True)
+        """
         max_depth = max_depth if max_depth is not None else self.DEFAULT_MAX_DEPTH
-        roots = self.repo.get_root_users()
+        roots = self.repo.get_root_users(filter_active=filter_active)
         if not roots:
             return []
         result = []
@@ -100,8 +119,58 @@ class OrgChartService:
             user_ids = [r["id"] for r in rows]
             users = self.repo.get_users_by_ids(user_ids)
             users_by_id = {u.id: u for u in users}
-            result.append(self._build_tree(users_by_id, root.id, rows))
+
+            # Only build tree if root user exists (it should since it came from get_root_users)
+            if root.id in users_by_id:
+                tree_node = self._build_tree_filtered(users_by_id, root.id, rows, filter_active)
+                if tree_node:
+                    result.append(tree_node)
         return result
+
+    def _build_tree_filtered(self, users_by_id: dict[int, User], root_id: int, rows: list[dict], filter_active: bool) -> Optional[OrgChartNode]:
+        """Build tree with optional filtering of ACCEPTED + is_active users."""
+        children_map: dict[int, list[int]] = {}
+        for row in rows:
+            pid = row["manager_id"]
+            if pid is not None and pid in users_by_id:
+                children_map.setdefault(pid, []).append(row["id"])
+
+        visited: set[int] = set()
+
+        def _recurse(uid: int) -> Optional[OrgChartNode]:
+            if uid in visited or uid not in users_by_id:
+                return None
+            visited.add(uid)
+            u = users_by_id[uid]
+
+            # Skip if filtering is enabled and user doesn't match
+            if filter_active and (u.status != "ACCEPTED" or not u.is_active):
+                return None
+
+            child_ids = children_map.get(uid, [])
+            subs = []
+            for cid in child_ids:
+                node = _recurse(cid)
+                if node is not None:
+                    subs.append(node)
+            return OrgChartNode(
+                id=u.id,
+                first_name=u.first_name,
+                last_name=u.last_name,
+                username=u.username,
+                profile_pic_url=u.profile_pic_url,
+                role=u.role,
+                stack=u.stack,
+                manager_id=u.manager_id,
+                status=u.status,
+                is_active=u.is_active,
+                subordinates=subs,
+            )
+
+        node = _recurse(root_id)
+        if node is None:
+            return None
+        return node
 
     def get_manager(self, user_id: int) -> Optional[User]:
         user = self._get_user_or_404(user_id)

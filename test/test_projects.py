@@ -171,12 +171,20 @@ def test_add_user_project(client, test_projects, user_cred, test_user1):
     assert res.status_code == status.HTTP_201_CREATED
 
 
-def test_add_user_project_unauthorized(client, test_projects, test_user, user_cred):
-    url = project_url + str(test_projects[2].id) + "/add/" + str(test_user["id"])
+def test_add_user_project_unauthorized(client, test_projects, test_user, test_user1):
+    # test_user1 (non-admin) trying to add a user to test_projects[0] (managed by test_user)
+    # This should be forbidden since test_user1 is not the manager and not an admin
+    login_res = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user1["email"], "password": test_user1["password"]}
+    )
+    token = login_res.json()["token"]
+
+    url = project_url + str(test_projects[0].id) + "/add/" + str(test_user["id"])
     data = {
         "team": "FRONTEND"
     }
-    res = client.post(url, json=data, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+    res = client.post(url, json=data, headers={"Authorization": f"Bearer {token}"})
 
     assert res.status_code == status.HTTP_403_FORBIDDEN
 
@@ -211,10 +219,21 @@ def test_remove_user_project(client, test_projects, user_cred, test_user1):
     assert res.status_code == status.HTTP_204_NO_CONTENT
 
 
-def test_remove_user_project_unauthorized(client, test_projects, test_user, user_cred):
-    url = project_url + str(test_projects[2].id) + "/remove/" + str(test_user["id"])
+def test_remove_user_project_unauthorized(client, test_projects, test_user, test_user1, user_cred):
+    # First, add test_user to test_projects[0] (managed by test_user, who is admin)
+    test_add_user_project(client, test_projects, user_cred, test_user1)
 
-    res = client.delete(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
+    # Now test_user1 (non-admin) tries to remove from test_projects[0] (managed by test_user)
+    # This should be forbidden since test_user1 is not the manager and not an admin
+    login_res = client.post(
+        "/api/v1/users/login",
+        data={"username": test_user1["email"], "password": test_user1["password"]}
+    )
+    token = login_res.json()["token"]
+
+    url = project_url + str(test_projects[0].id) + "/remove/" + str(test_user1["id"])
+
+    res = client.delete(url, headers={"Authorization": f"Bearer {token}"})
 
     assert res.status_code == status.HTTP_403_FORBIDDEN
 

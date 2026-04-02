@@ -55,22 +55,53 @@ class TechnicalTaskService:
     # --- Submissions ---
 
     def create_submission(self, current_user: User, data: dict) -> TechnicalTaskSubmission:
-        user_exp = get_key_by_value(current_user.years_of_experience)
+        # Check if user has required profile information
+        if not current_user.stack_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete your profile by selecting a tech stack before submitting."
+            )
+
+        if current_user.years_of_experience is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete your profile by adding years of experience before submitting."
+            )
+
+        try:
+            user_exp = get_key_by_value(current_user.years_of_experience)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
         task = self.task_repo.get_by_stack_and_level(current_user.stack_id, user_exp)
+
         if not task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Cannot find a task for this submission"
+                detail=(
+                    f"No technical task found for your stack and experience level "
+                    f"(stack_id={current_user.stack_id}, experience_level={user_exp}). "
+                    f"Please contact admin at info@slightlytechie.com."
+                )
             )
-        if self.submission_repo.get_existing_for_user(current_user.id):
+
+        # Check if user already submitted
+        existing_submission = self.submission_repo.get_existing_for_user(current_user.id)
+        if existing_submission:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Multiple submissions not allowed. Kindly contact admin."
+                detail="You have already submitted a task. Multiple submissions are not allowed. Contact admin if you need to update your submission."
             )
+
         try:
             return self.submission_repo.create(task.id, current_user.id, data)
         except Exception as e:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to submit task: {str(e)}"
+            )
 
     def get_all_submissions(self) -> list[TechnicalTaskSubmission]:
         submissions = self.submission_repo.get_all()

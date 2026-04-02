@@ -74,7 +74,10 @@ def verify_refresh_token(token: str):
 def get_current_user(
         token: str = Depends(oauth2_scheme),
         db: Session = Depends(database.get_db)):
-
+    """
+    Base authentication: verifies token and returns user.
+    Does NOT check is_active or status - use permission dependencies for that.
+    """
     credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -92,11 +95,6 @@ def get_current_user(
         print(f"User with ID {token_data.id} not found in database.")
         raise credential_exception
 
-    if not user.is_active:
-        if user.status == "CONTACTED":
-            return user
-        # Redirect the user to a default URL
-        raise HTTPException(status_code=302, headers={"Location": "/inactive"})
     return user
 
 

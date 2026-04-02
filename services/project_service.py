@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from api.api_models.projects import CreateProject, UpdateProject
 from db.models.projects import Project
 from db.models.users import User
+from db.models.users_projects import UserProject
 from db.repository.projects import ProjectRepository
 from db.repository.skills import SkillRepository
 from db.repository.stacks import StackRepository
@@ -20,6 +21,18 @@ class ProjectService:
         self.stack_repo = stack_repo
         self.skill_repo = skill_repo
 
+    def _enrich_project_members_with_team(self, project: Project) -> Project:
+        """Add team role data from users_projects join table to project members."""
+        for member in project.members:
+            user_project = self.project_repo.db.query(UserProject).filter(
+                UserProject.user_id == member.id,
+                UserProject.project_id == project.id
+            ).first()
+            if user_project:
+                # Dynamically set the team attribute for Pydantic serialization
+                object.__setattr__(member, 'team', user_project.team)
+        return project
+
     def create_project(self, project_data: CreateProject) -> Project:
         manager = self.user_repo.get_by_id(project_data.manager_id)
         if not manager:
@@ -28,17 +41,8 @@ class ProjectService:
         data = project_data.model_dump(exclude=["members", "stacks", "project_tools"])
         new_project = Project(**data)
 
-        if project_data.members:
-            seen = []
-            for member_id in project_data.members:
-                member = self.user_repo.get_by_id(member_id)
-                if not member:
-                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                        detail=f"User {member_id} not found")
-                if not member.is_active:
-                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                        detail=f"{member.first_name} is not an active member")
-                new_project.members.append(member)
+        # Note: Members are NOT added here. They are added separately via the /add/{userId} endpoint
+        # with their team roles specified. This ensures the users_projects join table has the team field set.
 
         if project_data.stacks:
             seen = []
@@ -66,18 +70,21 @@ class ProjectService:
                 new_project.project_tools.append(skill)
                 seen.append(skill_id)
 
-        return self.project_repo.save(new_project)
+        saved = self.project_repo.save(new_project)
+        return self._enrich_project_members_with_team(saved)
 
     def update_project(self, project_id: int, update_data: UpdateProject) -> Project:
         project = self.project_repo.get_by_id(project_id)
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-        if update_data.manager_id and update_data.manager_id != project.manager_id:
-            if not self.user_repo.get_by_id(update_data.manager_id):
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
-        return self.project_repo.update(
-            project, update_data.model_dump(exclude=["members", "stacks", "project_tools"])
+        if update_data.manager_id is not None:
+            if update_data.manager_id != project.manager_id:
+                if not self.user_repo.get_by_id(update_data.manager_id):
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
+        updated = self.project_repo.update(
+            project, update_data.model_dump(exclude=["members", "stacks", "project_tools"], exclude_none=True)
         )
+        return self._enrich_project_members_with_team(updated)
 
     def delete_project(self, project_id: int) -> None:
         project = self.project_repo.get_by_id(project_id)
@@ -89,7 +96,7 @@ class ProjectService:
         project = self.project_repo.get_by_id(project_id)
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-        return project
+        return self._enrich_project_members_with_team(project)
 
     def get_all_query(self):
         return self.project_repo.get_all_paginated_query()
@@ -119,4 +126,13 @@ class ProjectService:
     def get_project_members(self, project_id: int, team: Optional[ProjectTeam]) -> List[User]:
         if not self.project_repo.get_by_id(project_id):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-        return self.project_repo.get_members(project_id, team)
+        members = self.project_repo.get_members(project_id, team)
+        # Enrich members with team data
+        for member in members:
+            user_project = self.project_repo.db.query(UserProject).filter(
+                UserProject.user_id == member.id,
+                UserProject.project_id == project_id
+            ).first()
+            if user_project:
+                object.__setattr__(member, 'team', user_project.team)
+        return members

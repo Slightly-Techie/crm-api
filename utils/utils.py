@@ -33,10 +33,13 @@ class RoleChoices():
 
 
 def get_key_by_value(value):
+    # Map years of experience to ExperienceLevel enum values
+    from utils.enums import ExperienceLevel
+
     experience_level_map = {
-        "JUNIOR": [0, 1, 2],
-        "MID_LEVEL": [3, 4],
-        "SENIOR": [5, 6, 7, 8, 9, 10, 11, 12]
+        ExperienceLevel.JUNIOR.value: [0, 1, 2],
+        ExperienceLevel.MID_LEVEL.value: [3, 4],
+        ExperienceLevel.SENIOR.value: [5, 6, 7, 8, 9, 10, 11, 12]
     }
     for key, values in experience_level_map.items():
         if value in values:
