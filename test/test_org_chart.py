@@ -73,7 +73,11 @@ def org_tree(client, test_user, test_user1, session, admin_headers):
 class TestAdminGetFullOrgChart:
     """GET /api/v1/users/org-chart (admin only)"""
 
-    def test_returns_roots(self, client, test_user, test_user1, admin_headers):
+    def test_returns_roots(self, client, test_user, test_user1, admin_headers, session):
+        # Make users ACCEPTED so they appear in org chart
+        _make_admin_accepted(session, test_user)
+        _make_admin_accepted(session, test_user1)
+
         res = client.get("/api/v1/users/org-chart", headers=admin_headers)
         assert res.status_code == 200
         data = res.json()
@@ -82,7 +86,11 @@ class TestAdminGetFullOrgChart:
         assert test_user["id"] in root_ids
         assert test_user1["id"] in root_ids
 
-    def test_returns_tree_structure(self, client, org_tree, admin_headers):
+    def test_returns_tree_structure(self, client, org_tree, admin_headers, session):
+        # Make users ACCEPTED so they appear in org chart
+        _make_admin_accepted(session, org_tree["root"])
+        _make_admin_accepted(session, org_tree["child"])
+
         res = client.get("/api/v1/users/org-chart", headers=admin_headers)
         assert res.status_code == 200
         data = res.json()
@@ -144,7 +152,11 @@ class TestAdminGetSubordinates:
 class TestAdminGetUserOrgChart:
     """GET /api/v1/users/{user_id}/org-chart (admin only)"""
 
-    def test_returns_subtree(self, client, org_tree, admin_headers):
+    def test_returns_subtree(self, client, org_tree, admin_headers, session):
+        # Make users ACCEPTED so they appear in org chart
+        _make_admin_accepted(session, org_tree["root"])
+        _make_admin_accepted(session, org_tree["child"])
+
         res = client.get(
             f"/api/v1/users/{org_tree['root']['id']}/org-chart",
             headers=admin_headers,
@@ -155,7 +167,11 @@ class TestAdminGetUserOrgChart:
         sub_ids = {s["id"] for s in data["subordinates"]}
         assert org_tree["child"]["id"] in sub_ids
 
-    def test_leaf_node_subtree(self, client, org_tree, admin_headers):
+    def test_leaf_node_subtree(self, client, org_tree, admin_headers, session):
+        # Make users ACCEPTED so they appear in org chart
+        _make_admin_accepted(session, org_tree["root"])
+        _make_admin_accepted(session, org_tree["child"])
+
         res = client.get(
             f"/api/v1/users/{org_tree['child']['id']}/org-chart",
             headers=admin_headers,
@@ -317,7 +333,10 @@ class TestAcceptedUserViewEndpoints:
         assert org_tree["child"]["id"] in sub_ids
 
     def test_view_user_org_chart(self, client, org_tree, accepted_user_headers, session):
+        # Make both users ACCEPTED so they appear in org chart
+        _make_admin_accepted(session, org_tree["root"])
         _make_admin_accepted(session, org_tree["child"])
+
         res = client.get(
             f"/api/v1/users/view/{org_tree['root']['id']}/org-chart",
             headers=accepted_user_headers,

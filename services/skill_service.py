@@ -45,9 +45,25 @@ class SkillService:
         from db.database import create_roles
         from utils.endpoints_status import create_signup_endpoint
         from utils.tools import tools as skills_data, get_skills_image
+        import logging
 
-        create_roles()
-        create_signup_endpoint(status=True)
+        logger = logging.getLogger(__name__)
+
+        # Try to create roles - catch expected "already exists" exceptions
+        try:
+            create_roles()
+        except Exception as e:
+            # Expected when roles already exist; log unexpected errors for diagnostics
+            if "already" not in str(e).lower():
+                logger.warning(f"Unexpected error creating roles: {e}")
+
+        # Try to create signup endpoint - catch expected "already exists" exceptions
+        try:
+            create_signup_endpoint(status=True)
+        except Exception as e:
+            # Expected when endpoint already exists; log unexpected errors for diagnostics
+            if "already" not in str(e).lower():
+                logger.warning(f"Unexpected error creating signup endpoint: {e}")
 
         try:
             last_skill = None
@@ -65,7 +81,12 @@ class SkillService:
         skills = self.skill_repo.get_all_flat()
         threshold = 78
         return [
-            {"skill_id": skill.id, "skill_name": skill.name}
+            {
+                "skill_id": skill.id,
+                "skill_name": skill.name,
+
+                "image_url": skill.image_url or ""
+            }
             for skill in skills
             if fuzz.partial_ratio(name.lower(), skill.name.lower()) >= threshold
         ]

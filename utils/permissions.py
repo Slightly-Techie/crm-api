@@ -12,7 +12,7 @@ from utils.enums import UserStatus
 def is_authenticated(user: UserResponse = Depends(get_current_user)):
     """
         No need to do anything because `get_current_user` raises all the errors
-        his would be used as a path dependecy so return value is required
+        This would be used as a path dependency so return value is required
 
     Usage: @app.<method>("<route>", dependencies=[Depends(is_authenticated)] )
     """
@@ -22,7 +22,7 @@ def is_authenticated(user: UserResponse = Depends(get_current_user)):
 
 # Admin permission dependency
 def is_admin(user: UserResponse = Depends(is_authenticated)):
-    if user.role.name != RoleChoices.ADMIN:
+    if not user.role or user.role.name != RoleChoices.ADMIN:
         raise ForbiddenError()
 
     return user
@@ -33,6 +33,10 @@ def is_project_manager(
     db: Session = Depends(get_db),
     user: UserResponse = Depends(get_current_user),
 ):
+    # Allow admins
+    if user.role and user.role.name == RoleChoices.ADMIN:
+        return user
+
     project_id = request.path_params.get("project_id")
     if project_id is None:
         raise HTTPException(status_code=500, detail="project_id path parameter missing")
@@ -78,8 +82,8 @@ def is_owner(user, obj):
 
 
 def user_accepted(user: UserResponse = Depends(get_current_user)):
-    """Only accepted users can access feeds page"""
-    if user.status != UserStatus.ACCEPTED:
+    """Only active and accepted users can access protected resources"""
+    if not user.is_active or user.status != UserStatus.ACCEPTED:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have access to this resource"

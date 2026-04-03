@@ -51,7 +51,12 @@ def get(project_id: int, db: Session = Depends(get_db)):
 
 @project_router.get("/", status_code=status.HTTP_200_OK, response_model=Page[ProjectResponse])
 def get_all(db: Session = Depends(get_db)):
-    return paginate(db, _service(db).get_all_query())
+    service = _service(db)
+    page = paginate(db, service.get_all_query())
+    # Enrich members with team data
+    for project in page.items:
+        service._enrich_project_members_with_team(project)
+    return page
 
 
 @project_router.post("/{project_id}/add/{user_id}", status_code=status.HTTP_201_CREATED)

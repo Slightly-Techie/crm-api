@@ -22,9 +22,35 @@ class TechnicalTaskResponse(TechnicalTaskBase):
 
 
 class TechnicalTaskSubmissionBase(BaseModel):
-    github_link: Text
-    live_demo_url: Optional[Text]
-    description: Optional[Text]
+    github_link: Text = Field(...)
+    live_demo_url: Optional[Text] = None
+    description: Optional[Text] = None
+
+
+class UserMinimal(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    profile_pic_url: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StackMinimal(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TechnicalTaskMinimal(BaseModel):
+    id: int
+    content: str
+    experience_level: ExperienceLevel
+    stack: Optional[StackMinimal] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TechnicalTaskSubmissionResponse(TechnicalTaskSubmissionBase):
@@ -32,5 +58,8 @@ class TechnicalTaskSubmissionResponse(TechnicalTaskSubmissionBase):
     created_at: datetime
     updated_at: datetime
     task_id: int
+    user_id: Optional[int] = None
+    user: Optional[UserMinimal] = None
+    technical_task: Optional[TechnicalTaskMinimal] = None
 
     model_config = ConfigDict(from_attributes=True)

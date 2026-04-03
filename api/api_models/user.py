@@ -139,6 +139,8 @@ class OrgChartNode(BaseModel):
     role: Optional[Role] = None
     stack: Optional[Stacks] = None
     manager_id: Optional[int] = None
+    status: str  # Added for frontend filtering
+    is_active: bool  # Added for frontend filtering
     subordinates: List[OrgChartNode] = []
 
     model_config = ConfigDict(from_attributes=True)
@@ -278,6 +280,7 @@ class Token(BaseModel):
     is_active: bool = Field(...)
     user_status: str = Field(...)
     refresh_token: str = Field(...)
+    role: Optional[Role] = Field(None)
 
 
 class TokenData(BaseModel):

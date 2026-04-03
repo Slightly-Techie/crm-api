@@ -13,12 +13,19 @@ class OrgChartRepository(BaseRepository):
     def get_user(self, user_id: int) -> Optional[User]:
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def get_direct_subordinates(self, user_id: int) -> list[User]:
-        return (
-            self.db.query(User)
-            .filter(User.manager_id == user_id)
-            .all()
-        )
+    def get_direct_subordinates(self, user_id: int, filter_active: bool = False) -> list[User]:
+        """Get direct subordinates of a user.
+
+        Args:
+            user_id: The manager's user ID
+            filter_active: If True, only return ACCEPTED + is_active users
+        """
+        query = self.db.query(User).filter(User.manager_id == user_id)
+
+        if filter_active:
+            query = query.filter(User.status == "ACCEPTED", User.is_active == True)
+
+        return query.all()
 
     def get_subtree_ids(self, root_id: int, max_depth: int = 5) -> list[dict]:
         """Fetch all descendant user IDs using a recursive CTE, up to max_depth.
@@ -58,13 +65,18 @@ class OrgChartRepository(BaseRepository):
             return []
         return self.db.query(User).filter(User.id.in_(user_ids)).all()
 
-    def get_root_users(self) -> list[User]:
-        """Return users with no manager (org tree roots)."""
-        return (
-            self.db.query(User)
-            .filter(User.manager_id.is_(None))
-            .all()
-        )
+    def get_root_users(self, filter_active: bool = False) -> list[User]:
+        """Return users with no manager (org tree roots).
+
+        Args:
+            filter_active: If True, only return ACCEPTED + is_active users
+        """
+        query = self.db.query(User).filter(User.manager_id.is_(None))
+
+        if filter_active:
+            query = query.filter(User.status == "ACCEPTED", User.is_active == True)
+
+        return query.all()
 
     def get_ancestor_ids(self, user_id: int, max_depth: int = 50) -> list[int]:
         """Walk the manager chain upward using a recursive CTE.

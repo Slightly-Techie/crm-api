@@ -76,7 +76,8 @@ class AuthService:
             refresh_token=get_refresh_token(str(user.id)),
             token_type="Bearer",
             is_active=user.is_active,
-            user_status=user.status
+            user_status=user.status,
+            role=user.role
         )
 
     def refresh(self, refresh_token: str) -> Token:

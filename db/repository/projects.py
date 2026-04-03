@@ -30,6 +30,12 @@ class ProjectRepository(BaseRepository):
 
     def delete_with_memberships(self, project_id: int) -> None:
         self.db.query(UserProject).filter(UserProject.project_id == project_id).delete()
+        # Delete project_stacks entries
+        from db.models.project_stacks import ProjectStack
+        self.db.query(ProjectStack).filter(ProjectStack.project_id == project_id).delete()
+        # Delete project_skills entries
+        from db.models.project_skills import ProjectSkill
+        self.db.query(ProjectSkill).filter(ProjectSkill.project_id == project_id).delete()
         self.db.query(Project).filter(Project.id == project_id).delete()
         self.db.commit()
 
