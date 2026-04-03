@@ -44,4 +44,7 @@ def get_key_by_value(value):
     for key, values in experience_level_map.items():
         if value in values:
             return key
-    return None
+    raise ValueError(
+        f"Invalid years_of_experience value: {value}. "
+        f"Must be between 0 and 12. Valid ranges: Junior (0-2), Mid-level (3-4), Senior (5-12)."
+    )

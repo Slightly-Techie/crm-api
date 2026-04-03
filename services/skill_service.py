@@ -45,18 +45,25 @@ class SkillService:
         from db.database import create_roles
         from utils.endpoints_status import create_signup_endpoint
         from utils.tools import tools as skills_data, get_skills_image
+        import logging
 
-        # Try to create roles and signup endpoint, but don't fail if they already exist
-        # or if running in a test environment with different database session
+        logger = logging.getLogger(__name__)
+
+        # Try to create roles - catch expected "already exists" exceptions
         try:
             create_roles()
-        except Exception:
-            pass  # Roles likely already exist
+        except Exception as e:
+            # Expected when roles already exist; log unexpected errors for diagnostics
+            if "already" not in str(e).lower():
+                logger.warning(f"Unexpected error creating roles: {e}")
 
+        # Try to create signup endpoint - catch expected "already exists" exceptions
         try:
             create_signup_endpoint(status=True)
-        except Exception:
-            pass  # Endpoint likely already exists
+        except Exception as e:
+            # Expected when endpoint already exists; log unexpected errors for diagnostics
+            if "already" not in str(e).lower():
+                logger.warning(f"Unexpected error creating signup endpoint: {e}")
 
         try:
             last_skill = None

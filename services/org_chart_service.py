@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from api.api_models.user import OrgChartNode
 from db.models.users import User
 from db.repository.org_chart import OrgChartRepository
+from utils.enums import UserStatus
 
 
 class OrgChartService:
@@ -100,7 +101,17 @@ class OrgChartService:
         user_ids = [r["id"] for r in rows]
         users = self.repo.get_users_by_ids(user_ids)
         users_by_id = {u.id: u for u in users}
-        return self._build_tree_filtered(users_by_id, root_id, rows, filter_active)
+        tree_node = self._build_tree_filtered(users_by_id, root_id, rows, filter_active)
+        if tree_node is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    f"User with id {root_id} is not available in the filtered org chart"
+                    if filter_active
+                    else f"Unable to build org chart subtree for user with id {root_id}"
+                ),
+            )
+        return tree_node
 
     def get_full_org_chart(self, max_depth: Optional[int] = None, filter_active: bool = True) -> list[OrgChartNode]:
         """Get the full organizational chart.
@@ -144,7 +155,7 @@ class OrgChartService:
             u = users_by_id[uid]
 
             # Skip if filtering is enabled and user doesn't match
-            if filter_active and (u.status != "ACCEPTED" or not u.is_active):
+            if filter_active and (u.status != UserStatus.ACCEPTED or not u.is_active):
                 return None
 
             child_ids = children_map.get(uid, [])

@@ -23,14 +23,19 @@ class ProjectService:
 
     def _enrich_project_members_with_team(self, project: Project) -> Project:
         """Add team role data from users_projects join table to project members."""
+        if not project.members:
+            return project
+
+        user_projects = self.project_repo.db.query(UserProject).filter(
+            UserProject.project_id == project.id
+        ).all()
+        teams_by_user_id = {user_project.user_id: user_project.team for user_project in user_projects}
+
         for member in project.members:
-            user_project = self.project_repo.db.query(UserProject).filter(
-                UserProject.user_id == member.id,
-                UserProject.project_id == project.id
-            ).first()
-            if user_project:
+            team = teams_by_user_id.get(member.id)
+            if team is not None:
                 # Dynamically set the team attribute for Pydantic serialization
-                object.__setattr__(member, 'team', user_project.team)
+                setattr(member, 'team', team)
         return project
 
     def create_project(self, project_data: CreateProject) -> Project:
@@ -38,11 +43,16 @@ class ProjectService:
         if not manager:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
 
+        # Members are added separately via /add/{userId} endpoint, not during creation
+        if project_data.members:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Members cannot be added during project creation. "
+                       "Use the POST /projects/{project_id}/add/{user_id} endpoint to add members with their team roles."
+            )
+
         data = project_data.model_dump(exclude=["members", "stacks", "project_tools"])
         new_project = Project(**data)
-
-        # Note: Members are NOT added here. They are added separately via the /add/{userId} endpoint
-        # with their team roles specified. This ensures the users_projects join table has the team field set.
 
         if project_data.stacks:
             seen = []

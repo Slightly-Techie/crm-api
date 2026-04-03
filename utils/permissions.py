@@ -22,7 +22,7 @@ def is_authenticated(user: UserResponse = Depends(get_current_user)):
 
 # Admin permission dependency
 def is_admin(user: UserResponse = Depends(is_authenticated)):
-    if user.role.name != RoleChoices.ADMIN:
+    if not user.role or user.role.name != RoleChoices.ADMIN:
         raise ForbiddenError()
 
     return user
@@ -34,7 +34,7 @@ def is_project_manager(
     user: UserResponse = Depends(get_current_user),
 ):
     # Allow admins
-    if user.role.name == RoleChoices.ADMIN:
+    if user.role and user.role.name == RoleChoices.ADMIN:
         return user
 
     project_id = request.path_params.get("project_id")
@@ -87,30 +87,5 @@ def user_accepted(user: UserResponse = Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have access to this resource"
-        )
-    return user
-
-
-def user_contacted(user: UserResponse = Depends(get_current_user)):
-    """Only CONTACTED users (for task submission)"""
-    if user.status != UserStatus.CONTACTED:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This resource is only for applicants with tasks"
-        )
-    return user
-
-
-def user_active_and_accepted(user: UserResponse = Depends(get_current_user)):
-    """Strict check: user must be both active AND accepted"""
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your account is not active. Please contact an administrator."
-        )
-    if user.status != UserStatus.ACCEPTED:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your application is still being processed."
         )
     return user

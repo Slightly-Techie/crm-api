@@ -22,7 +22,7 @@ class TechnicalTaskResponse(TechnicalTaskBase):
 
 
 class TechnicalTaskSubmissionBase(BaseModel):
-    github_link: Optional[Text] = None
+    github_link: Text = Field(...)
     live_demo_url: Optional[Text] = None
     description: Optional[Text] = None
 

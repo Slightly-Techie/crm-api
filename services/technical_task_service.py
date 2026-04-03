@@ -75,6 +75,15 @@ class TechnicalTaskService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
+
+        if user_exp is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Invalid years_of_experience value: {current_user.years_of_experience}. "
+                    f"Please update your profile with a valid experience level before submitting."
+                )
+            )
         task = self.task_repo.get_by_stack_and_level(current_user.stack_id, user_exp)
 
         if not task:

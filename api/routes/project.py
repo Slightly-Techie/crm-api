@@ -51,11 +51,11 @@ def get(project_id: int, db: Session = Depends(get_db)):
 
 @project_router.get("/", status_code=status.HTTP_200_OK, response_model=Page[ProjectResponse])
 def get_all(db: Session = Depends(get_db)):
-
-    page = paginate(db, _service(db).get_all_query())
+    service = _service(db)
+    page = paginate(db, service.get_all_query())
     # Enrich members with team data
     for project in page.items:
-        _service(db)._enrich_project_members_with_team(project)
+        service._enrich_project_members_with_team(project)
     return page
 
 
