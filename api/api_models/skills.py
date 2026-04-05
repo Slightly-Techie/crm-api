@@ -9,7 +9,7 @@ class SkillBase(BaseModel):
 
     @field_validator('name')
     def normalize_name(cls, v):
-        return v.title()
+        return v.strip().title()
 
 
 class SkillCreate(SkillBase):

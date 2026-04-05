@@ -90,32 +90,38 @@ class ProjectService:
                 if not self.user_repo.get_by_id(update_data.manager_id):
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
 
+        validated_project_tools = None
+        validated_stacks = None
+
+        if update_data.project_tools is not None:
+            if len(set(update_data.project_tools)) != len(update_data.project_tools):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                    detail="Duplicate skill ids provided")
+            validated_project_tools = []
+            for skill_id in update_data.project_tools:
+                skill = self.skill_repo.get_by_id(skill_id)
+                if not skill:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"Skill {skill_id} not found")
+                validated_project_tools.append(skill)
+
+        if update_data.stacks is not None:
+            if len(set(update_data.stacks)) != len(update_data.stacks):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                    detail="Duplicate stack ids provided")
+            validated_stacks = []
+            for stack_id in update_data.stacks:
+                stack = self.stack_repo.get_by_id(stack_id)
+                if not stack:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"Stack {stack_id} not found")
+                validated_stacks.append(stack)
+
         updated = self.project_repo.update(
             project, update_data.model_dump(exclude=["members", "stacks", "project_tools"], exclude_none=True)
         )
 
         try:
-            validated_project_tools = None
-            validated_stacks = None
-
-            if update_data.project_tools is not None:
-                validated_project_tools = []
-                for skill_id in update_data.project_tools:
-                    skill = self.skill_repo.get_by_id(skill_id)
-                    if not skill:
-                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                            detail=f"Skill {skill_id} not found")
-                    validated_project_tools.append(skill)
-
-            if update_data.stacks is not None:
-                validated_stacks = []
-                for stack_id in update_data.stacks:
-                    stack = self.stack_repo.get_by_id(stack_id)
-                    if not stack:
-                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                            detail=f"Stack {stack_id} not found")
-                    validated_stacks.append(stack)
-
             if validated_project_tools is not None:
                 updated.project_tools = validated_project_tools
 
@@ -125,9 +131,6 @@ class ProjectService:
             if validated_project_tools is not None or validated_stacks is not None:
                 self.project_repo.db.commit()
                 self.project_repo.db.refresh(updated)
-        except HTTPException:
-            self.project_repo.db.rollback()
-            raise
         except Exception as e:
             self.project_repo.db.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

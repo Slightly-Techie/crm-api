@@ -24,6 +24,11 @@ def _service(db: Session) -> AnnouncementService:
     return AnnouncementService(AnnouncementRepository(db))
 
 
+_ALLOWED_IMAGE_CONTENT_TYPES = {
+    "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "image/bmp",
+}
+
+
 @announcement_route.post("/image", status_code=status.HTTP_200_OK)
 async def upload_announcement_image(
     file: UploadFile = File(...),
@@ -33,6 +38,11 @@ async def upload_announcement_image(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file format. Please upload an image.",
+        )
+    if file.content_type not in _ALLOWED_IMAGE_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Please upload an image.",
         )
     resource_type = "announcement"
     upload_folder = "announcements"

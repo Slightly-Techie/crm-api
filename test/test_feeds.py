@@ -28,7 +28,7 @@ def test_get_one_feed(client, test_user, test_feeds):
 def test_get_one_feed_does_not_exist(client, test_user, test_feeds):
     login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]
-    res = client.get(f"api/v1/feed/10000", headers={"Authorization": f"Bearer {token}"})
+    res = client.get("/api/v1/feed/10000", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 404
 
 

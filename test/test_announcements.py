@@ -28,7 +28,7 @@ def test_get_one_announcement(client, test_user, test_announcements):
 def test_get_one_announcement_does_not_exist(client, test_user):
     login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
     token = login_res.json()["token"]
-    res = client.get("api/v1/announcements/100", headers={"Authorization": f"Bearer {token}"})
+    res = client.get("/api/v1/announcements/100", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 404
 
 
