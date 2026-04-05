@@ -24,12 +24,13 @@ def create_email_template(template: EmailTemplateCreate, db: Session = Depends(g
 
 
 @email_templates_route.get("/{template_id}", response_model=EmailTemplateResponse)
-def read_email_template(template_id: int, db: Session = Depends(get_db)):
+def read_email_template(template_id: int, db: Session = Depends(get_db),
+                        current_user=Depends(is_admin)):
     return _service(db).get_by_id(template_id)
 
 
 @email_templates_route.get("/", response_model=Page[EmailTemplateResponse])
-def read_all_email_templates(db: Session = Depends(get_db)):
+def read_all_email_templates(db: Session = Depends(get_db), current_user=Depends(is_admin)):
     return paginate(db, _service(db).get_all_query())
 
 

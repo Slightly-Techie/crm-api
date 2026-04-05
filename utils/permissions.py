@@ -20,8 +20,18 @@ def is_authenticated(user: UserResponse = Depends(get_current_user)):
     return user
 
 
+def user_accepted(user: UserResponse = Depends(get_current_user)):
+    """Only active and accepted users can access protected resources"""
+    if not user.is_active or user.status != UserStatus.ACCEPTED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this resource"
+        )
+    return user
+
+
 # Admin permission dependency
-def is_admin(user: UserResponse = Depends(is_authenticated)):
+def is_admin(user: UserResponse = Depends(user_accepted)):
     if not user.role or user.role.name != RoleChoices.ADMIN:
         raise ForbiddenError()
 
@@ -31,7 +41,7 @@ def is_admin(user: UserResponse = Depends(is_authenticated)):
 def is_project_manager(
     request: Request,
     db: Session = Depends(get_db),
-    user: UserResponse = Depends(get_current_user),
+    user: UserResponse = Depends(user_accepted),
 ):
     # Allow admins
     if user.role and user.role.name == RoleChoices.ADMIN:
@@ -44,9 +54,7 @@ def is_project_manager(
         Project.id == int(project_id), Project.manager_id == user.id
     )
     if not project.first():
-        raise HTTPException(
-            status_code=403, detail="Only the project manager can perform this action"
-        )
+        raise ForbiddenError()
 
     return user
 
@@ -79,13 +87,3 @@ def is_owner(user, obj):
         return True
 
     raise ForbiddenError()
-
-
-def user_accepted(user: UserResponse = Depends(get_current_user)):
-    """Only active and accepted users can access protected resources"""
-    if not user.is_active or user.status != UserStatus.ACCEPTED:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have access to this resource"
-        )
-    return user

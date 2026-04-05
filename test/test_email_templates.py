@@ -69,5 +69,5 @@ def test_delete_email_template(client, test_email_templates, test_user):
     response = client.delete(f"/api/v1/email-templates/{template_id}",headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 204
 
-    response = client.get(f"/api/v1/email-templates/{template_id}")
+    response = client.get(f"/api/v1/email-templates/{template_id}", headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 404

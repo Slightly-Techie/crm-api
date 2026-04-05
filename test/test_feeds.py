@@ -2,27 +2,33 @@ import pytest
 from api.api_models.user import Feeds, FeedUpdate
 
 
-def test_get_all_feeds(client, test_feeds):
-    response = client.get("/api/v1/feed/?page=1&size=50")
+def test_get_all_feeds(client, test_user, test_feeds):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    response = client.get("/api/v1/feed/?page=1&size=50", headers={"Authorization": f"Bearer {token}"})
     feeds = response.json()
-    
+
     assert len(feeds["items"]) == 4
     assert response.status_code == 200
     assert feeds["items"][1]["content"] == test_feeds[1].content
-    assert feeds["items"][1]["user"]["id"] == test_feeds[1].user.id    
+    assert feeds["items"][1]["user"]["id"] == test_feeds[1].user_id
 
 
-def test_get_one_feed(client, test_feeds):
-    res = client.get(f"/api/v1/feed/{test_feeds[0].id}")
+def test_get_one_feed(client, test_user, test_feeds):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.get(f"/api/v1/feed/{test_feeds[0].id}", headers={"Authorization": f"Bearer {token}"})
     feed = Feeds(**res.json())
     assert feed.id == test_feeds[0].id
     assert feed.content == test_feeds[0].content
-    assert feed.user.id == test_feeds[0].user.id
+    assert feed.user.id == test_feeds[0].user_id
     assert res.status_code == 200
 
 
-def test_get_one_feed_does_not_exist(client, test_feeds):
-    res = client.get(f"api/v1/feed/10000")
+def test_get_one_feed_does_not_exist(client, test_user, test_feeds):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.get(f"api/v1/feed/10000", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 404
 
 

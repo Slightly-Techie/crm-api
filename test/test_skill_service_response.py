@@ -9,7 +9,7 @@ class TestSkillServiceResponseFormat:
     """Test that search_skills returns consistent response format"""
 
     def test_search_skills_returns_correct_field_names(self):
-        """search_skills should return skill_id, skill_name, image_url"""
+        """search_skills should return id, name, image_url"""
         skill_repo = Mock(spec=SkillRepository)
         service = SkillService(skill_repo)
 
@@ -29,12 +29,12 @@ class TestSkillServiceResponseFormat:
         assert isinstance(result[0], dict)
 
         # Verify field names
-        assert "skill_id" in result[0]
-        assert "skill_name" in result[0]
+        assert "id" in result[0]
+        assert "name" in result[0]
         assert "image_url" in result[0]
 
     def test_search_skills_maps_model_fields_correctly(self):
-        """search_skills should map skill model id→skill_id, name→skill_name"""
+        """search_skills should map skill model id→id, name→name"""
         skill_repo = Mock(spec=SkillRepository)
         service = SkillService(skill_repo)
 
@@ -47,8 +47,8 @@ class TestSkillServiceResponseFormat:
 
         result = service.search_skills("react")
 
-        assert result[0]["skill_id"] == 5
-        assert result[0]["skill_name"] == "React"
+        assert result[0]["id"] == 5
+        assert result[0]["name"] == "React"
         assert result[0]["image_url"] == "https://example.com/react.png"
 
     def test_search_skills_handles_null_image_url(self):
@@ -101,5 +101,5 @@ class TestSkillServiceResponseFormat:
         # Should find JavaScript at minimum
         assert len(result) > 0
         # Should contain JavaScript
-        found_js = any(s["skill_name"] == "JavaScript" for s in result)
+        found_js = any(s["name"] == "JavaScript" for s in result)
         assert found_js

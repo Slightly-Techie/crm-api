@@ -26,8 +26,7 @@ from db.repository.email_templates import EmailTemplateRepository
 from db.repository.technical_tasks import TechnicalTaskSubmissionRepository
 from db.repository.users import UserRepository
 from services.user_service import UserService
-from utils.oauth2 import get_current_user
-from utils.permissions import is_admin
+from utils.permissions import is_admin, user_accepted
 
 profile_route = APIRouter(tags=["User"], prefix="/users")
 logger = logging.getLogger(__name__)
@@ -43,12 +42,12 @@ def _service(db: Session) -> UserService:
 
 @profile_route.get("/profile/{user_id}", response_model=ApplicantProfileResponse)
 async def get_profile(user_id: int, db: Session = Depends(get_db),
-                      current_user: User = Depends(get_current_user)):
+                      current_user: User = Depends(user_accepted)):
     return _service(db).get_profile(user_id)
 
 
 @profile_route.put("/profile", response_model=ProfileResponse)
-async def update_profile(userDetails: ProfileUpdate, current_user: User = Depends(get_current_user),
+async def update_profile(userDetails: ProfileUpdate, current_user: User = Depends(user_accepted),
                          db: Session = Depends(get_db)):
     return _service(db).update_profile(current_user.id, userDetails.model_dump(exclude_unset=True))
 
@@ -56,8 +55,18 @@ async def update_profile(userDetails: ProfileUpdate, current_user: User = Depend
 @profile_route.get("/", response_model=Page[ProfileResponse])
 def get_all_profile(skill: str = Query(None), stack: str = Query(None),
                     active: Optional[bool] = None, p: Optional[str] = None,
-                    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    query = _service(db).build_search_query(skill, stack, active, p)
+                    status: Optional[UserStatus] = Query(
+                        None,
+                        description="Filter users by status. Accepted values are defined by the UserStatus enum."
+                    ),
+                    db: Session = Depends(get_db), current_user: User = Depends(user_accepted)):
+    query = _service(db).build_search_query(
+        skill,
+        stack,
+        active,
+        p,
+        status.value if status is not None else None
+    )
     return paginate(db, query)
 
 
@@ -69,7 +78,8 @@ def update_profile_status(user_id: int, db: Session = Depends(get_db),
 
 
 @profile_route.get("/user_info", response_model=dict)
-def get_user_info(email: str, db: Session = Depends(get_db)):
+def get_user_info(email: str, db: Session = Depends(get_db),
+                  current_user: User = Depends(user_accepted)):
     return _service(db).get_user_info(email)
 
 
@@ -82,7 +92,7 @@ async def update_user_status(user_id: int, new_status: UserStatus, db: Session =
 
 @profile_route.patch("/profile/avatar", response_model=ProfileResponse,
                      status_code=status.HTTP_200_OK)
-async def update_avi(current_user: User = Depends(get_current_user),
+async def update_avi(current_user: User = Depends(user_accepted),
                      db: Session = Depends(get_db), file: UploadFile = File(...)):
     return await _service(db).update_avatar(current_user, file)
 

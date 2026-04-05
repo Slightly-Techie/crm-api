@@ -141,10 +141,12 @@ def test_activate_invalid_user_profile(client, test_user):
 def test_get_user_info(client, test_user):
     # Given a test_user
     email = test_user["email"]
+    login_res = client.post("/api/v1/users/login", data={"username": email, "password": test_user["password"]})
+    token = login_res.json()["token"]
 
     # When the test_user requests user information based on email
     response = client.get(
-        f"/api/v1/users/user_info?email={email}"
+        f"/api/v1/users/user_info?email={email}", headers={"Authorization": f"Bearer {token}"}
     )
 
     # Then the response should be successful with a 200 OK status code
