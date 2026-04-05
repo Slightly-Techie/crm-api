@@ -8,8 +8,8 @@ class SkillBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator('name')
-    def convert_to_lower_case(cls, v):
-        return v.lower()
+    def normalize_name(cls, v):
+        return v.strip().title()
 
 
 class SkillCreate(SkillBase):

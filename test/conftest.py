@@ -18,7 +18,7 @@ from api.api_models.user import (
     ForgotPasswordRequest,
     # UserSignUp
 )
-from utils.enums import EmailTemplateName
+from utils.enums import EmailTemplateName, UserStatus
 from utils.tools import tools as skills_data
 from db.models.skills import Skill
 from db.models.projects import Project
@@ -114,7 +114,7 @@ def create_signup_endpoint(session):
 
 
 @pytest.fixture
-def test_user(client):
+def test_user(client, session):
     user = {
         "username": "slightlytechie1",
         "first_name": "Slightly",
@@ -134,6 +134,10 @@ def test_user(client):
     assert res.status_code == 201
     new_user = res.json()
     new_user["password"] = user.get("password")
+    # Admin user must be ACCEPTED for the is_admin → user_accepted guard to pass
+    db_user = session.query(User).filter(User.id == new_user["id"]).first()
+    db_user.status = UserStatus.ACCEPTED
+    session.commit()
     return new_user
 
 

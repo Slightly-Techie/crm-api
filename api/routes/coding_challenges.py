@@ -11,8 +11,7 @@ from api.api_models.coding_challenges import (
 from db.database import get_db
 from db.repository.coding_challenges import CodingChallengeRepository
 from services.coding_challenge_service import CodingChallengeService
-from utils.permissions import is_admin
-from utils.oauth2 import get_current_user
+from utils.permissions import is_admin, user_accepted
 
 coding_challenge_route = APIRouter(tags=["Coding Challenges"], prefix="/coding-challenges")
 
@@ -32,14 +31,14 @@ def create_challenge(
 
 
 @coding_challenge_route.get("/latest", status_code=status.HTTP_200_OK, response_model=CodingChallengeResponse | None)
-def get_latest_challenge(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """Get the most recent coding challenge - All users"""
+def get_latest_challenge(db: Session = Depends(get_db), current_user=Depends(user_accepted)):
+    """Get the most recent coding challenge - Accepted users"""
     return _service(db).get_latest()
 
 
 @coding_challenge_route.get("/", status_code=status.HTTP_200_OK, response_model=Page[CodingChallengeResponse])
-def get_all_challenges(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """Get all coding challenges - All users"""
+def get_all_challenges(db: Session = Depends(get_db), current_user=Depends(user_accepted)):
+    """Get all coding challenges - Accepted users"""
     return paginate(db, _service(db).get_all_query())
 
 
@@ -47,7 +46,7 @@ def get_all_challenges(db: Session = Depends(get_db), current_user=Depends(get_c
 def get_challenge_by_id(
     challenge_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(user_accepted)
 ):
     """Get a specific challenge by ID"""
     return _service(db).get_by_id(challenge_id)

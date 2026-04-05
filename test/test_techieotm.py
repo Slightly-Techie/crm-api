@@ -76,14 +76,19 @@ def test_get_latest_techie_of_the_month(client, test_user, session):
     latest_techieotm = TechieOTM(user_id=1, points=200)
     db.add(latest_techieotm)
     db.commit()
+    db.refresh(latest_techieotm)
+    expected_id = latest_techieotm.id
+    expected_user_id = latest_techieotm.user_id
 
-    response = client.get("/api/v1/users/techieotm/latest")
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    response = client.get("/api/v1/users/techieotm/latest", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == status.HTTP_200_OK
 
     techieotm_response = response.json()
-    assert techieotm_response["id"] == latest_techieotm.id
-    assert techieotm_response["user"]["id"] == latest_techieotm.user_id
+    assert techieotm_response["id"] == expected_id
+    assert techieotm_response["user"]["id"] == expected_user_id
     
 
 def test_get_all_techies_of_the_months(client, test_user, session):
@@ -94,7 +99,9 @@ def test_get_all_techies_of_the_months(client, test_user, session):
     db.add_all(techieotms)
     db.commit()
 
-    response = client.get("/api/v1/users/techieotm/?page=1&size=2")
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    response = client.get("/api/v1/users/techieotm/?page=1&size=2", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == status.HTTP_200_OK
 
     techieotm_response = response.json()

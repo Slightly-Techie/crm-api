@@ -6,7 +6,7 @@ from api.api_models.user import Tags
 from db.database import get_db
 from db.repository.tags import TagRepository
 from services.tag_service import TagService
-from utils.oauth2 import get_current_user
+from utils.permissions import user_accepted
 
 tag_route = APIRouter(tags=["User"], prefix="/users")
 
@@ -16,17 +16,17 @@ def _service(db: Session) -> TagService:
 
 
 @tag_route.get("/tags")
-def get_current_user_tags(user=Depends(get_current_user), db: Session = Depends(get_db)):
+def get_current_user_tags(user=Depends(user_accepted), db: Session = Depends(get_db)):
     return _service(db).get_user_tags(user)
 
 
 @tag_route.post("/tags", response_model=Tags, status_code=status.HTTP_201_CREATED)
-def create_tag(tag: TagCreate, current_user=Depends(get_current_user),
+def create_tag(tag: TagCreate, current_user=Depends(user_accepted),
                db: Session = Depends(get_db)):
     return _service(db).create_tag(current_user, tag.name)
 
 
 @tag_route.delete("/tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_tag_by_id(tag_id: int, user=Depends(get_current_user),
+def delete_tag_by_id(tag_id: int, user=Depends(user_accepted),
                      db: Session = Depends(get_db)):
     _service(db).delete_tag(tag_id)

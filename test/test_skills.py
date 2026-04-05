@@ -4,16 +4,20 @@ from app import app
 client = TestClient(app)
 
 
-def test_populate_skills(client):
-    res = client.post("/api/v1/skills/data")
+def test_populate_skills(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.post("/api/v1/skills/data", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
     assert res.json()["message"] == "Skills table populated successfully!"
 
 
-def test_get_all_skills(client, populate_skills):
-    res = client.get("/api/v1/skills/all")
+def test_get_all_skills(client, test_user, populate_skills):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.get("/api/v1/skills/all", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
-    assert len(res.json()["items"]) == 50
+    assert len(res.json()) == len(populate_skills)
 
 
 # this is the same as test_add_skill
@@ -91,12 +95,12 @@ def test_admin_can_create_skill_in_pool(client, test_user):
 
     res = client.post(
         "/api/v1/skills/pool",
-        json={"name": "SuperNewSkill", "image_url": "https://example.com/s.png"},
+        json={"name": "React Native", "image_url": "https://example.com/s.png"},
         headers={"Authorization": f"Bearer {token}"},
     )
 
     assert res.status_code == 201
-    assert res.json()["name"] == "SuperNewSkill"
+    assert res.json()["name"] == "React Native"
 
 
 def test_non_admin_cannot_create_skill_in_pool(client, test_user1):
