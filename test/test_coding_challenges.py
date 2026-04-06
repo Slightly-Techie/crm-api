@@ -28,7 +28,13 @@ def test_non_admin_cannot_create_challenge(client, test_user1):
     assert res.status_code == 403
 
 
-def test_authenticated_user_can_get_challenges(client, test_user, test_user1):
+def test_authenticated_user_can_get_challenges(client, test_user, test_user1, session):
+    from db.models.users import User
+    from utils.enums import UserStatus
+    db_user1 = session.query(User).filter(User.id == test_user1["id"]).first()
+    db_user1.status = UserStatus.ACCEPTED
+    session.commit()
+
     admin_headers = _auth_header(client, test_user["email"], test_user["password"])
     user_headers = _auth_header(client, test_user1["email"], test_user1["password"])
 
@@ -44,7 +50,13 @@ def test_authenticated_user_can_get_challenges(client, test_user, test_user1):
     assert len(list_res.json()["items"]) >= 1
 
 
-def test_get_latest_challenge(client, test_user, test_user1):
+def test_get_latest_challenge(client, test_user, test_user1, session):
+    from db.models.users import User
+    from utils.enums import UserStatus
+    db_user1 = session.query(User).filter(User.id == test_user1["id"]).first()
+    db_user1.status = UserStatus.ACCEPTED
+    session.commit()
+
     admin_headers = _auth_header(client, test_user["email"], test_user["password"])
     user_headers = _auth_header(client, test_user1["email"], test_user1["password"])
 

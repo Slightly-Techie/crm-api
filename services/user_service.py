@@ -44,8 +44,9 @@ class UserService:
         return updated
 
     def build_search_query(self, skill: Optional[str], stack: Optional[str],
-                           active: Optional[bool], p: Optional[str]):
-        return self.user_repo.build_search_query(skill, stack, active, p)
+                           active: Optional[bool], p: Optional[str],
+                           status: Optional[str] = None):
+        return self.user_repo.build_search_query(skill, stack, active, p, status)
 
     def activate_user(self, user_id: int) -> User:
         user = self.user_repo.get_by_id(user_id)

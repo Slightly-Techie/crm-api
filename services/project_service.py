@@ -55,30 +55,28 @@ class ProjectService:
         new_project = Project(**data)
 
         if project_data.stacks:
-            seen = []
+            # A set has fewer elements than the list only when duplicates exist
+            if len(set(project_data.stacks)) != len(project_data.stacks):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                    detail="Duplicate stack ids provided")
             for stack_id in project_data.stacks:
-                if stack_id in seen:
-                    raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                                        detail=f"Duplicate stack id: {stack_id}")
                 stack = self.stack_repo.get_by_id(stack_id)
                 if not stack:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                         detail=f"Stack {stack_id} not found")
                 new_project.stacks.append(stack)
-                seen.append(stack_id)
 
         if project_data.project_tools:
-            seen = []
+            # A set has fewer elements than the list only when duplicates exist
+            if len(set(project_data.project_tools)) != len(project_data.project_tools):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                    detail="Duplicate skill ids provided")
             for skill_id in project_data.project_tools:
-                if skill_id in seen:
-                    raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                                        detail=f"Duplicate skill id: {skill_id}")
                 skill = self.skill_repo.get_by_id(skill_id)
                 if not skill:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                         detail=f"Skill {skill_id} not found")
                 new_project.project_tools.append(skill)
-                seen.append(skill_id)
 
         saved = self.project_repo.save(new_project)
         return self._enrich_project_members_with_team(saved)
@@ -91,9 +89,53 @@ class ProjectService:
             if update_data.manager_id != project.manager_id:
                 if not self.user_repo.get_by_id(update_data.manager_id):
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
+
+        validated_project_tools = None
+        validated_stacks = None
+
+        if update_data.project_tools is not None:
+            if len(set(update_data.project_tools)) != len(update_data.project_tools):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                    detail="Duplicate skill ids provided")
+            validated_project_tools = []
+            for skill_id in update_data.project_tools:
+                skill = self.skill_repo.get_by_id(skill_id)
+                if not skill:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"Skill {skill_id} not found")
+                validated_project_tools.append(skill)
+
+        if update_data.stacks is not None:
+            if len(set(update_data.stacks)) != len(update_data.stacks):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                    detail="Duplicate stack ids provided")
+            validated_stacks = []
+            for stack_id in update_data.stacks:
+                stack = self.stack_repo.get_by_id(stack_id)
+                if not stack:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                        detail=f"Stack {stack_id} not found")
+                validated_stacks.append(stack)
+
         updated = self.project_repo.update(
             project, update_data.model_dump(exclude=["members", "stacks", "project_tools"], exclude_none=True)
         )
+
+        try:
+            if validated_project_tools is not None:
+                updated.project_tools = validated_project_tools
+
+            if validated_stacks is not None:
+                updated.stacks = validated_stacks
+
+            if validated_project_tools is not None or validated_stacks is not None:
+                self.project_repo.db.commit()
+                self.project_repo.db.refresh(updated)
+        except Exception as e:
+            self.project_repo.db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Failed to update project relationships: {e}")
+
         return self._enrich_project_members_with_team(updated)
 
     def delete_project(self, project_id: int) -> None:

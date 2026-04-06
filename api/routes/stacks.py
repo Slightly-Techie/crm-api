@@ -6,7 +6,7 @@ from db.database import get_db
 from db.models.users import User
 from db.repository.stacks import StackRepository
 from services.stack_service import StackService
-from utils.permissions import is_admin
+from utils.permissions import is_admin, user_accepted
 
 stack_router = APIRouter(tags=["Stacks"], prefix="/stacks")
 
@@ -16,7 +16,8 @@ def _service(db: Session) -> StackService:
 
 
 @stack_router.get("/", response_model=list[stack_schemas.Stacks])
-async def list_stacks(db: Session = Depends(get_db), page: int = 1, limit: int = 100):
+async def list_stacks(db: Session = Depends(get_db), page: int = 1, limit: int = 100,
+                      current_user=Depends(user_accepted)):
     return _service(db).list_stacks(page=page, limit=limit)
 
 
@@ -27,7 +28,8 @@ async def create_stack(stack: stack_schemas.StackCreate, user: User = Depends(is
 
 
 @stack_router.get("/{stack_id}", response_model=stack_schemas.Stacks)
-async def read_stack(stack_id: int, db: Session = Depends(get_db)):
+async def read_stack(stack_id: int, db: Session = Depends(get_db),
+                     current_user=Depends(user_accepted)):
     return _service(db).get_by_id(stack_id)
 
 

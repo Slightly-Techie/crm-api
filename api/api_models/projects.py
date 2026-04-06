@@ -51,12 +51,13 @@ class ProjectResponse(ProjectBase):
 
 
 class UpdateProject(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    project_type: Optional[ProjectType]
-    project_priority: Optional[ProjectPriority]
-    project_tools: Optional[List[int]] = Field(None)
-    manager_id: Optional[int]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    project_type: Optional[ProjectType] = None
+    project_priority: Optional[ProjectPriority] = None
+    project_tools: Optional[List[int]] = None
+    stacks: Optional[List[int]] = None
+    manager_id: Optional[int] = None
 
 
 class ProjectMember(BaseModel):

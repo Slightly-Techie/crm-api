@@ -56,6 +56,7 @@ def accepted_admin_headers(client, test_user, session):
 @pytest.fixture
 def org_tree(client, test_user, test_user1, session, admin_headers):
     """Build a small org tree: test_user -> test_user1 (test_user is manager of test_user1)."""
+    _make_admin_accepted(session, test_user)
     res = client.patch(
         f"/api/v1/users/{test_user1['id']}/manager",
         json={"manager_id": test_user["id"]},
@@ -70,8 +71,8 @@ def org_tree(client, test_user, test_user1, session, admin_headers):
 # ===========================================================================
 
 
-class TestAdminGetFullOrgChart:
-    """GET /api/v1/users/org-chart (admin only)"""
+class TestGetFullOrgChart:
+    """GET /api/v1/users/org-chart (accepted users only)"""
 
     def test_returns_roots(self, client, test_user, test_user1, admin_headers, session):
         # Make users ACCEPTED so they appear in org chart
@@ -108,7 +109,15 @@ class TestAdminGetFullOrgChart:
         res = client.get("/api/v1/users/org-chart?max_depth=1", headers=admin_headers)
         assert res.status_code == 200
 
-    def test_forbidden_for_non_admin(self, client, user_headers):
+    def test_accepted_non_admin_can_access(self, client, test_user1, session):
+        # Endpoint is open to all accepted users, not just admins
+        _make_admin_accepted(session, test_user1)
+        headers = _auth_header(client, test_user1["email"], test_user1["password"])
+        res = client.get("/api/v1/users/org-chart", headers=headers)
+        assert res.status_code == 200
+
+    def test_forbidden_for_non_accepted_user(self, client, user_headers):
+        # Users whose status is not ACCEPTED are denied
         res = client.get("/api/v1/users/org-chart", headers=user_headers)
         assert res.status_code == 403
 

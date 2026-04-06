@@ -21,7 +21,7 @@ def stack_factory(session):
 
 
 
-def test_list_stacks(session, client, stack_factory):
+def test_list_stacks(session, client, user_cred, stack_factory):
 	url = app.url_path_for("list_stacks")
 
 	# list of stack names
@@ -29,7 +29,7 @@ def test_list_stacks(session, client, stack_factory):
 	for stack in stack_names:
 		stack_factory(stack)
 
-	res = client.get(url)
+	res = client.get(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
 	res_data = res.json()
 
 	assert res.status_code == status.HTTP_200_OK
@@ -58,12 +58,12 @@ def test_create_stack_no_user(session, client):
 	
 
 
-def test_read_stack(session, client, stack_factory):
+def test_read_stack(session, client, user_cred, stack_factory):
 	# create stack
 	stack = stack_factory("backend")
 
 	url = app.url_path_for("read_stack", stack_id=stack.id)
-	res = client.get(url)
+	res = client.get(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
 	res_data = res.json()
 
 	assert res.status_code == status.HTTP_200_OK

@@ -21,13 +21,15 @@ class SkillService:
                 detail="No skills found with the given ids"
             )
         existing = self.skill_repo.get_user_skill_entries(current_user.id, skill_ids)
-        if existing:
-            existing_ids = [e.skill_id for e in existing]
+        existing_ids = {e.skill_id for e in existing}
+        new_skills = [skill for skill in db_skills if skill.id not in existing_ids]
+        if not new_skills:
+            already = ", ".join(skill.name for skill in db_skills if skill.id in existing_ids)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User already has skills with IDs: {existing_ids}"
+                detail=f"Already in your profile: {already}"
             )
-        return self.skill_repo.add_skills_to_user(current_user.id, db_skills, current_user)
+        return self.skill_repo.add_skills_to_user(current_user.id, new_skills, current_user)
 
     def delete_skill(self, skill_id: int) -> None:
         entry = self.skill_repo.get_user_skill_entry(skill_id)
@@ -40,6 +42,9 @@ class SkillService:
 
     def get_all_query(self) -> list[Skill]:
         return self.skill_repo.get_all_paginated_query()
+
+    def get_all_flat(self) -> list[Skill]:
+        return self.skill_repo.get_all_flat()
 
     def populate_skills(self) -> dict:
         from db.database import create_roles
@@ -79,26 +84,27 @@ class SkillService:
 
     def search_skills(self, name: str) -> list[dict]:
         skills = self.skill_repo.get_all_flat()
-        threshold = 78
+        query = name.strip().lower()
+        threshold = 70
         return [
             {
-                "skill_id": skill.id,
-                "skill_name": skill.name,
-
+                "id": skill.id,
+                "name": skill.name,
                 "image_url": skill.image_url or ""
             }
             for skill in skills
-            if fuzz.partial_ratio(name.lower(), skill.name.lower()) >= threshold
+            if fuzz.partial_ratio(query, skill.name.lower()) >= threshold
         ]
 
     def create_pool_skill(self, name: str, image_url=None):
-        existing = self.skill_repo.get_by_name(name)
+        normalized = name.strip().title()
+        existing = self.skill_repo.get_by_name(normalized)
         if existing:
             raise HTTPException(
                 status_code=400,
-                detail=f"Skill '{name}' already exists"
+                detail=f"Skill '{existing.name}' already exists in the pool"
             )
-        return self.skill_repo.create(name, image_url)
+        return self.skill_repo.create(normalized, image_url)
 
     def delete_pool_skill(self, skill_id: int) -> None:
         skill = self.skill_repo.get_by_id(skill_id)

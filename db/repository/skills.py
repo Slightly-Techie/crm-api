@@ -9,6 +9,10 @@ from db.models.users_skills import UserSkill
 from db.repository.base import BaseRepository
 
 
+def _normalize_skill_name(name: str) -> str:
+    return name.strip().title()
+
+
 class SkillRepository(BaseRepository):
     model = Skill
 
@@ -49,20 +53,26 @@ class SkillRepository(BaseRepository):
         return select(Skill).order_by(desc(Skill.created_at))
 
     def get_by_name(self, name: str) -> Optional[Skill]:
-        return self.db.query(Skill).filter(Skill.name == name).first()
+        # All skill names are stored title-cased (see upsert/create). Using exact
+        # match on the normalised form hits the unique index on `name` directly.
+        normalized = _normalize_skill_name(name)
+        return self.db.query(Skill).filter(Skill.name == normalized).first()
 
     def upsert(self, name: str, image_url: Optional[str]) -> Skill:
-        skill = self.get_by_name(name)
+        normalized = _normalize_skill_name(name)
+        skill = self.get_by_name(normalized)
         if skill:
             if not skill.image_url and image_url:
                 skill.image_url = image_url
+
         else:
-            skill = Skill(name=name, image_url=image_url)
+            skill = Skill(name=normalized, image_url=image_url)
         self.db.add(skill)
         return skill
 
     def create(self, name: str, image_url: Optional[str]) -> Skill:
-        skill = Skill(name=name, image_url=image_url)
+        normalized = _normalize_skill_name(name)
+        skill = Skill(name=normalized, image_url=image_url)
         self.db.add(skill)
         self.db.commit()
         self.db.refresh(skill)

@@ -14,7 +14,7 @@ from db.repository.stacks import StackRepository
 from db.repository.users import UserRepository
 from services.project_service import ProjectService
 from utils.enums import ProjectTeam
-from utils.permissions import is_admin, is_project_manager
+from utils.permissions import is_admin, is_project_manager, user_accepted
 
 project_router = APIRouter(tags=["Project"], prefix="/projects")
 
@@ -45,12 +45,12 @@ def delete(project_id: int, db: Session = Depends(get_db), user: User = Depends(
 
 
 @project_router.get("/{project_id}", status_code=status.HTTP_200_OK, response_model=ProjectResponse)
-def get(project_id: int, db: Session = Depends(get_db)):
+def get(project_id: int, db: Session = Depends(get_db), current_user=Depends(user_accepted)):
     return _service(db).get_project(project_id)
 
 
 @project_router.get("/", status_code=status.HTTP_200_OK, response_model=Page[ProjectResponse])
-def get_all(db: Session = Depends(get_db)):
+def get_all(db: Session = Depends(get_db), current_user=Depends(user_accepted)):
     service = _service(db)
     page = paginate(db, service.get_all_query())
     # Enrich members with team data
@@ -77,5 +77,5 @@ def remove_user_from_project(
 @project_router.get("/{project_id}/members", status_code=status.HTTP_200_OK,
                     response_model=List[MembersResponse])
 def get_project_members(project_id: int, team: Optional[ProjectTeam] = None,
-                        db: Session = Depends(get_db)):
+                        db: Session = Depends(get_db), current_user=Depends(user_accepted)):
     return _service(db).get_project_members(project_id, team)

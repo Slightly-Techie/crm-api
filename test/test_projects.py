@@ -57,29 +57,29 @@ def test_create_project_not_authorized(client, test_projects):
     assert res.status_code == 401
 
 
-def test_get_all_projects(client, test_projects):
-    response = client.get(f"{project_url}?page=1&size=2")
+def test_get_all_projects(client, user_cred, test_projects):
+    response = client.get(f"{project_url}?page=1&size=2", headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
     assert response.status_code == 200
     projects = response.json()
     assert len(projects["items"]) == 2
 
-    assert projects["items"][0]["name"] == test_projects[0].name  
+    assert projects["items"][0]["name"] == test_projects[0].name
 
 
-def test_get_project(session, client, test_projects):
+def test_get_project(session, client, user_cred, test_projects):
     url = project_url + str(test_projects[0].id)
 
-    res = client.get(url)
+    res = client.get(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
     res_data = res.json()
 
     assert res.status_code == status.HTTP_200_OK
     assert res_data['name'] == test_projects[0].name
 
 
-def test_get_project_not_found(session, client, test_projects):
+def test_get_project_not_found(session, client, user_cred, test_projects):
     url = project_url + str(100)
 
-    res = client.get(url)
+    res = client.get(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
 
     assert res.status_code == status.HTTP_404_NOT_FOUND
 
@@ -241,7 +241,7 @@ def test_remove_user_project_unauthorized(client, test_projects, test_user, test
 def test_get_all_team_members(client, user_cred, test_user1, test_projects):
     test_add_user_project(client, test_projects, user_cred, test_user1)
     url = project_url + str(1) + "/members?team=FRONTEND"
-    res = client.get(url)
+    res = client.get(url, headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"})
     members = res.json()
 
     assert res.status_code == 200

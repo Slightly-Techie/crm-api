@@ -2,8 +2,10 @@ import pytest
 from api.api_models.announcements import AnnouncementResponse
 
 
-def test_get_all_announcements(client, test_announcements):
-    response = client.get("/api/v1/announcements?page=1&size=50")
+def test_get_all_announcements(client, test_user, test_announcements):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    response = client.get("/api/v1/announcements?page=1&size=50", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     announcements = response.json()
     assert len(announcements["items"]) == 4
@@ -12,8 +14,10 @@ def test_get_all_announcements(client, test_announcements):
     assert announcements["items"][1]["content"] == test_announcements[1].content
 
 
-def test_get_one_announcement(client, test_announcements):
-    res = client.get(f"/api/v1/announcements/{test_announcements[0].id}")
+def test_get_one_announcement(client, test_user, test_announcements):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.get(f"/api/v1/announcements/{test_announcements[0].id}", headers={"Authorization": f"Bearer {token}"})
     announcement = AnnouncementResponse(**res.json())
     assert announcement.id == test_announcements[0].id
     assert announcement.title == test_announcements[0].title
@@ -21,8 +25,10 @@ def test_get_one_announcement(client, test_announcements):
     assert res.status_code == 200
 
 
-def test_get_one_announcement_does_not_exist(client):
-    res = client.get("api/v1/announcements/100")
+def test_get_one_announcement_does_not_exist(client, test_user):
+    login_res = client.post("/api/v1/users/login", data={"username": test_user["email"], "password": test_user["password"]})
+    token = login_res.json()["token"]
+    res = client.get("/api/v1/announcements/100", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 404
 
 

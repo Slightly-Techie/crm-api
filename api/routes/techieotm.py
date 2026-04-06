@@ -8,7 +8,7 @@ from db.database import get_db
 from db.repository.techieotm import TechieOTMRepository
 from db.repository.users import UserRepository
 from services.techieotm_service import TechieOTMService
-from utils.permissions import is_admin
+from utils.permissions import is_admin, user_accepted
 
 techieotm_router = APIRouter(tags=["User"], prefix="/users/techieotm")
 
@@ -26,10 +26,12 @@ def create_techie_of_the_month(
 
 
 @techieotm_router.get("/latest", response_model=TechieOTMResponse)
-def get_latest_techie_of_the_month(db: Session = Depends(get_db)):
+def get_latest_techie_of_the_month(db: Session = Depends(get_db),
+                                   current_user=Depends(user_accepted)):
     return _service(db).get_latest()
 
 
 @techieotm_router.get("/", response_model=Page[TechieOTMResponse])
-def get_all_techies_of_the_months(db: Session = Depends(get_db)):
+def get_all_techies_of_the_months(db: Session = Depends(get_db),
+                                  current_user=Depends(user_accepted)):
     return paginate(db, _service(db).get_all_query())

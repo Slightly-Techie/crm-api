@@ -11,8 +11,7 @@ from api.api_models.weekly_meetings import (
 from db.database import get_db
 from db.repository.weekly_meetings import WeeklyMeetingRepository
 from services.weekly_meeting_service import WeeklyMeetingService
-from utils.permissions import is_admin
-from utils.oauth2 import get_current_user
+from utils.permissions import is_admin, user_accepted
 
 weekly_meeting_route = APIRouter(tags=["Weekly Meetings"], prefix="/weekly-meetings")
 
@@ -32,14 +31,14 @@ def create_meeting(
 
 
 @weekly_meeting_route.get("/active", status_code=status.HTTP_200_OK, response_model=WeeklyMeetingResponse | None)
-def get_active_meeting(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """Get the current active meeting - All users"""
+def get_active_meeting(db: Session = Depends(get_db), current_user=Depends(user_accepted)):
+    """Get the current active meeting - Accepted users"""
     return _service(db).get_active()
 
 
 @weekly_meeting_route.get("/", status_code=status.HTTP_200_OK, response_model=Page[WeeklyMeetingResponse])
-def get_all_meetings(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """Get all meetings - All users"""
+def get_all_meetings(db: Session = Depends(get_db), current_user=Depends(user_accepted)):
+    """Get all meetings - Accepted users"""
     return paginate(db, _service(db).get_all_query())
 
 
@@ -47,7 +46,7 @@ def get_all_meetings(db: Session = Depends(get_db), current_user=Depends(get_cur
 def get_meeting_by_id(
     meeting_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(user_accepted)
 ):
     """Get a specific meeting by ID"""
     return _service(db).get_by_id(meeting_id)

@@ -65,8 +65,9 @@ class UserRepository(BaseRepository):
         return user
 
     def build_search_query(self, skill: Optional[str], stack: Optional[str],
-                           active: Optional[bool], p: Optional[str]):
-        from sqlalchemy import or_
+                           active: Optional[bool], p: Optional[str],
+                           status: Optional[str] = None):
+        from sqlalchemy import or_, func
 
         query = select(User).order_by(desc(User.created_at))
         if skill:
@@ -87,12 +88,17 @@ class UserRepository(BaseRepository):
                         User.is_active.is_(True) & (User.status != "ACCEPTED")
                     )
                 )
+        if status:
+            query = query.filter(User.status == status)
         if p:
             p_escaped = p.replace("%", r"\%").replace("_", r"\_")
+            full_name = func.concat(User.first_name, " ", User.last_name)
             query = query.filter(
                 User.username.ilike(f"%{p_escaped}%", escape="\\")
                 | User.first_name.ilike(f"%{p_escaped}%", escape="\\")
                 | User.last_name.ilike(f"%{p_escaped}%", escape="\\")
+                | User.email.ilike(f"%{p_escaped}%", escape="\\")
+                | full_name.ilike(f"%{p_escaped}%", escape="\\")
             )
         return query
 

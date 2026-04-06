@@ -1,14 +1,14 @@
 """
 Org-chart endpoints.
 
-**Admin-only** (full visibility):
-  GET  /users/org-chart                – complete organisational tree
-    GET  /users/{user_id}/manager        – manager of any user
-    GET  /users/{user_id}/subordinates   – direct reports of any user
-    GET  /users/{user_id}/org-chart      – full subtree rooted at any user
-  PATCH /users/{user_id}/manager       – assign / remove a user's manager
+**Admin-only** (write / destructive operations):
+    PATCH /users/{user_id}/manager       – assign / remove a user's manager
+    GET  /users/{user_id}/manager        – manager of any user (admin)
+    GET  /users/{user_id}/subordinates   – direct reports of any user (admin)
+    GET  /users/{user_id}/org-chart      – full subtree rooted at any user (admin)
 
-**Authenticated accepted users**:
+**Authenticated accepted users** (read-only):
+  GET  /users/org-chart                – complete organisational tree
   GET  /users/me/manager               – my manager
   GET  /users/me/subordinates          – my direct reports
     GET  /users/view/{user_id}/manager        – manager of any user
@@ -83,7 +83,7 @@ def get_my_subordinates(
 )
 def get_full_org_chart(
     max_depth: int = Query(default=5, ge=1, le=20),
-    current_user=Depends(is_admin),
+    current_user=Depends(user_accepted),
     service: OrgChartService = Depends(_get_service),
 ):
     return service.get_full_org_chart(max_depth)
