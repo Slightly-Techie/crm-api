@@ -2,13 +2,19 @@ from __future__ import annotations
 
 from fastapi import Form, UploadFile
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic.types import conint
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Annotated, List, Optional, Union
 from api.api_models.tags import TagBase
 from utils.utils import RoleChoices
 from .stacks import Stacks
 from .technical_task import TechnicalTaskSubmissionResponse
 import re
+
+
+# Shared type for stack_id validation - must be positive integer or None
+# This prevents invalid values like -1, 0, or negative integers from being accepted
+PositiveStackId = Annotated[Optional[int], Field(None, gt=0)]
 
 
 class Role(BaseModel):
@@ -61,7 +67,7 @@ class UserSignUp(BaseModel):
     password: str = Field(..., min_length=8)
     password_confirmation: str = Field(..., min_length=8)
     role_id: Optional[int] = Field(None)
-    stack_id: Optional[int] = Field(None)
+    stack_id: PositiveStackId = None  # Must be positive integer or None; rejects -1, 0, etc.
     bio: Optional[str] = Field(None)
     phone_number: str = Field(...)
     years_of_experience: Optional[int] = Field(None)
@@ -97,13 +103,6 @@ class UserSignUp(BaseModel):
         if not check_role:
             return role_id
         return role_id or check_role.id
-
-    @field_validator("stack_id", mode="before", check_fields=True)
-    def validate_stack_id(cls, stack_id):
-        # Reject invalid stack_id values like -1, 0, or other non-positive integers
-        if stack_id is not None and stack_id <= 0:
-            return None
-        return stack_id
 
 
 # ---------------------------------------------------------------------------
@@ -215,16 +214,9 @@ class ProfileUpdate(BaseModel):
     linkedin_profile: Optional[str] = None
     portfolio_url: Optional[str] = None
     profile_pic_url: Optional[str] = None
-    stack_id: Optional[int] = Field(None)
+    stack_id: PositiveStackId = None  # Must be positive integer or None; rejects -1, 0, etc.
 
     model_config = ConfigDict(from_attributes=True)
-
-    @field_validator("stack_id", mode="before", check_fields=True)
-    def validate_stack_id(cls, stack_id):
-        # Reject invalid stack_id values like -1, 0, or other non-positive integers
-        if stack_id is not None and stack_id <= 0:
-            return None
-        return stack_id
 
 
 class ProfileResponse(ProfileUpdate):

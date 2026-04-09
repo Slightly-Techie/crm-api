@@ -36,6 +36,25 @@ def test_list_stacks(session, client, user_cred, stack_factory):
 	assert len(res_data) == 2
 
 
+def test_list_stacks_unauthenticated(session, client, stack_factory):
+	"""Test that unauthenticated users can list stacks (for signup page)"""
+	url = app.url_path_for("list_stacks")
+
+	# list of stack names
+	stack_names = ["backend", "frontend", "mobile"]
+	for stack in stack_names:
+		stack_factory(stack)
+
+	# Make request without authentication headers
+	res = client.get(url)
+	res_data = res.json()
+
+	assert res.status_code == status.HTTP_200_OK
+	assert len(res_data) == 3
+	assert all('name' in stack for stack in res_data)
+	assert all('id' in stack for stack in res_data)
+
+
 def test_create_stack(session, client, user_cred):
 	url = app.url_path_for("create_stack")
 

@@ -73,12 +73,16 @@ class SkillService:
         try:
             last_skill = None
             for skill_name in skills_data:
-                last_skill = self.skill_repo.upsert(skill_name, get_skills_image(skill_name))
+                # get_skills_image returns None if CairoSVG is unavailable or image fetch fails
+                # This is acceptable - skills can exist without images
+                image_url = get_skills_image(skill_name)
+                last_skill = self.skill_repo.upsert(skill_name, image_url)
             self.skill_repo.db.commit()
             if last_skill:
                 self.skill_repo.db.refresh(last_skill)
         except Exception as e:
             self.skill_repo.db.rollback()
+            logger.error(f"Error populating skills: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Error populating skills: {e}")
         return {"message": "Skills table populated successfully!"}
 
