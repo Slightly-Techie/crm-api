@@ -46,6 +46,44 @@ def test_user_signup_valid(client):
     assert res.status_code == 201
 
 
+def test_user_signup_with_invalid_stack_id_negative_one(client):
+    """Test that stack_id=-1 is rejected with 422 validation error"""
+    payload = {
+        **user_signup_payload,
+        "stack_id": -1,
+        "username": "testuser1",
+        "email": "test1@slightlytechie.com"
+    }
+    res = client.post("/api/v1/users/register", json=payload)
+    assert res.status_code == 422
+    assert "stack_id" in res.json()["detail"][0]["loc"]
+
+
+def test_user_signup_with_invalid_stack_id_zero(client):
+    """Test that stack_id=0 is rejected with 422 validation error"""
+    payload = {
+        **user_signup_payload,
+        "stack_id": 0,
+        "username": "testuser2",
+        "email": "test2@slightlytechie.com"
+    }
+    res = client.post("/api/v1/users/register", json=payload)
+    assert res.status_code == 422
+    assert "stack_id" in res.json()["detail"][0]["loc"]
+
+
+def test_user_signup_with_null_stack_id(client):
+    """Test that stack_id=null is accepted (user has no stack)"""
+    payload = {
+        **user_signup_payload,
+        "stack_id": None,
+        "username": "testuser3",
+        "email": "test3@slightlytechie.com"
+    }
+    res = client.post("/api/v1/users/register", json=payload)
+    assert res.status_code == 201
+
+
 def test_user_signup_invalid():
     res = client.post("/api/v1/users/register", json=user_signup_payload_incomplete)
     assert res.status_code == 422

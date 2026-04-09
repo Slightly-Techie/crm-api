@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
@@ -16,8 +17,22 @@ def _service(db: Session) -> StackService:
 
 
 @stack_router.get("/", response_model=list[stack_schemas.Stacks])
-async def list_stacks(db: Session = Depends(get_db), page: int = 1, limit: int = 100,
-                      current_user=Depends(user_accepted)):
+async def list_stacks(
+    db: Session = Depends(get_db),
+    page: int = 1,
+    limit: int = 100
+):
+    """
+    List all stacks.
+
+    This endpoint is intentionally public (no authentication required) because:
+    - The signup page needs to fetch available stacks for users to select during registration
+    - Users signing up are not yet authenticated, creating a chicken-and-egg problem
+    - Stack data is non-sensitive organizational metadata (e.g., "Frontend", "Backend", "Mobile")
+    - No user-specific or confidential information is exposed
+
+    Security consideration: Only basic stack info (id, name) is returned, no sensitive data.
+    """
     return _service(db).list_stacks(page=page, limit=limit)
 
 
