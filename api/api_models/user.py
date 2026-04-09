@@ -98,6 +98,13 @@ class UserSignUp(BaseModel):
             return role_id
         return role_id or check_role.id
 
+    @field_validator("stack_id", mode="before", check_fields=True)
+    def validate_stack_id(cls, stack_id):
+        # Reject invalid stack_id values like -1, 0, or other non-positive integers
+        if stack_id is not None and stack_id <= 0:
+            return None
+        return stack_id
+
 
 # ---------------------------------------------------------------------------
 # Hierarchy / tree schemas
@@ -211,6 +218,13 @@ class ProfileUpdate(BaseModel):
     stack_id: Optional[int] = Field(None)
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("stack_id", mode="before", check_fields=True)
+    def validate_stack_id(cls, stack_id):
+        # Reject invalid stack_id values like -1, 0, or other non-positive integers
+        if stack_id is not None and stack_id <= 0:
+            return None
+        return stack_id
 
 
 class ProfileResponse(ProfileUpdate):

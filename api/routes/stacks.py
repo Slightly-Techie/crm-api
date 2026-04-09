@@ -16,8 +16,7 @@ def _service(db: Session) -> StackService:
 
 
 @stack_router.get("/", response_model=list[stack_schemas.Stacks])
-async def list_stacks(db: Session = Depends(get_db), page: int = 1, limit: int = 100,
-                      current_user=Depends(user_accepted)):
+async def list_stacks(db: Session = Depends(get_db), page: int = 1, limit: int = 100):
     return _service(db).list_stacks(page=page, limit=limit)
 
 
