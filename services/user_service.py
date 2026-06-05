@@ -45,8 +45,19 @@ class UserService:
 
     def build_search_query(self, skill: Optional[str], stack: Optional[str],
                            active: Optional[bool], p: Optional[str],
-                           status: Optional[str] = None):
-        return self.user_repo.build_search_query(skill, stack, active, p, status)
+                           status: Optional[str] = None,
+                           tags: Optional[list[str]] = None,
+                           min_experience: Optional[int] = None,
+                           max_experience: Optional[int] = None,
+                           open_to_projects: Optional[bool] = None,
+                           skills: Optional[list[str]] = None,
+                           experience_levels: Optional[list[str]] = None,
+                           created_after=None):
+        return self.user_repo.build_search_query(
+            skill, stack, active, p, status,
+            tags, min_experience, max_experience, open_to_projects, skills,
+            experience_levels, created_after
+        )
 
     def activate_user(self, user_id: int) -> User:
         user = self.user_repo.get_by_id(user_id)

@@ -13,6 +13,9 @@ class TagService:
         tags = self.tag_repo.get_all_for_user(user.id)
         return {"tags": tags}
 
+    def get_all_tags(self) -> dict:
+        return {"tags": self.tag_repo.get_all()}
+
     def create_tag(self, user: User, tag_name: str) -> Tag:
         existing_tag = self.tag_repo.get_by_name(tag_name)
         if existing_tag:

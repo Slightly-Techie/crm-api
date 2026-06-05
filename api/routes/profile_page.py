@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
@@ -59,13 +60,42 @@ def get_all_profile(skill: str = Query(None), stack: str = Query(None),
                         None,
                         description="Filter users by status. Accepted values are defined by the UserStatus enum."
                     ),
+                    tags: Optional[List[str]] = Query(
+                        None, description="Filter by tag name(s); matches users having ANY of the given tags."
+                    ),
+                    skills: Optional[List[str]] = Query(
+                        None, description="Filter by skill name(s); matches users having ANY of the given skills."
+                    ),
+                    experience: Optional[List[str]] = Query(
+                        None,
+                        description="Experience level(s): entry (0-2), intermediate (3-5), expert (6+). Matches ANY."
+                    ),
+                    min_experience: Optional[int] = Query(
+                        None, ge=0, description="Minimum years of experience (inclusive)."
+                    ),
+                    max_experience: Optional[int] = Query(
+                        None, ge=0, description="Maximum years of experience (inclusive)."
+                    ),
+                    open_to_projects: Optional[bool] = Query(
+                        None, description="Filter by availability for project work."
+                    ),
+                    created_after: Optional[datetime] = Query(
+                        None, description="Only include users created on or after this timestamp (ISO 8601)."
+                    ),
                     db: Session = Depends(get_db), current_user: User = Depends(user_accepted)):
     query = _service(db).build_search_query(
         skill,
         stack,
         active,
         p,
-        status.value if status is not None else None
+        status.value if status is not None else None,
+        tags,
+        min_experience,
+        max_experience,
+        open_to_projects,
+        skills,
+        experience,
+        created_after,
     )
     return paginate(db, query)
 

@@ -20,6 +20,11 @@ def get_current_user_tags(user=Depends(user_accepted), db: Session = Depends(get
     return _service(db).get_user_tags(user)
 
 
+@tag_route.get("/tags/all")
+def get_all_tags(user=Depends(user_accepted), db: Session = Depends(get_db)):
+    return _service(db).get_all_tags()
+
+
 @tag_route.post("/tags", response_model=Tags, status_code=status.HTTP_201_CREATED)
 def create_tag(tag: TagCreate, current_user=Depends(user_accepted),
                db: Session = Depends(get_db)):

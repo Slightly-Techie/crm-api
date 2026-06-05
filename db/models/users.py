@@ -33,6 +33,8 @@ class User(Base):
         TIMESTAMP(timezone=True),
         nullable=False, server_default=text('now()'), server_onupdate=text("now()"))
     is_active = Column(Boolean)
+    # Availability for project work — distinct from is_active (account/directory status)
+    open_to_projects = Column(Boolean, nullable=False, server_default=text('true'))
     status = Column(SQLAlchemyEnum(UserStatus), default=UserStatus.TO_CONTACT, nullable=False)
 
     skills = relationship('Skill', secondary="users_skills", back_populates='users')

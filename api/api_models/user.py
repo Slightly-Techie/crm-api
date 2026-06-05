@@ -215,6 +215,7 @@ class ProfileUpdate(BaseModel):
     portfolio_url: Optional[str] = None
     profile_pic_url: Optional[str] = None
     stack_id: PositiveStackId = None  # Must be positive integer or None; rejects -1, 0, etc.
+    open_to_projects: Optional[bool] = None  # Availability for project work
 
     model_config = ConfigDict(from_attributes=True)
 
