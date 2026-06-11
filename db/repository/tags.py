@@ -17,6 +17,9 @@ class TagRepository(BaseRepository):
         ).first()
         return user.tags if user else []
 
+    def get_all(self) -> list[Tag]:
+        return self.db.query(Tag).order_by(Tag.name).all()
+
     def get_by_name(self, name: str) -> Optional[Tag]:
         return self.db.query(Tag).filter(Tag.name == name).first()
 
