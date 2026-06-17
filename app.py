@@ -93,7 +93,7 @@ async def startup_event():
 
 v1_prefix = "/api/v1"
 
-# app.add_event_handler("startup", startup_event)
+app.add_event_handler("startup", startup_event)
 app.include_router(auth_router, prefix=v1_prefix)
 app.include_router(profile_route, prefix=v1_prefix)
 app.include_router(skill_route, prefix=v1_prefix)
