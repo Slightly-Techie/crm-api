@@ -13,7 +13,7 @@ from api.routes.coding_challenges import coding_challenge_route
 # from db.database import engine
 # from db.database import Base
 from fastapi.middleware.cors import CORSMiddleware
-from db.database import create_roles, create_stacks, SessionLocal
+from db.database import create_roles, create_stacks, wait_for_db, SessionLocal
 from api.routes.tags import tag_route
 from api.routes.stacks import stack_router
 from api.routes.project import project_router
@@ -86,9 +86,21 @@ def health_check():
 
 
 async def startup_event():
-    create_roles()
-    create_stacks()
-    create_signup_endpoint()
+    # Never let DB/seeding failures crash the app on boot. A transient DB or
+    # 6PN outage should leave the service up (reporting unhealthy via /health)
+    # rather than exiting and crash-looping to the machine's max restart count.
+    if not wait_for_db():
+        logger.error(
+            "Database unreachable at startup; skipping seeding. "
+            "Service will report unhealthy until the DB is reachable."
+        )
+        return
+
+    for step in (create_roles, create_stacks, create_signup_endpoint):
+        try:
+            step()
+        except Exception:
+            logger.exception("Startup seeding step '%s' failed", step.__name__)
 
 
 v1_prefix = "/api/v1"

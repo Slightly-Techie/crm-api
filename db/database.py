@@ -1,6 +1,12 @@
-from sqlalchemy import create_engine
+import logging
+import time
+
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker
 from core.config import settings
+
+logger = logging.getLogger(__name__)
 
 pg_user = settings.POSTGRES_USER
 pg_pass = settings.POSTGRES_PASSWORD
@@ -22,6 +28,28 @@ def set_up_db(production_env) -> tuple:
 
 
 engine, SessionLocal, Base = set_up_db(settings.PRODUCTION_ENV)
+
+
+def wait_for_db(max_attempts: int = 10, delay: float = 3.0) -> bool:
+    """Probe the database until it accepts connections, with bounded retries.
+
+    Returns True once a connection succeeds, or False after all attempts are
+    exhausted. Used at startup so a transient DB/network outage degrades into an
+    unhealthy service rather than crash-looping the app to its max restart count.
+    """
+    for attempt in range(1, max_attempts + 1):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return True
+        except OperationalError as exc:
+            logger.warning(
+                "Database not ready (attempt %s/%s): %s",
+                attempt, max_attempts, exc
+            )
+            if attempt < max_attempts:
+                time.sleep(delay)
+    return False
 
 
 def get_db():
