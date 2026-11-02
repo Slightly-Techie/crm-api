@@ -65,9 +65,18 @@ async def send_email(subject: str, recipient_email: str, html_content: str) -> J
         return JSONResponse(status_code=500, content={"message": "Unable to send email at the moment."})
 
 
+def build_reset_password_url(base_url: str, path: str, token: str) -> str:
+    """Join base_url and path with exactly one slash, then add the token as a query string.
+
+    Works whether or not base_url ends with "/" and whether or not path starts with "/".
+    urljoin is not used because it drops part of the base path in some cases.
+    """
+    return f"{base_url.rstrip('/')}/{path.lstrip('/')}?{urlencode({'token': token})}"
+
+
 async def send_password_reset_email(email: str, reset_token: str, username: str, email_template):
     # subject = "Reset Password"
-    reset_password_url = f"{settings.BASE_URL}{settings.URL_PATH}?{urlencode({'token': reset_token})}"
+    reset_password_url = build_reset_password_url(settings.BASE_URL, settings.URL_PATH, reset_token)
 
     if email_template:
         html_content = email_template.html_content.format(username, reset_password_url)
