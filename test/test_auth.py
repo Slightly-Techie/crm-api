@@ -186,3 +186,44 @@ def test_reset_password_invalid_token():
 #     reset_token = "test_reset_token"
 #     response = await send_email(email, reset_token)
 #     assert response.status_code == 200
+
+
+FORGOT_PASSWORD_URL = "/api/v1/users/forgot-password"
+GENERIC_MESSAGE = "If an account exists for that email, we've sent a password reset link."
+
+
+@pytest.fixture
+def mock_reset_email(mocker):
+    # The real function returns None once the email is sent.
+    return mocker.patch(
+        "services.auth_service.send_password_reset_email",
+        new_callable=mocker.AsyncMock,
+        return_value=None,
+    )
+
+
+def test_forgot_password_unknown_email_returns_generic_message(client, mock_reset_email):
+    res = client.post(FORGOT_PASSWORD_URL, json={"email": "nobody@example.com"})
+
+    assert res.status_code == 200
+    assert res.json() == {"message": GENERIC_MESSAGE}
+    mock_reset_email.assert_not_called()
+
+
+def test_forgot_password_known_email_sends_one_email(client, test_user, mock_reset_email):
+    res = client.post(FORGOT_PASSWORD_URL, json={"email": test_user["email"]})
+
+    assert res.status_code == 200
+    assert res.json() == {"message": GENERIC_MESSAGE}
+    mock_reset_email.assert_called_once()
+    assert mock_reset_email.call_args[0][0] == test_user["email"]
+
+
+def test_forgot_password_same_response_for_known_and_unknown_emails(
+    client, test_user, mock_reset_email
+):
+    known = client.post(FORGOT_PASSWORD_URL, json={"email": test_user["email"]})
+    unknown = client.post(FORGOT_PASSWORD_URL, json={"email": "nobody@example.com"})
+
+    assert known.status_code == unknown.status_code
+    assert known.json() == unknown.json()

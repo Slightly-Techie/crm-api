@@ -17,6 +17,8 @@ from utils.utils import get_key_by_value, get_password_hash, verify_password
 
 logger = logging.getLogger(__name__)
 
+FORGOT_PASSWORD_MESSAGE = "If an account exists for that email, we've sent a password reset link."
+
 
 class AuthService:
     def __init__(self, user_repo: UserRepository,
@@ -115,7 +117,10 @@ class AuthService:
             email = email.lower()
             user = self.user_repo.get_by_email(email)
             if not user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                # Same response as for a real account, so the endpoint can't be used
+                # to find out which emails are registered.
+                logger.info("Password reset requested for an email with no account")
+                return {"message": FORGOT_PASSWORD_MESSAGE}
             reset_token = create_reset_token(email)
             try:
                 email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
@@ -134,7 +139,7 @@ class AuthService:
                         status_code=response.status_code,
                         detail=content.get("message", "Failed to send password reset email")
                     )
-            return {"message": "Password reset email sent successfully"}
+            return {"message": FORGOT_PASSWORD_MESSAGE}
         except HTTPException:
             raise
         except Exception as e:
