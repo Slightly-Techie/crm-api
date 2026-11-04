@@ -252,3 +252,39 @@ def test_batch_update_status_forbidden_for_non_admin(client, test_user1, inactiv
     )
 
     assert res.status_code == 403
+
+
+def _update_profile(client, user_cred, **links):
+    return client.put(
+        "/api/v1/users/profile",
+        json=links,
+        headers={"Authorization": f"{user_cred.token_type} {user_cred.token}"},
+    )
+
+
+def test_profile_link_without_scheme_gets_https(client, user_cred):
+    res = _update_profile(client, user_cred, github_profile="github.com/ransfordgenesis")
+
+    assert res.status_code == 200
+    assert res.json()["github_profile"] == "https://github.com/ransfordgenesis"
+
+
+def test_profile_link_with_https_is_unchanged(client, user_cred):
+    res = _update_profile(client, user_cred, twitter_profile="https://x.com/a")
+
+    assert res.status_code == 200
+    assert res.json()["twitter_profile"] == "https://x.com/a"
+
+
+def test_profile_link_with_javascript_scheme_is_rejected(client, user_cred):
+    res = _update_profile(client, user_cred, portfolio_url="javascript:alert(1)")
+
+    assert res.status_code == 422
+
+
+def test_empty_profile_link_clears_the_field(client, user_cred):
+    _update_profile(client, user_cred, linkedin_profile="linkedin.com/in/kobi")
+    res = _update_profile(client, user_cred, linkedin_profile="")
+
+    assert res.status_code == 200
+    assert res.json()["linkedin_profile"] is None

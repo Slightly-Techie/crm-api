@@ -186,3 +186,18 @@ def test_reset_password_invalid_token():
 #     reset_token = "test_reset_token"
 #     response = await send_email(email, reset_token)
 #     assert response.status_code == 200
+
+
+def test_signup_rejects_javascript_profile_link(client):
+    payload = {**user_signup_payload, "github_profile": "javascript:alert(1)"}
+    res = client.post("/api/v1/users/register", json=payload)
+
+    assert res.status_code == 422
+
+
+def test_signup_adds_https_to_profile_link(client):
+    payload = {**user_signup_payload, "github_profile": "github.com/slightlytechie"}
+    res = client.post("/api/v1/users/register", json=payload)
+
+    assert res.status_code == 201
+    assert res.json()["github_profile"] == "https://github.com/slightlytechie"
