@@ -6,7 +6,7 @@ from pydantic.types import conint
 from datetime import datetime
 from typing import Annotated, List, Optional, Union
 from api.api_models.tags import TagBase
-from utils.utils import RoleChoices
+from utils.utils import RoleChoices, normalize_profile_url
 from .stacks import Stacks
 from .technical_task import TechnicalTaskSubmissionResponse
 import re
@@ -79,6 +79,10 @@ class UserSignUp(BaseModel):
     is_active: bool = False
 
     model_config = ConfigDict(from_attributes=True, validate_assignment=True)
+
+    @field_validator("github_profile", "twitter_profile", "linkedin_profile", "portfolio_url")
+    def validate_profile_links(cls, value):
+        return normalize_profile_url(value)
 
     @field_validator("phone_number")
     def validate_phone_number(cls, value):
@@ -218,6 +222,10 @@ class ProfileUpdate(BaseModel):
     open_to_projects: Optional[bool] = None  # Availability for project work
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("github_profile", "twitter_profile", "linkedin_profile", "portfolio_url")
+    def validate_profile_links(cls, value):
+        return normalize_profile_url(value)
 
 
 class ProfileResponse(ProfileUpdate):

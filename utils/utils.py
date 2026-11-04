@@ -1,5 +1,7 @@
 import bcrypt
 import os
+import re
+from urllib.parse import urlsplit
 
 
 def get_password_hash(password: str) -> str:
@@ -48,3 +50,37 @@ def get_key_by_value(value):
         f"Invalid years_of_experience value: {value}. "
         f"Must be between 0 and 12. Valid ranges: Junior (0-2), Mid-level (3-4), Senior (5-12)."
     )
+
+
+# A scheme like "javascript:" or "mailto:". A digit after the colon means a port
+# ("github.com:443", "localhost:3000"), which is not a scheme.
+_SCHEME = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*:(?![0-9])")
+# Browsers ignore tabs and newlines inside URLs, so "java\tscript:" still runs.
+_IGNORED_URL_CHARS = re.compile(r"[\t\r\n]")
+
+
+def normalize_profile_url(value: str | None) -> str | None:
+    """Make a profile link safe to use as an href.
+
+    - Empty or missing: None (clears the field).
+    - No scheme ("github.com/kobi"): "https://" is added, so it is not a relative link.
+    - http or https: kept.
+    - Any other scheme ("javascript:", "data:", "mailto:"): ValueError, so the API returns 422.
+    """
+    if value is None:
+        return None
+    value = _IGNORED_URL_CHARS.sub("", value).strip()
+    if not value:
+        return None
+
+    if value.startswith("//"):
+        value = "https:" + value
+    elif _SCHEME.match(value):
+        if not value.lower().startswith(("http://", "https://")):
+            raise ValueError("Profile links must start with http:// or https://")
+    else:
+        value = "https://" + value
+
+    if not urlsplit(value).netloc:
+        raise ValueError("Profile link is not a valid URL")
+    return value
