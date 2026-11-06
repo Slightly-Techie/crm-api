@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 import pytest
-from fastapi import HTTPException
+from fastapi import BackgroundTasks, HTTPException
 from fastapi.testclient import TestClient
 from jose import jwt
 from api.api_models.user import ResetPasswordRequest
-from api.routes.auth import reset_password
+from api.routes.auth import _auth_service, reset_password
 from app import app
 from core.config import settings
+from services.auth_service import _send_password_reset_email_safely
 # from utils.mail_service import send_email
 from utils.oauth2 import create_reset_token, verify_reset_token
 
@@ -227,3 +228,33 @@ def test_forgot_password_same_response_for_known_and_unknown_emails(
 
     assert known.status_code == unknown.status_code
     assert known.json() == unknown.json()
+
+
+def test_forgot_password_known_email_queues_email_instead_of_sending_it(
+    session, test_user, mock_reset_email
+):
+    # The service returns as soon as the email is queued, so a real account
+    # gets its response without waiting for SMTP.
+    background_tasks = BackgroundTasks()
+
+    result = _auth_service(session).forgot_password(test_user["email"], background_tasks)
+
+    assert result == {"message": GENERIC_MESSAGE}
+    mock_reset_email.assert_not_called()
+    assert len(background_tasks.tasks) == 1
+    task = background_tasks.tasks[0]
+    assert task.func is _send_password_reset_email_safely
+    assert task.args[0] == test_user["email"]
+
+
+def test_forgot_password_send_failure_still_returns_generic_200(client, test_user, mocker):
+    mocker.patch(
+        "services.auth_service.send_password_reset_email",
+        new_callable=mocker.AsyncMock,
+        side_effect=RuntimeError("SMTP is down"),
+    )
+
+    res = client.post(FORGOT_PASSWORD_URL, json={"email": test_user["email"]})
+
+    assert res.status_code == 200
+    assert res.json() == {"message": GENERIC_MESSAGE}

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -59,8 +59,10 @@ def me(user=Depends(is_authenticated), db: Session = Depends(get_db)):
 
 
 @auth_router.post("/forgot-password")
-async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    return await _auth_service(db).forgot_password(request.email)
+def forgot_password(
+    request: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+):
+    return _auth_service(db).forgot_password(request.email, background_tasks)
 
 
 @auth_router.post("/reset-password")
