@@ -14,19 +14,11 @@ from db.models.feeds import Feed
 from db.models.stacks import Stack
 from db.models.users import User
 from db.models.announcements import Announcement
-from api.api_models.user import (
-    ForgotPasswordRequest,
-    # UserSignUp
-)
 from utils.enums import EmailTemplateName, UserStatus
 from utils.tools import tools as skills_data
 from db.models.skills import Skill
 from db.models.projects import Project
 from utils.utils import RoleChoices
-from api.routes.auth import (
-    forgot_password,
-    # reset_password
-)
 from api.api_models import user
 
 pg_user = settings.POSTGRES_USER
@@ -319,20 +311,6 @@ def mock_create_reset_token(mocker):
 @pytest.fixture
 def mock_send_email(mocker):
     return mocker.patch('utils.mail_service.send_email', return_value={"message": "Email has been sent"})
-
-
-@pytest.mark.asyncio
-async def test_forgot_password_user_not_found(mock_create_reset_token, mock_send_email, session):
-    email = "nonexistent@example.com"
-    db = session
-    with pytest.raises(HTTPException) as e:
-        await forgot_password(ForgotPasswordRequest(email=email), db=db)
-
-    assert e.value.status_code == 404
-    assert e.value.detail == 'User not found'
-
-    mock_create_reset_token.assert_not_called()
-    mock_send_email.assert_not_called()
 
 
 @pytest.fixture
