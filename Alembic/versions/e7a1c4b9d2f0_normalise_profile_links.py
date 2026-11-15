@@ -12,6 +12,10 @@ rules as utils.utils.normalize_profile_url:
 - empty or blank: NULL
 - starts with "//": "https:" is added
 - has a scheme other than http or https ("javascript:", "mailto:"): NULL
+- github_profile that is just a GitHub username ("kobi-ampem", "@kobi-ampem"):
+  "github.com/" is added
+- any other value with no "." cannot be a link ("N/A", "None yet", a bare
+  "https://"): NULL
 - no scheme: "https://" is added
 
 The SQL is written out here on purpose, so the migration keeps working even
@@ -31,6 +35,10 @@ PROFILE_LINK_COLUMNS = ("github_profile", "twitter_profile", "linkedin_profile",
 # A scheme followed by ":" and not a digit (a digit means a port, as in "github.com:443").
 HAS_SCHEME = r"'^[a-zA-Z][a-zA-Z0-9+.-]*:[^0-9]'"
 HAS_HTTP_SCHEME = r"'^https?://'"
+# A GitHub username: letters, digits and hyphens, not starting with a hyphen.
+GITHUB_USERNAME = r"'^@?[A-Za-z0-9][A-Za-z0-9-]*$'"
+# Placeholder text that also looks like a username, so it is not turned into a link.
+PLACEHOLDERS = "('none', 'null', 'nil', 'na', 'no', 'nothing')"
 
 
 def upgrade() -> None:
@@ -44,6 +52,14 @@ def upgrade() -> None:
             f"UPDATE users SET {column} = NULL "
             f"WHERE {column} ~ {HAS_SCHEME} AND {column} !~* {HAS_HTTP_SCHEME}"
         )
+        if column == "github_profile":
+            # Just a username: link to it on GitHub ("kobi-ampem" -> "github.com/kobi-ampem").
+            op.execute(
+                f"UPDATE users SET {column} = 'github.com/' || ltrim({column}, '@') "
+                f"WHERE {column} ~ {GITHUB_USERNAME} AND lower({column}) NOT IN {PLACEHOLDERS}"
+            )
+        # No "." means it cannot be a link: "N/A", "None yet", a bare "https://".
+        op.execute(f"UPDATE users SET {column} = NULL WHERE {column} NOT LIKE '%.%'")
         # No scheme at all: add https://.
         op.execute(
             f"UPDATE users SET {column} = 'https://' || {column} "
