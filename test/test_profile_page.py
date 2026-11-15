@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from api.api_models import user
+from db.models.users import User
 
 
 @patch('services.user_service.send_email')
@@ -288,3 +289,16 @@ def test_empty_profile_link_clears_the_field(client, user_cred):
 
     assert res.status_code == 200
     assert res.json()["linkedin_profile"] is None
+
+
+def test_bad_stored_link_does_not_break_reading_profiles(client, session, test_user, user_cred):
+    # Links are only checked on the way in; a bad value already stored must not
+    # turn every response that includes this user into a 500.
+    db_user = session.query(User).filter(User.id == test_user["id"]).first()
+    db_user.github_profile = "https://"
+    session.commit()
+    headers = {"Authorization": f"{user_cred.token_type} {user_cred.token}"}
+
+    assert client.get("/api/v1/users/", headers=headers).status_code == 200
+    profile_url = f"/api/v1/users/profile/{test_user['id']}"
+    assert client.get(profile_url, headers=headers).status_code == 200
