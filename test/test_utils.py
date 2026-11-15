@@ -42,6 +42,7 @@ def test_normalize_profile_url(value, expected):
     "data:text/html,<script>alert(1)</script>",
     "mailto:someone@example.com",
     "https://",
+    "https://user@",
 ])
 def test_normalize_profile_url_rejects_unsafe_links(value):
     with pytest.raises(ValueError):

@@ -81,6 +81,6 @@ def normalize_profile_url(value: str | None) -> str | None:
     else:
         value = "https://" + value
 
-    if not urlsplit(value).netloc:
+    if not urlsplit(value).hostname:
         raise ValueError("Profile link is not a valid URL")
     return value
