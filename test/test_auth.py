@@ -85,6 +85,21 @@ def test_user_signup_with_null_stack_id(client):
     assert res.status_code == 201
 
 
+def test_signup_rejects_javascript_profile_link(client):
+    payload = {**user_signup_payload, "github_profile": "javascript:alert(1)"}
+    res = client.post("/api/v1/users/register", json=payload)
+
+    assert res.status_code == 422
+
+
+def test_signup_adds_https_to_profile_link(client):
+    payload = {**user_signup_payload, "github_profile": "github.com/slightlytechie"}
+    res = client.post("/api/v1/users/register", json=payload)
+
+    assert res.status_code == 201
+    assert res.json()["github_profile"] == "https://github.com/slightlytechie"
+
+
 def test_user_signup_invalid():
     res = client.post("/api/v1/users/register", json=user_signup_payload_incomplete)
     assert res.status_code == 422

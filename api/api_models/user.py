@@ -6,7 +6,7 @@ from pydantic.types import conint
 from datetime import datetime
 from typing import Annotated, List, Optional, Union
 from api.api_models.tags import TagBase
-from utils.utils import RoleChoices
+from utils.utils import RoleChoices, normalize_profile_url
 from .stacks import Stacks
 from .technical_task import TechnicalTaskSubmissionResponse
 import re
@@ -59,7 +59,22 @@ class FeedCreate(FeedBase):
     pass
 
 
-class UserSignUp(BaseModel):
+class ProfileLinksInput(BaseModel):
+    """Normalises profile links on the models that save them.
+
+    Only input models use this. If a response model ran it too, one bad link
+    already in the database would make every response that includes that user
+    fail with a 500.
+    """
+
+    @field_validator(
+        "github_profile", "twitter_profile", "linkedin_profile", "portfolio_url", check_fields=False
+    )
+    def validate_profile_links(cls, value):
+        return normalize_profile_url(value)
+
+
+class UserSignUp(ProfileLinksInput):
     username: str = Field(..., min_length=4)
     email: EmailStr = Field(...)
     first_name: str = Field(..., min_length=2)
@@ -201,7 +216,7 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ProfileUpdate(BaseModel):
+class ProfileBase(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     first_name: Optional[str] = None
@@ -220,7 +235,11 @@ class ProfileUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ProfileResponse(ProfileUpdate):
+class ProfileUpdate(ProfileLinksInput, ProfileBase):
+    pass
+
+
+class ProfileResponse(ProfileBase):
     id: int = Field(...)
     skills: list[Skills]
     tags: list[Tags]
