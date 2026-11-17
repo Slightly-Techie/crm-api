@@ -1,5 +1,5 @@
 import logging
-from fastapi import HTTPException, status
+from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.exc import ProgrammingError
 from api.api_models.user import Token, UserSignUp
 from core.config import settings
@@ -16,6 +16,17 @@ from utils.oauth2 import (
 from utils.utils import get_key_by_value, get_password_hash, verify_password
 
 logger = logging.getLogger(__name__)
+
+FORGOT_PASSWORD_MESSAGE = "If an account exists for that email, we've sent a password reset link."
+
+
+async def _send_password_reset_email_safely(email: str, reset_token: str, username: str, email_template) -> None:
+    # Runs as a background task, after the response has gone out. Failures are
+    # logged here because there is no caller left to return them to.
+    try:
+        await send_password_reset_email(email, reset_token, username, email_template)
+    except Exception:
+        logger.exception("Sending password reset email failed")
 
 
 class AuthService:
@@ -110,12 +121,15 @@ class AuthService:
                 detail=settings.ERRORS.get("INVALID_CREDENTIALS")
             )
 
-    async def forgot_password(self, email: str) -> dict:
+    def forgot_password(self, email: str, background_tasks: BackgroundTasks) -> dict:
         try:
             email = email.lower()
             user = self.user_repo.get_by_email(email)
             if not user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                # Same response as for a real account, so the endpoint can't be used
+                # to find out which emails are registered.
+                logger.info("Password reset requested for an email with no account")
+                return {"message": FORGOT_PASSWORD_MESSAGE}
             reset_token = create_reset_token(email)
             try:
                 email_template = self.email_template_repo.get_by_name("PASSWORD RESET")
@@ -124,19 +138,13 @@ class AuthService:
                 # Also rollback the current DB transaction to avoid leaving the session in a failed state.
                 self.email_template_repo.rollback()
                 email_template = None
-            response = await send_password_reset_email(email, reset_token, user.username, email_template)
-            # If response is JSONResponse, extract the content
-            if hasattr(response, 'body'):
-                import json
-                content = json.loads(response.body)
-                if response.status_code != 200:
-                    raise HTTPException(
-                        status_code=response.status_code,
-                        detail=content.get("message", "Failed to send password reset email")
-                    )
-            return {"message": "Password reset email sent successfully"}
-        except HTTPException:
-            raise
+            # Send after the response, so a real account doesn't wait for SMTP
+            # (which would make it slower than an unknown email) and a failed
+            # send can't change the response.
+            background_tasks.add_task(
+                _send_password_reset_email_safely, email, reset_token, user.username, email_template
+            )
+            return {"message": FORGOT_PASSWORD_MESSAGE}
         except Exception as e:
             logger.error("Forgot password failed: %s", e)
             raise HTTPException(
